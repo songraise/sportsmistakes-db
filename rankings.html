@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Rankings | SportsMistakes</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    body { margin:0; font-family:Arial,sans-serif; background:#07111f; color:#fff; }
+    header { padding:28px 20px; background:#0d1b2e; border-bottom:1px solid #203852; }
+    header a { color:#74b9ff; text-decoration:none; font-weight:bold; margin-right:16px; }
+    .container { max-width:1050px; margin:35px auto; padding:0 20px; }
+    h1 { margin-bottom:8px; }
+    .sub { color:#b7c7d9; margin-bottom:24px; }
+    .tabs { display:flex; flex-wrap:wrap; gap:10px; margin-bottom:22px; }
+    button {
+      padding:11px 14px; border:none; border-radius:8px; cursor:pointer;
+      background:#203852; color:white; font-weight:bold;
+    }
+    button.active { background:#1e90ff; }
+    .list { display:grid; gap:14px; }
+    .row {
+      background:#0d1b2e; border:1px solid #203852; border-radius:14px;
+      padding:16px; cursor:pointer;
+    }
+    .rank { color:#ffcc00; font-weight:bold; font-size:18px; margin-right:8px; }
+    .score {
+      float:right; background:#ffcc00; color:#111; padding:5px 8px;
+      border-radius:8px; font-weight:bold; font-size:12px;
+    }
+    h2 { margin:8px 0; font-size:20px; }
+    .meta { color:#9fb2c7; font-size:14px; margin-bottom:8px; }
+    .summary { color:#d8e4f2; line-height:1.45; }
+    .message { color:#b7c7d9; margin:18px 0; }
+  </style>
+</head>
+
+<body>
+
+<header>
+  <a href="index.html">Home</a>
+  <a href="submit.html">Submit Mistake</a>
+  <a href="rankings.html">Rankings</a>
+</header>
+
+<div class="container">
+  <h1>SportsMistakes Rankings</h1>
+  <div class="sub">Browse the most controversial mistakes by sport and category.</div>
+
+  <div class="tabs">
+    <button class="active" onclick="setRanking('all', this)">Top Overall</button>
+    <button onclick="setRanking('NFL', this)">Top NFL</button>
+    <button onclick="setRanking('NHL', this)">Top NHL</button>
+    <button onclick="setRanking('NBA', this)">Top NBA</button>
+    <button onclick="setRanking('MLB', this)">Top MLB</button>
+    <button onclick="setRanking('Soccer', this)">Top Soccer</button>
+    <button onclick="setRanking('Coaching Mistake', this)">Coaching</button>
+    <button onclick="setRanking('Referee Mistake', this)">Referee</button>
+    <button onclick="setRanking('Player Mistake', this)">Player</button>
+    <button onclick="setRanking('Front Office Mistake', this)">Front Office</button>
+  </div>
+
+  <div id="message" class="message">Loading rankings...</div>
+  <div id="rankingsList" class="list"></div>
+</div>
+
+<script>
+  const SUPABASE_URL = "https://scwjlljurircxuufhqih.supabase.co";
+  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNjd2psbGp1cmlyY3h1dWZocWloIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyNjUyMjcsImV4cCI6MjA5Njg0MTIyN30.WF0HRRb9mAkuOySjabTd8CZXVZRqF0MhMl0N2mafnns";
+
+  const client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  let mistakes = [];
+  let currentRanking = "all";
+
+  async function loadMistakes() {
+    const { data, error } = await client
+      .from("mistakes")
+      .select("*")
+      .order("controversy_score", { ascending: false });
+
+    if (error) {
+      console.error(error);
+      document.getElementById("message").innerText = "Could not load rankings.";
+      return;
+    }
+
+    mistakes = data || [];
+    renderRankings();
+  }
+
+  function setRanking(type, button) {
+    currentRanking = type;
+
+    document.querySelectorAll(".tabs button").forEach(btn => btn.classList.remove("active"));
+    button.classList.add("active");
+
+    renderRankings();
+  }
+
+  function renderRankings() {
+    const list = document.getElementById("rankingsList");
+    const message = document.getElementById("message");
+
+    let filtered = mistakes;
+
+    if (currentRanking !== "all") {
+      filtered = mistakes.filter(m =>
+        m.sport === currentRanking || m.category === currentRanking
+      );
+    }
+
+    filtered = filtered
+      .sort((a, b) => (b.controversy_score || 0) - (a.controversy_score || 0))
+      .slice(0, 100);
+
+    if (filtered.length === 0) {
+      message.innerText = "No mistakes found for this ranking.";
+      list.innerHTML = "";
+      return;
+    }
+
+    message.innerText = `${filtered.length} ranked mistake${filtered.length === 1 ? "" : "s"}`;
+
+    list.innerHTML = filtered.map((m, index) => `
+      <div class="row" onclick="window.location.href='mistake.html?id=${m.id}'">
+        <span class="rank">#${index + 1}</span>
+        <span class="score">${escapeHtml(m.controversy_score || 0)}/100</span>
+
+        <h2>${escapeHtml(m.title || "Untitled Mistake")}</h2>
+
+        <div class="meta">
+          ${escapeHtml(m.sport || "")}
+          ${m.year ? " • " + escapeHtml(m.year) : ""}
+          ${m.category ? " • " + escapeHtml(m.category) : ""}
+          ${m.subcategory ? " • " + escapeHtml(m.subcategory) : ""}
+        </div>
+
+        <div class="summary">
+          ${escapeHtml(m.summary || "No summary added yet.")}
+        </div>
+      </div>
+    `).join("");
+  }
+
+  function escapeHtml(value) {
+    return String(value)
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#039;");
+  }
+
+  loadMistakes();
+</script>
+
+</body>
+</html>
