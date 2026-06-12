@@ -262,7 +262,7 @@
     }
 
     grid.innerHTML = filtered.map(m => `
-      <div class="card">
+     <div class="card" onclick="window.location.href='mistake.html?id=${m.id}'" style="cursor:pointer;">
         <span class="badge">${escapeHtml(m.sport || "Sport")}</span>
         <span class="score">${escapeHtml(m.controversy_score || 0)}/100</span>
 
