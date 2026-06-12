@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>SportsMistakes | Mistake Detail</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #07111f;
+      color: #fff;
+    }
+
+    header {
+      padding: 28px 20px;
+      background: #0d1b2e;
+      border-bottom: 1px solid #203852;
+    }
+
+    header a {
+      color: #74b9ff;
+      text-decoration: none;
+      font-weight: bold;
+    }
+
+    .container {
+      max-width: 850px;
+      margin: 40px auto;
+      padding: 0 20px;
+    }
+
+    .card {
+      background: #0d1b2e;
+      border: 1px solid #203852;
+      border-radius: 16px;
+      padding: 26px;
+    }
+
+    .badge {
+      display: inline-block;
+      font-size: 13px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: #1e90ff;
+      margin-bottom: 14px;
+    }
+
+    .score {
+      float: right;
+      background: #ffcc00;
+      color: #111;
+      padding: 6px 10px;
+      border-radius: 8px;
+      font-weight: bold;
+      font-size: 13px;
+    }
+
+    h1 {
+      font-size: 34px;
+      margin: 10px 0;
+    }
+
+    .meta {
+      color: #9fb2c7;
+      margin-bottom: 22px;
+      font-size: 15px;
+    }
+
+    .section {
+      margin-top: 24px;
+      padding-top: 20px;
+      border-top: 1px solid #203852;
+    }
+
+    .section h2 {
+      font-size: 20px;
+      margin-bottom: 10px;
+    }
+
+    p {
+      color: #d8e4f2;
+      line-height: 1.6;
+      font-size: 16px;
+    }
+
+    .sources a {
+      display: inline-block;
+      color: #74b9ff;
+      text-decoration: none;
+      margin-right: 16px;
+      margin-top: 8px;
+    }
+
+    .loading, .error {
+      text-align: center;
+      color: #b9c8da;
+      padding: 40px;
+    }
+  </style>
+</head>
+
+<body>
+
+<header>
+  <a href="index.html">← Back to SportsMistakes</a>
+</header>
+
+<div class="container">
+  <div id="content" class="loading">Loading mistake...</div>
+</div>
+
+<script>
+  const SUPABASE_URL = "https://scwjlljurircxuufhqih.supabase.co";
+  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNjd2psbGp1cmlyY3h1dWZocWloIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyNjUyMjcsImV4cCI6MjA5Njg0MTIyN30.WF0HRRb9mAkuOySjabTd8CZXVZRqF0MhMl0N2mafnns";
+
+  const client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  const params = new URLSearchParams(window.location.search);
+  const id = params.get("id");
+
+  async function loadMistake() {
+    const content = document.getElementById("content");
+
+    if (!id) {
+      content.innerHTML = `<div class="error">No mistake ID provided.</div>`;
+      return;
+    }
+
+    const { data, error } = await client
+      .from("mistakes")
+      .select("*")
+      .eq("id", id)
+      .single();
+
+    if (error || !data) {
+      console.error(error);
+      content.innerHTML = `<div class="error">Mistake not found.</div>`;
+      return;
+    }
+
+    content.className = "card";
+    content.innerHTML = `
+      <span class="badge">${escapeHtml(data.sport || "Sport")}</span>
+      <span class="score">${escapeHtml(data.controversy_score || 0)}/100</span>
+
+      <h1>${escapeHtml(data.title || "Untitled Mistake")}</h1>
+
+      <div class="meta">
+        ${escapeHtml(data.year || "")}
+        ${data.category ? " • " + escapeHtml(data.category) : ""}
+        ${data.subcategory ? " • " + escapeHtml(data.subcategory) : ""}
+      </div>
+
+      ${data.teams_people ? `
+        <div class="section">
+          <h2>Teams / People</h2>
+          <p>${escapeHtml(data.teams_people)}</p>
+        </div>
+      ` : ""}
+
+      <div class="section">
+        <h2>What Happened</h2>
+        <p>${escapeHtml(data.summary || "No summary added yet.")}</p>
+      </div>
+
+      ${data.why_it_matters ? `
+        <div class="section">
+          <h2>Why It Matters</h2>
+          <p>${escapeHtml(data.why_it_matters)}</p>
+        </div>
+      ` : ""}
+
+      <div class="section sources">
+        <h2>Sources</h2>
+        ${data.source_1 ? `<a href="${escapeHtml(data.source_1)}" target="_blank">Source 1</a>` : ""}
+        ${data.source_2 ? `<a href="${escapeHtml(data.source_2)}" target="_blank">Source 2</a>` : ""}
+      </div>
+    `;
+  }
+
+  function escapeHtml(value) {
+    return String(value)
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#039;");
+  }
+
+  loadMistake();
+</script>
+
+</body>
+</html>
