@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Submit a Mistake | SportsMistakes</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    body { margin:0; font-family:Arial,sans-serif; background:#07111f; color:#fff; }
+    header { padding:28px 20px; background:#0d1b2e; border-bottom:1px solid #203852; }
+    header a { color:#74b9ff; text-decoration:none; font-weight:bold; }
+    .container { max-width:750px; margin:40px auto; padding:0 20px; }
+    .card { background:#0d1b2e; border:1px solid #203852; border-radius:16px; padding:26px; }
+    h1 { margin-top:0; font-size:34px; }
+    p { color:#d8e4f2; line-height:1.6; }
+    label { display:block; margin-top:18px; font-weight:bold; color:#d8e4f2; }
+    input, select, textarea {
+      width:100%; box-sizing:border-box; margin-top:8px; padding:12px;
+      border-radius:8px; border:1px solid #203852; background:#07111f;
+      color:white; font-size:15px;
+    }
+    textarea { min-height:130px; resize:vertical; }
+    button {
+      margin-top:22px; padding:14px 20px; border:none; border-radius:8px;
+      background:#1e90ff; color:white; font-weight:bold; cursor:pointer; font-size:16px;
+    }
+    .message { margin-top:18px; color:#d8e4f2; }
+  </style>
+</head>
+<body>
+
+<header>
+  <a href="index.html">← Back to SportsMistakes</a>
+</header>
+
+<div class="container">
+  <div class="card">
+    <h1>Submit a Sports Mistake</h1>
+    <p>
+      Help build the Internet's Database of Sports Mistakes. Submissions go into
+      a review queue before they appear publicly.
+    </p>
+
+    <label>Title</label>
+    <input id="title" placeholder="Example: Seahawks Goal-Line Pass" />
+
+    <label>Sport</label>
+    <select id="sport">
+      <option value="">Select sport</option>
+      <option>NFL</option>
+      <option>NHL</option>
+      <option>NBA</option>
+      <option>MLB</option>
+      <option>Soccer</option>
+      <option>Olympics</option>
+      <option>Tennis</option>
+      <option>Golf</option>
+      <option>Other</option>
+    </select>
+
+    <label>Category</label>
+    <select id="category">
+      <option value="">Select category</option>
+      <option>Coaching Mistake</option>
+      <option>Referee Mistake</option>
+      <option>Player Mistake</option>
+      <option>Front Office Mistake</option>
+      <option>Ownership Mistake</option>
+      <option>League Mistake</option>
+      <option>Other</option>
+    </select>
+
+    <label>Description</label>
+    <textarea id="description" placeholder="Briefly explain what happened and why it may belong in the database."></textarea>
+
+    <label>Source URL</label>
+    <input id="source_url" placeholder="Paste an article, video, or reference link" />
+
+    <button onclick="submitMistake()">Submit Mistake</button>
+
+    <div id="message" class="message"></div>
+  </div>
+</div>
+
+<script>
+  const SUPABASE_URL = "https://scwjlljurircxuufhqih.supabase.co";
+  const SUPABASE_ANON_KEY = "PASTE_YOUR_ANON_KEY_HERE";
+
+  const client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  async function submitMistake() {
+    const message = document.getElementById("message");
+
+    const title = document.getElementById("title").value.trim();
+    const sport = document.getElementById("sport").value;
+    const category = document.getElementById("category").value;
+    const description = document.getElementById("description").value.trim();
+    const source_url = document.getElementById("source_url").value.trim();
+
+    if (!title || !description) {
+      message.innerText = "Please add at least a title and description.";
+      return;
+    }
+
+    message.innerText = "Submitting...";
+
+    const { error } = await client
+      .from("mistake_submissions")
+      .insert({
+        title,
+        sport,
+        category,
+        description,
+        source_url,
+        status: "pending"
+      });
+
+    if (error) {
+      console.error(error);
+      message.innerText = "Submission failed. Please try again.";
+      return;
+    }
+
+    message.innerText = "Submission received. Thank you! It will be reviewed before publishing.";
+
+    document.getElementById("title").value = "";
+    document.getElementById("sport").value = "";
+    document.getElementById("category").value = "";
+    document.getElementById("description").value = "";
+    document.getElementById("source_url").value = "";
+  }
+</script>
+
+</body>
+</html>
