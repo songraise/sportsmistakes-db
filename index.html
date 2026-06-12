@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>SportsMistakes | The Internet's Database of Sports Mistakes</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #07111f;
+      color: #fff;
+    }
+
+    header {
+      padding: 55px 20px;
+      text-align: center;
+      background: linear-gradient(135deg, #07111f, #12365f);
+    }
+
+    h1 {
+      font-size: 46px;
+      margin: 0;
+    }
+
+    .tagline {
+      font-size: 22px;
+      color: #d8e8ff;
+      margin-top: 10px;
+    }
+
+    .sub {
+      max-width: 760px;
+      margin: 18px auto 0;
+      color: #b7c7d9;
+      line-height: 1.5;
+    }
+
+    .controls {
+      max-width: 1100px;
+      margin: 25px auto;
+      padding: 0 20px;
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    input, select {
+      padding: 12px;
+      border-radius: 8px;
+      border: none;
+      font-size: 15px;
+    }
+
+    input {
+      flex: 1;
+      min-width: 240px;
+    }
+
+    select {
+      min-width: 170px;
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: 0 auto 50px;
+      padding: 0 20px;
+    }
+
+    .stats {
+      margin-bottom: 20px;
+      color: #b7c7d9;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
+      gap: 18px;
+    }
+
+    .card {
+      background: #0d1b2e;
+      border: 1px solid #203852;
+      border-radius: 14px;
+      padding: 18px;
+    }
+
+    .badge {
+      display: inline-block;
+      font-size: 12px;
+      padding: 5px 8px;
+      border-radius: 999px;
+      background: #1e90ff;
+      color: white;
+      margin-bottom: 10px;
+    }
+
+    .score {
+      float: right;
+      background: #ffcc00;
+      color: #111;
+      padding: 5px 8px;
+      border-radius: 8px;
+      font-weight: bold;
+      font-size: 12px;
+    }
+
+    .card h2 {
+      font-size: 20px;
+      margin: 8px 0;
+    }
+
+    .meta {
+      font-size: 14px;
+      color: #9fb2c7;
+      margin-bottom: 12px;
+    }
+
+    .summary {
+      color: #d8e4f2;
+      line-height: 1.45;
+      font-size: 15px;
+    }
+
+    .why {
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid #203852;
+      color: #b9c8da;
+      font-size: 14px;
+    }
+
+    .sources {
+      margin-top: 14px;
+      font-size: 14px;
+    }
+
+    .sources a {
+      color: #74b9ff;
+      text-decoration: none;
+      margin-right: 10px;
+    }
+
+    .empty {
+      text-align: center;
+      padding: 40px;
+      color: #b9c8da;
+    }
+
+    footer {
+      text-align: center;
+      padding: 25px;
+      color: #8094aa;
+      font-size: 14px;
+    }
+  </style>
+</head>
+
+<body>
+
+<header>
+  <h1>SportsMistakes</h1>
+  <div class="tagline">The Internet's Database of Sports Mistakes</div>
+  <p class="sub">
+    Search, rank, debate, and discover the biggest coaching blunders,
+    referee controversies, player errors, front-office disasters, and
+    unforgettable mistakes in sports history.
+  </p>
+</header>
+
+<div class="controls">
+  <input id="searchInput" type="text" placeholder="Search mistakes, teams, people..." />
+
+  <select id="sportFilter">
+    <option value="">All Sports</option>
+    <option value="NFL">NFL</option>
+    <option value="NHL">NHL</option>
+    <option value="NBA">NBA</option>
+    <option value="MLB">MLB</option>
+    <option value="Soccer">Soccer</option>
+    <option value="Olympics">Olympics</option>
+    <option value="Tennis">Tennis</option>
+    <option value="Golf">Golf</option>
+  </select>
+
+  <select id="categoryFilter">
+    <option value="">All Categories</option>
+    <option value="Coaching Mistake">Coaching Mistake</option>
+    <option value="Referee Mistake">Referee Mistake</option>
+    <option value="Player Mistake">Player Mistake</option>
+    <option value="Front Office Mistake">Front Office Mistake</option>
+    <option value="Ownership Mistake">Ownership Mistake</option>
+    <option value="League Mistake">League Mistake</option>
+  </select>
+</div>
+
+<div class="container">
+  <div class="stats" id="stats">Loading mistakes...</div>
+  <div class="grid" id="mistakesGrid"></div>
+</div>
+
+<footer>
+  SportsMistakes.com — The Internet's Database of Sports Mistakes
+</footer>
+
+<script>
+  const SUPABASE_URL = "https://scwjlljurircxuufhqih.supabase.co";
+  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNjd2psbGp1cmlyY3h1dWZocWloIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyNjUyMjcsImV4cCI6MjA5Njg0MTIyN30.WF0HRRb9mAkuOySjabTd8CZXVZRqF0MhMl0N2mafnns";
+
+  const client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  let mistakes = [];
+
+  async function loadMistakes() {
+    const { data, error } = await client
+      .from("mistakes")
+      .select("*")
+      .order("controversy_score", { ascending: false });
+
+    if (error) {
+      document.getElementById("stats").innerText = "Error loading mistakes.";
+      console.error(error);
+      return;
+    }
+
+    mistakes = data || [];
+    renderMistakes();
+  }
+
+  function renderMistakes() {
+    const grid = document.getElementById("mistakesGrid");
+    const stats = document.getElementById("stats");
+
+    const search = document.getElementById("searchInput").value.toLowerCase();
+    const sport = document.getElementById("sportFilter").value;
+    const category = document.getElementById("categoryFilter").value;
+
+    const filtered = mistakes.filter(m => {
+      const text = `
+        ${m.title || ""}
+        ${m.sport || ""}
+        ${m.category || ""}
+        ${m.subcategory || ""}
+        ${m.teams_people || ""}
+        ${m.summary || ""}
+      `.toLowerCase();
+
+      return (
+        (!search || text.includes(search)) &&
+        (!sport || m.sport === sport) &&
+        (!category || m.category === category)
+      );
+    });
+
+    stats.innerText = `${filtered.length} sports mistakes found`;
+
+    if (filtered.length === 0) {
+      grid.innerHTML = `<div class="empty">No mistakes found.</div>`;
+      return;
+    }
+
+    grid.innerHTML = filtered.map(m => `
+      <div class="card">
+        <span class="badge">${escapeHtml(m.sport || "Sport")}</span>
+        <span class="score">${escapeHtml(m.controversy_score || 0)}/100</span>
+
+        <h2>${escapeHtml(m.title || "Untitled Mistake")}</h2>
+
+        <div class="meta">
+          ${escapeHtml(m.year || "")}
+          ${m.category ? " • " + escapeHtml(m.category) : ""}
+          ${m.subcategory ? " • " + escapeHtml(m.subcategory) : ""}
+        </div>
+
+        <div class="summary">
+          ${escapeHtml(m.summary || "No summary added yet.")}
+        </div>
+
+        ${m.why_it_matters ? `
+          <div class="why">
+            <strong>Why it matters:</strong> ${escapeHtml(m.why_it_matters)}
+          </div>
+        ` : ""}
+
+        <div class="sources">
+          ${m.source_1 ? `<a href="${escapeHtml(m.source_1)}" target="_blank">Source 1</a>` : ""}
+          ${m.source_2 ? `<a href="${escapeHtml(m.source_2)}" target="_blank">Source 2</a>` : ""}
+        </div>
+      </div>
+    `).join("");
+  }
+
+  function escapeHtml(value) {
+    return String(value)
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#039;");
+  }
+
+  document.getElementById("searchInput").addEventListener("input", renderMistakes);
+  document.getElementById("sportFilter").addEventListener("change", renderMistakes);
+  document.getElementById("categoryFilter").addEventListener("change", renderMistakes);
+
+  loadMistakes();
+</script>
+
+</body>
+</html>
