@@ -125,13 +125,68 @@
   const client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
   function containsUnsafeText(text) {
-    const banned = [
-      "porn", "xxx", "nude", "nazi", "kill yourself"
-    ];
+  const lower = text.toLowerCase();
 
-    const lower = text.toLowerCase();
-    return banned.some(word => lower.includes(word));
-  }
+  const bannedPatterns = [
+    // profanity
+    /\bfuck\b/i,
+    /\bfucking\b/i,
+    /\bshit\b/i,
+    /\basshole\b/i,
+    /\bbitch\b/i,
+    /\bcunt\b/i,
+    /\bdick\b/i,
+    /\bpussy\b/i,
+    /\bmotherfucker\b/i,
+
+    // sexual / porn
+    /\bporn\b/i,
+    /\bxxx\b/i,
+    /\bnude\b/i,
+    /\bnudes\b/i,
+    /\bnsfw\b/i,
+    /\bsex tape\b/i,
+    /\bonlyfans\b/i,
+
+    // threats / self-harm
+    /\bkill yourself\b/i,
+    /\bkys\b/i,
+    /\bsuicide\b/i,
+    /\bdie\b/i,
+    /\bdeath threat\b/i,
+
+    // hate / extremism
+    /\bnazi\b/i,
+    /\bhitler\b/i,
+    /\bheil\b/i,
+    /\bwhite power\b/i,
+    /\bterrorist\b/i,
+    /\bracist\b/i,
+    /\bhomophobic\b/i,
+    /\bantisemitic\b/i,
+    /\bslur\b/i,
+
+    // political / war trigger terms you may want to review manually
+    /\bgenocide\b/i,
+    /\bfree palestine\b/i,
+    /\bpalestine\b/i,
+    /\bisrael\b/i,
+    /\bhamas\b/i,
+    /\bzionist\b/i,
+    /\bzionism\b/i,
+
+    // spam / scam / gambling spam
+    /\bcasino\b/i,
+    /\bcrypto\b/i,
+    /\bbitcoin\b/i,
+    /\btelegram\b/i,
+    /\bwhatsapp\b/i,
+    /\bviagra\b/i,
+    /\bescort\b/i
+  ];
+
+  return bannedPatterns.some(pattern => pattern.test(lower));
+}
 
   async function submitMistake() {
     const message = document.getElementById("message");
