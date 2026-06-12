@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Admin Submissions | SportsMistakes</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    body { margin:0; font-family:Arial,sans-serif; background:#07111f; color:#fff; }
+    header { padding:28px 20px; background:#0d1b2e; border-bottom:1px solid #203852; }
+    header a { color:#74b9ff; text-decoration:none; font-weight:bold; margin-right:16px; }
+    .container { max-width:1000px; margin:35px auto; padding:0 20px; }
+    .card { background:#0d1b2e; border:1px solid #203852; border-radius:16px; padding:22px; margin-bottom:18px; }
+    h1 { margin-top:0; }
+    .meta { color:#9fb2c7; margin:8px 0 14px; }
+    p { color:#d8e4f2; line-height:1.55; }
+    input, select, textarea {
+      width:100%; box-sizing:border-box; margin-top:8px; margin-bottom:12px; padding:11px;
+      border-radius:8px; border:1px solid #203852; background:#07111f; color:white; font-size:14px;
+    }
+    textarea { min-height:90px; resize:vertical; }
+    label { font-weight:bold; color:#d8e4f2; }
+    button {
+      padding:11px 15px; border:none; border-radius:8px; color:white;
+      font-weight:bold; cursor:pointer; margin-right:8px; margin-top:8px;
+    }
+    .approve { background:#1e90ff; }
+    .reject { background:#8b1e1e; }
+    .refresh { background:#444; }
+    .message { color:#d8e4f2; margin:15px 0; }
+    .source a { color:#74b9ff; }
+  </style>
+</head>
+
+<body>
+
+<header>
+  <a href="index.html">← Homepage</a>
+  <a href="submit.html">Submit Page</a>
+</header>
+
+<div class="container">
+  <h1>Pending Mistake Submissions</h1>
+  <button class="refresh" onclick="loadSubmissions()">Refresh</button>
+  <div id="message" class="message">Loading submissions...</div>
+  <div id="submissions"></div>
+</div>
+
+<script>
+  const SUPABASE_URL = "https://scwjlljurircxuufhqih.supabase.co";
+  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNjd2psbGp1cmlyY3h1dWZocWloIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyNjUyMjcsImV4cCI6MjA5Njg0MTIyN30.WF0HRRb9mAkuOySjabTd8CZXVZRqF0MhMl0N2mafnns";
+
+  const client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  async function loadSubmissions() {
+    const message = document.getElementById("message");
+    const container = document.getElementById("submissions");
+
+    message.innerText = "Loading submissions...";
+    container.innerHTML = "";
+
+    const { data, error } = await client
+      .from("mistake_submissions")
+      .select("*")
+      .eq("status", "pending")
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      console.error(error);
+      message.innerText = "Could not load submissions.";
+      return;
+    }
+
+    if (!data || data.length === 0) {
+      message.innerText = "No pending submissions.";
+      return;
+    }
+
+    message.innerText = `${data.length} pending submission${data.length === 1 ? "" : "s"}.`;
+
+    container.innerHTML = data.map(s => `
+      <div class="card" id="submission-${s.id}">
+        <h2>${escapeHtml(s.title || "Untitled Submission")}</h2>
+        <div class="meta">
+          ${escapeHtml(s.sport || "Unknown sport")}
+          ${s.category ? " • " + escapeHtml(s.category) : ""}
+        </div>
+
+        <p>${escapeHtml(s.description || "")}</p>
+
+        <div class="source">
+          ${s.source_url ? `<a href="${escapeHtml(s.source_url)}" target="_blank">Open Source</a>` : "No source provided"}
+        </div>
+
+        <div style="margin-top:20px;">
+          <label>Public Title</label>
+          <input id="title-${s.id}" value="${escapeAttr(s.title || "")}" />
+
+          <label>Sport</label>
+          <input id="sport-${s.id}" value="${escapeAttr(s.sport || "")}" />
+
+          <label>Category</label>
+          <input id="category-${s.id}" value="${escapeAttr(s.category || "")}" />
+
+          <label>Subcategory</label>
+          <input id="subcategory-${s.id}" placeholder="Example: Play Calling, Missed Call, Turnover" />
+
+          <label>Teams / People</label>
+          <input id="teams-${s.id}" placeholder="Example: Boston Red Sox, New York Yankees, Jesse Barfield" />
+
+          <label>Year</label>
+          <input id="year-${s.id}" placeholder="Example: 1990" />
+
+          <label>Summary</label>
+          <textarea id="summary-${s.id}">${escapeHtml(s.description || "")}</textarea>
+
+          <label>Why It Matters</label>
+          <textarea id="why-${s.id}" placeholder="Why this mistake belongs in the database"></textarea>
+
+          <label>Controversy Score</label>
+          <input id="score-${s.id}" value="60" />
+
+          <button class="approve" onclick="approveSubmission('${s.id}', '${escapeJs(s.source_url || "")}')">
+            Approve & Publish
+          </button>
+
+          <button class="reject" onclick="rejectSubmission('${s.id}')">
+            Reject
+          </button>
+        </div>
+      </div>
+    `).join("");
+  }
+
+  async function approveSubmission(id, sourceUrl) {
+    const title = document.getElementById(`title-${id}`).value.trim();
+    const sport = document.getElementById(`sport-${id}`).value.trim();
+    const category = document.getElementById(`category-${id}`).value.trim();
+    const subcategory = document.getElementById(`subcategory-${id}`).value.trim();
+    const teams_people = document.getElementById(`teams-${id}`).value.trim();
+    const yearValue = document.getElementById(`year-${id}`).value.trim();
+    const summary = document.getElementById(`summary-${id}`).value.trim();
+    const why_it_matters = document.getElementById(`why-${id}`).value.trim();
+    const scoreValue = document.getElementById(`score-${id}`).value.trim();
+
+    if (!title || !sport || !summary) {
+      alert("Title, sport, and summary are required before publishing.");
+      return;
+    }
+
+    const year = yearValue ? parseInt(yearValue, 10) : null;
+    const controversy_score = scoreValue ? parseInt(scoreValue, 10) : 50;
+
+    const { error: insertError } = await client
+      .from("mistakes")
+      .insert({
+        title,
+        sport,
+        year,
+        category,
+        subcategory,
+        teams_people,
+        summary,
+        why_it_matters,
+        verdict_type: "Fan Verdict",
+        controversy_score,
+        source_1: sourceUrl
+      });
+
+    if (insertError) {
+      console.error(insertError);
+      alert("Could not publish mistake.");
+      return;
+    }
+
+    const { error: updateError } = await client
+      .from("mistake_submissions")
+      .update({
+        status: "approved",
+        review_notes: "Approved and published"
+      })
+      .eq("id", id);
+
+    if (updateError) {
+      console.error(updateError);
+      alert("Published, but could not update submission status.");
+      return;
+    }
+
+    document.getElementById(`submission-${id}`).remove();
+    alert("Submission approved and published!");
+  }
+
+  async function rejectSubmission(id) {
+    const reason = prompt("Optional rejection note:", "Rejected");
+    const { error } = await client
+      .from("mistake_submissions")
+      .update({
+        status: "rejected",
+        review_notes: reason || "Rejected"
+      })
+      .eq("id", id);
+
+    if (error) {
+      console.error(error);
+      alert("Could not reject submission.");
+      return;
+    }
+
+    document.getElementById(`submission-${id}`).remove();
+    alert("Submission rejected.");
+  }
+
+  function escapeHtml(value) {
+    return String(value)
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#039;");
+  }
+
+  function escapeAttr(value) {
+    return escapeHtml(value).replaceAll("\n", " ");
+  }
+
+  function escapeJs(value) {
+    return String(value).replaceAll("\\", "\\\\").replaceAll("'", "\\'");
+  }
+
+  loadSubmissions();
+</script>
+
+</body>
+</html>
