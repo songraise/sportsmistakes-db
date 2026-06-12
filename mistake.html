@@ -86,6 +86,35 @@
       font-size: 16px;
     }
 
+    .vote-buttons {
+      margin-top: 15px;
+    }
+
+    .vote-buttons button {
+      padding: 12px 18px;
+      border: none;
+      border-radius: 8px;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      margin-right: 10px;
+      margin-bottom: 10px;
+    }
+
+    .yes-btn {
+      background: #1e90ff;
+    }
+
+    .no-btn {
+      background: #444;
+    }
+
+    #voteResults {
+      margin-top: 18px;
+      color: #d8e4f2;
+      font-size: 16px;
+    }
+
     .sources a {
       display: inline-block;
       color: #74b9ff;
@@ -173,12 +202,95 @@
         </div>
       ` : ""}
 
+      <div class="section">
+        <h2>Fan Verdict</h2>
+        <p>Was this actually a mistake?</p>
+
+        <div class="vote-buttons">
+          <button class="yes-btn" onclick="submitVote('yes')">YES — Mistake</button>
+          <button class="no-btn" onclick="submitVote('no')">NO — Not a Mistake</button>
+        </div>
+
+        <div id="voteResults">
+          Loading votes...
+        </div>
+      </div>
+
       <div class="section sources">
         <h2>Sources</h2>
         ${data.source_1 ? `<a href="${escapeHtml(data.source_1)}" target="_blank">Source 1</a>` : ""}
         ${data.source_2 ? `<a href="${escapeHtml(data.source_2)}" target="_blank">Source 2</a>` : ""}
       </div>
     `;
+
+    await loadVotes();
+  }
+
+  async function loadVotes() {
+    const voteResults = document.getElementById("voteResults");
+    if (!voteResults || !id) return;
+
+    const { data, error } = await client
+      .from("mistake_votes")
+      .select("vote")
+      .eq("mistake_id", id);
+
+    if (error) {
+      voteResults.innerText = "Could not load votes.";
+      console.error(error);
+      return;
+    }
+
+    const votes = data || [];
+    const total = votes.length;
+    const yes = votes.filter(v => v.vote === "yes").length;
+    const no = votes.filter(v => v.vote === "no").length;
+
+    if (total === 0) {
+      voteResults.innerHTML = "No votes yet. Be the first to vote.";
+      return;
+    }
+
+    const yesPercent = Math.round((yes / total) * 100);
+    const noPercent = Math.round((no / total) * 100);
+
+    voteResults.innerHTML = `
+      <strong>${yesPercent}% YES</strong> / ${noPercent}% NO<br>
+      ${total} total vote${total === 1 ? "" : "s"}
+    `;
+  }
+
+  async function submitVote(vote) {
+    const voteKey = "sportsmistakes_vote_" + id;
+
+    if (localStorage.getItem(voteKey)) {
+      alert("You already voted on this mistake.");
+      return;
+    }
+
+    let voterId = localStorage.getItem("sportsmistakes_voter_id");
+
+    if (!voterId) {
+      voterId = crypto.randomUUID();
+      localStorage.setItem("sportsmistakes_voter_id", voterId);
+    }
+
+    const { error } = await client
+      .from("mistake_votes")
+      .insert({
+        mistake_id: id,
+        vote: vote,
+        voter_id: voterId
+      });
+
+    if (error) {
+      alert("Vote failed. Please try again.");
+      console.error(error);
+      return;
+    }
+
+    localStorage.setItem(voteKey, vote);
+    await loadVotes();
   }
 
   function escapeHtml(value) {
