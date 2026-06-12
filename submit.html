@@ -9,10 +9,12 @@
     body { margin:0; font-family:Arial,sans-serif; background:#07111f; color:#fff; }
     header { padding:28px 20px; background:#0d1b2e; border-bottom:1px solid #203852; }
     header a { color:#74b9ff; text-decoration:none; font-weight:bold; }
-    .container { max-width:750px; margin:40px auto; padding:0 20px; }
+    .container { max-width:800px; margin:40px auto; padding:0 20px; }
     .card { background:#0d1b2e; border:1px solid #203852; border-radius:16px; padding:26px; }
     h1 { margin-top:0; font-size:34px; }
-    p { color:#d8e4f2; line-height:1.6; }
+    h2 { font-size:20px; margin-top:24px; }
+    p, li { color:#d8e4f2; line-height:1.6; }
+    .rules { background:#07111f; border:1px solid #203852; border-radius:12px; padding:18px; margin:20px 0; }
     label { display:block; margin-top:18px; font-weight:bold; color:#d8e4f2; }
     input, select, textarea {
       width:100%; box-sizing:border-box; margin-top:8px; padding:12px;
@@ -20,11 +22,14 @@
       color:white; font-size:15px;
     }
     textarea { min-height:130px; resize:vertical; }
+    .checkbox-row { display:flex; gap:10px; align-items:flex-start; margin-top:18px; }
+    .checkbox-row input { width:auto; margin-top:4px; }
     button {
       margin-top:22px; padding:14px 20px; border:none; border-radius:8px;
       background:#1e90ff; color:white; font-weight:bold; cursor:pointer; font-size:16px;
     }
     .message { margin-top:18px; color:#d8e4f2; }
+    .warning { color:#ffcc00; font-weight:bold; }
   </style>
 </head>
 <body>
@@ -40,6 +45,30 @@
       Help build the Internet's Database of Sports Mistakes. Submissions go into
       a review queue before they appear publicly.
     </p>
+
+    <div class="rules">
+      <h2>Notability Standards</h2>
+      <p>A submission should meet at least one of these:</p>
+      <ul>
+        <li>It influenced the outcome of a game, season, playoff series, trade, draft, or championship.</li>
+        <li>It received media coverage or became widely discussed by fans.</li>
+        <li>It involved a major coaching, referee, player, ownership, league, or front-office decision.</li>
+        <li>It has historical significance.</li>
+        <li>It has a credible source that supports what happened.</li>
+      </ul>
+
+      <h2>Safety Rules</h2>
+      <ul>
+        <li>No hate speech, threats, harassment, or slurs.</li>
+        <li>No pornography or unsafe links.</li>
+        <li>No fake accusations or unsupported claims.</li>
+        <li>No spam, gambling spam, or unrelated promotions.</li>
+      </ul>
+
+      <p class="warning">
+        Bad or unsafe submissions may be rejected without review.
+      </p>
+    </div>
 
     <label>Title</label>
     <input id="title" placeholder="Example: Seahawks Goal-Line Pass" />
@@ -71,10 +100,17 @@
     </select>
 
     <label>Description</label>
-    <textarea id="description" placeholder="Briefly explain what happened and why it may belong in the database."></textarea>
+    <textarea id="description" placeholder="Briefly explain what happened and why it belongs in the database."></textarea>
 
     <label>Source URL</label>
-    <input id="source_url" placeholder="Paste an article, video, or reference link" />
+    <input id="source_url" placeholder="https://example.com/article-or-video" />
+
+    <div class="checkbox-row">
+      <input type="checkbox" id="rulesCheck" />
+      <span>
+        I confirm this submission is sports-related, safe, and supported by a real source.
+      </span>
+    </div>
 
     <button onclick="submitMistake()">Submit Mistake</button>
 
@@ -88,6 +124,15 @@
 
   const client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+  function containsUnsafeText(text) {
+    const banned = [
+      "porn", "xxx", "nude", "nazi", "kill yourself"
+    ];
+
+    const lower = text.toLowerCase();
+    return banned.some(word => lower.includes(word));
+  }
+
   async function submitMistake() {
     const message = document.getElementById("message");
 
@@ -96,9 +141,30 @@
     const category = document.getElementById("category").value;
     const description = document.getElementById("description").value.trim();
     const source_url = document.getElementById("source_url").value.trim();
+    const rulesCheck = document.getElementById("rulesCheck").checked;
 
-    if (!title || !description) {
-      message.innerText = "Please add at least a title and description.";
+    if (!title || !description || !source_url) {
+      message.innerText = "Please add a title, description, and source URL.";
+      return;
+    }
+
+    if (!source_url.startsWith("https://")) {
+      message.innerText = "Please use a full secure source URL starting with https://";
+      return;
+    }
+
+    if (!sport || !category) {
+      message.innerText = "Please select a sport and category.";
+      return;
+    }
+
+    if (!rulesCheck) {
+      message.innerText = "Please confirm that the submission follows the rules.";
+      return;
+    }
+
+    if (containsUnsafeText(title + " " + description + " " + source_url)) {
+      message.innerText = "This submission appears to violate the safety rules.";
       return;
     }
 
@@ -128,6 +194,7 @@
     document.getElementById("category").value = "";
     document.getElementById("description").value = "";
     document.getElementById("source_url").value = "";
+    document.getElementById("rulesCheck").checked = false;
   }
 </script>
 
