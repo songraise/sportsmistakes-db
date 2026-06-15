@@ -24,6 +24,7 @@
       color: #74b9ff;
       text-decoration: none;
       font-weight: bold;
+      margin-right: 16px;
     }
 
     .container {
@@ -123,6 +124,46 @@
       margin-top: 8px;
     }
 
+    .related-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+      gap: 14px;
+      margin-top: 14px;
+    }
+
+    .related-card {
+      background: #07111f;
+      border: 1px solid #203852;
+      border-radius: 12px;
+      padding: 14px;
+      cursor: pointer;
+    }
+
+    .related-card:hover {
+      border-color: #1e90ff;
+    }
+
+    .related-card h3 {
+      font-size: 16px;
+      margin: 6px 0;
+    }
+
+    .related-meta {
+      font-size: 13px;
+      color: #9fb2c7;
+    }
+
+    .related-score {
+      display: inline-block;
+      background: #ffcc00;
+      color: #111;
+      padding: 4px 7px;
+      border-radius: 8px;
+      font-weight: bold;
+      font-size: 12px;
+      margin-top: 8px;
+    }
+
     .loading, .error {
       text-align: center;
       color: #b9c8da;
@@ -134,7 +175,9 @@
 <body>
 
 <header>
-  <a href="index.html">← Back to SportsMistakes</a>
+  <a href="index.html">Home</a>
+  <a href="rankings.html">Rankings</a>
+  <a href="submit.html">Submit Mistake</a>
 </header>
 
 <div class="container">
@@ -149,6 +192,8 @@
 
   const params = new URLSearchParams(window.location.search);
   const id = params.get("id");
+
+  let currentMistake = null;
 
   async function loadMistake() {
     const content = document.getElementById("content");
@@ -169,6 +214,8 @@
       content.innerHTML = `<div class="error">Mistake not found.</div>`;
       return;
     }
+
+    currentMistake = data;
 
     content.className = "card";
     content.innerHTML = `
@@ -221,9 +268,15 @@
         ${data.source_1 ? `<a href="${escapeHtml(data.source_1)}" target="_blank">Source 1</a>` : ""}
         ${data.source_2 ? `<a href="${escapeHtml(data.source_2)}" target="_blank">Source 2</a>` : ""}
       </div>
+
+      <div class="section">
+        <h2>Related Mistakes</h2>
+        <div id="relatedMistakes">Loading related mistakes...</div>
+      </div>
     `;
 
     await loadVotes();
+    await loadRelatedMistakes();
   }
 
   async function loadVotes() {
@@ -291,6 +344,48 @@
 
     localStorage.setItem(voteKey, vote);
     await loadVotes();
+  }
+
+  async function loadRelatedMistakes() {
+    const relatedBox = document.getElementById("relatedMistakes");
+    if (!relatedBox || !currentMistake) return;
+
+    const { data, error } = await client
+      .from("mistakes")
+      .select("*")
+      .neq("id", id)
+      .or(`sport.eq.${currentMistake.sport},category.eq.${currentMistake.category},subcategory.eq.${currentMistake.subcategory}`)
+      .order("controversy_score", { ascending: false })
+      .limit(6);
+
+    if (error) {
+      console.error(error);
+      relatedBox.innerHTML = "Could not load related mistakes.";
+      return;
+    }
+
+    if (!data || data.length === 0) {
+      relatedBox.innerHTML = "No related mistakes yet.";
+      return;
+    }
+
+    relatedBox.innerHTML = `
+      <div class="related-grid">
+        ${data.map(m => `
+          <div class="related-card" onclick="window.location.href='mistake.html?id=${m.id}'">
+            <div class="related-meta">
+              ${escapeHtml(m.sport || "")}
+              ${m.year ? " • " + escapeHtml(m.year) : ""}
+            </div>
+            <h3>${escapeHtml(m.title || "Untitled Mistake")}</h3>
+            <div class="related-meta">
+              ${escapeHtml(m.category || "")}
+            </div>
+            <span class="related-score">${escapeHtml(m.controversy_score || 0)}/100</span>
+          </div>
+        `).join("")}
+      </div>
+    `;
   }
 
   function escapeHtml(value) {
