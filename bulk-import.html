@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Bulk Import | SportsMistakes</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    body { margin:0; font-family:Arial,sans-serif; background:#07111f; color:#fff; }
+    .top-nav { display:flex; justify-content:space-between; align-items:center; background:#0d1b2e; border-bottom:1px solid #203852; padding:14px 20px; }
+    .nav-brand { font-weight:bold; font-size:20px; color:#fff; cursor:pointer; }
+    .nav-links a { color:#74b9ff; text-decoration:none; font-weight:bold; margin-left:18px; }
+    .nav-links a:hover { color:#ffcc00; }
+    .container { max-width:950px; margin:35px auto; padding:0 20px; }
+    .card { background:#0d1b2e; border:1px solid #203852; border-radius:16px; padding:24px; }
+    textarea { width:100%; min-height:330px; box-sizing:border-box; margin-top:14px; padding:14px; border-radius:10px; border:1px solid #203852; background:#07111f; color:white; font-size:14px; }
+    button { margin-top:18px; padding:14px 20px; border:none; border-radius:8px; background:#1e90ff; color:white; font-weight:bold; cursor:pointer; }
+    .message { margin-top:18px; color:#d8e4f2; white-space:pre-wrap; }
+    code { color:#ffcc00; }
+  </style>
+</head>
+
+<body>
+
+<nav class="top-nav">
+  <div class="nav-brand" onclick="window.location.href='index.html'">SportsMistakes</div>
+  <div class="nav-links">
+    <a href="index.html">Home</a>
+    <a href="rankings.html">Rankings</a>
+    <a href="submit.html">Submit</a>
+  </div>
+</nav>
+
+<div class="container">
+  <div class="card">
+    <h1>Bulk Import Mistakes</h1>
+    <p>Paste one mistake per line using this format:</p>
+    <p><code>Title | Sport | Year | Category | Subcategory | Teams/People | Summary | Why It Matters | Score | Source URL</code></p>
+
+    <textarea id="bulkText" placeholder="Example:
+Seahawks Goal-Line Pass | NFL | 2015 | Coaching Mistake | Play Calling | Seattle Seahawks, New England Patriots | Seattle passed from the 1-yard line in Super Bowl XLIX and was intercepted. | One of the most debated coaching decisions in NFL history. | 95 | https://en.wikipedia.org/wiki/Super_Bowl_XLIX"></textarea>
+
+    <button onclick="importMistakes()">Import Mistakes</button>
+
+    <div id="message" class="message"></div>
+  </div>
+</div>
+
+<script>
+  const SUPABASE_URL = "https://scwjlljurircxuufhqih.supabase.co";
+  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNjd2psbGp1cmlyY3h1dWZocWloIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyNjUyMjcsImV4cCI6MjA5Njg0MTIyN30.WF0HRRb9mAkuOySjabTd8CZXVZRqF0MhMl0N2mafnns";
+
+  const client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  async function importMistakes() {
+    const message = document.getElementById("message");
+    const raw = document.getElementById("bulkText").value.trim();
+
+    if (!raw) {
+      message.innerText = "Paste at least one row first.";
+      return;
+    }
+
+    const lines = raw.split("\n").map(line => line.trim()).filter(Boolean);
+    const rows = [];
+
+    for (let i = 0; i < lines.length; i++) {
+      const parts = lines[i].split("|").map(p => p.trim());
+
+      if (parts.length < 10) {
+        message.innerText = `Line ${i + 1} has ${parts.length} fields. It needs 10 fields separated by |`;
+        return;
+      }
+
+      rows.push({
+        title: parts[0],
+        sport: parts[1],
+        year: parts[2] ? parseInt(parts[2], 10) : null,
+        category: parts[3],
+        subcategory: parts[4],
+        teams_people: parts[5],
+        summary: parts[6],
+        why_it_matters: parts[7],
+        verdict_type: "Fan Verdict",
+        controversy_score: parts[8] ? parseInt(parts[8], 10) : 50,
+        source_1: parts[9]
+      });
+    }
+
+    message.innerText = `Importing ${rows.length} mistakes...`;
+
+    const { error } = await client
+      .from("mistakes")
+      .insert(rows);
+
+    if (error) {
+      console.error(error);
+      message.innerText = "Import failed. Check console for error.";
+      return;
+    }
+
+    message.innerText = `Success! Imported ${rows.length} mistakes.`;
+    document.getElementById("bulkText").value = "";
+  }
+</script>
+
+</body>
+</html>
