@@ -7,6 +7,32 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
+   .top-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #0d1b2e;
+  border-bottom: 1px solid #203852;
+  padding: 14px 20px;
+}
+
+.nav-brand {
+  font-weight: bold;
+  font-size: 20px;
+  color: #ffffff;
+  cursor: pointer;
+}
+
+.nav-links a {
+  color: #74b9ff;
+  text-decoration: none;
+  font-weight: bold;
+  margin-left: 18px;
+}
+
+.nav-links a:hover {
+  color: #ffcc00;
+} 
     body {
       margin: 0;
       font-family: Arial, sans-serif;
@@ -217,7 +243,14 @@
 </head>
 
 <body>
-
+<nav class="top-nav">
+  <div class="nav-brand" onclick="window.location.href='index.html'">SportsMistakes</div>
+  <div class="nav-links">
+    <a href="index.html">Home</a>
+    <a href="rankings.html">Rankings</a>
+    <a href="submit.html">Submit</a>
+  </div>
+</nav>
 <header>
   <h1>SportsMistakes</h1>
   <div class="tagline">The Internet's Database of Sports Mistakes</div>
