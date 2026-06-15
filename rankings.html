@@ -6,6 +6,32 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
+    .top-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #0d1b2e;
+  border-bottom: 1px solid #203852;
+  padding: 14px 20px;
+}
+
+.nav-brand {
+  font-weight: bold;
+  font-size: 20px;
+  color: #ffffff;
+  cursor: pointer;
+}
+
+.nav-links a {
+  color: #74b9ff;
+  text-decoration: none;
+  font-weight: bold;
+  margin-left: 18px;
+}
+
+.nav-links a:hover {
+  color: #ffcc00;
+}
     body { margin:0; font-family:Arial,sans-serif; background:#07111f; color:#fff; }
     header { padding:28px 20px; background:#0d1b2e; border-bottom:1px solid #203852; }
     header a { color:#74b9ff; text-decoration:none; font-weight:bold; margin-right:16px; }
@@ -33,6 +59,7 @@
     .summary { color:#d8e4f2; line-height:1.45; }
     .message { color:#b7c7d9; margin:18px 0; }
   </style>
+
 </head>
 
 <body>
@@ -156,4 +183,12 @@
 </script>
 
 </body>
+<nav class="top-nav">
+  <div class="nav-brand" onclick="window.location.href='index.html'">SportsMistakes</div>
+  <div class="nav-links">
+    <a href="index.html">Home</a>
+    <a href="rankings.html">Rankings</a>
+    <a href="submit.html">Submit</a>
+  </div>
+</nav>
 </html>
