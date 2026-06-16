@@ -18,6 +18,45 @@
     .sub { max-width:760px; margin:15px auto 0; color:#b7c7d9; line-height:1.5; }
 
     .container { max-width:1100px; margin:35px auto 60px; padding:0 20px; }
+
+    .global-search-box {
+      background:#0d1b2e;
+      border:1px solid #203852;
+      border-radius:14px;
+      padding:18px;
+      margin-bottom:24px;
+    }
+
+    .global-search-box h2 {
+      margin:0 0 12px;
+      font-size:22px;
+    }
+
+    .search-row {
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+
+    .search-row input {
+      flex:1;
+      min-width:240px;
+      padding:13px;
+      border-radius:8px;
+      border:none;
+      font-size:15px;
+    }
+
+    .search-row button {
+      padding:13px 16px;
+      border:none;
+      border-radius:8px;
+      cursor:pointer;
+      background:#1e90ff;
+      color:white;
+      font-weight:bold;
+    }
+
     .collection-tabs { display:flex; flex-wrap:wrap; gap:10px; margin-bottom:25px; }
     button {
       padding:11px 14px; border:none; border-radius:8px; cursor:pointer;
@@ -38,6 +77,11 @@
     .card-stats { display:flex; gap:15px; color:#ffcc00; font-size:14px; margin-bottom:10px; }
     .summary { color:#d8e4f2; line-height:1.45; font-size:15px; }
     .empty { color:#b9c8da; padding:30px; text-align:center; }
+
+    @media (max-width:760px) {
+      h1 { font-size:34px; }
+      .nav-links a { margin-left:10px; font-size:14px; }
+    }
   </style>
 </head>
 
@@ -48,6 +92,7 @@
     <a href="index.html">Home</a>
     <a href="rankings.html">Rankings</a>
     <a href="collections.html">Collections</a>
+    <a href="hall-of-fame.html">Hall of Fame</a>
     <a href="submit.html">Submit</a>
   </div>
 </nav>
@@ -61,6 +106,15 @@
 </header>
 
 <div class="container">
+
+  <div class="global-search-box">
+    <h2>🔎 Search the SportsMistakes Database</h2>
+    <div class="search-row">
+      <input id="globalSearchInput" type="text" placeholder="Search mistakes, teams, players, refs..." />
+      <button onclick="runGlobalSearch()">Search</button>
+    </div>
+  </div>
+
   <div class="collection-tabs">
     <button class="active" onclick="setCollection('all', this)">All Collections</button>
     <button onclick="setCollection('referee', this)">Worst Referee Calls</button>
@@ -92,7 +146,7 @@
   const collectionInfo = {
     all: {
       title: "All Collections",
-      description: "The strongest entries across the SportsMistakes database."
+      description: "Browse the strongest entries across the SportsMistakes database."
     },
     referee: {
       title: "Worst Referee Calls Ever",
@@ -147,6 +201,23 @@
     mistakes = data || [];
     renderCollection();
   }
+
+  function runGlobalSearch() {
+    const query = document.getElementById("globalSearchInput").value.trim();
+
+    if (!query) {
+      alert("Type something to search first.");
+      return;
+    }
+
+    window.location.href = "index.html?search=" + encodeURIComponent(query);
+  }
+
+  document.getElementById("globalSearchInput").addEventListener("keydown", function(event) {
+    if (event.key === "Enter") {
+      runGlobalSearch();
+    }
+  });
 
   function setCollection(type, button) {
     currentCollection = type;
