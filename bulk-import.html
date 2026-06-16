@@ -17,6 +17,8 @@
     textarea { width:100%; min-height:330px; box-sizing:border-box; margin-top:14px; padding:14px; border-radius:10px; border:1px solid #203852; background:#07111f; color:white; font-size:14px; }
     button { margin-top:18px; padding:14px 20px; border:none; border-radius:8px; background:#1e90ff; color:white; font-weight:bold; cursor:pointer; }
     .message { margin-top:18px; color:#d8e4f2; white-space:pre-wrap; }
+    .warning { color:#ffcc00; }
+    .error { color:#ff8b8b; }
     code { color:#ffcc00; }
   </style>
 </head>
@@ -41,7 +43,7 @@
     <textarea id="bulkText" placeholder="Example:
 Seahawks Goal-Line Pass | NFL | 2015 | Coaching Mistake | Play Calling | Seattle Seahawks, New England Patriots | Seattle passed from the 1-yard line in Super Bowl XLIX and was intercepted. | One of the most debated coaching decisions in NFL history. | 95 | https://en.wikipedia.org/wiki/Super_Bowl_XLIX"></textarea>
 
-    <button onclick="importMistakes()">Import Mistakes</button>
+    <button onclick="checkAndImportMistakes()">Check Duplicates & Import</button>
 
     <div id="message" class="message"></div>
   </div>
@@ -53,15 +55,44 @@ Seahawks Goal-Line Pass | NFL | 2015 | Coaching Mistake | Play Calling | Seattle
 
   const client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-  async function importMistakes() {
-    const message = document.getElementById("message");
-    const raw = document.getElementById("bulkText").value.trim();
+  function normalizeTitle(title) {
+    return String(title || "")
+      .toLowerCase()
+      .replace(/[^a-z0-9 ]/g, " ")
+      .replace(/\s+/g, " ")
+      .trim();
+  }
 
-    if (!raw) {
-      message.innerText = "Paste at least one row first.";
-      return;
-    }
+  function getImportantWords(title) {
+    const stopWords = new Set([
+      "the", "a", "an", "and", "or", "of", "to", "in", "on", "for",
+      "vs", "v", "game", "mistake", "error", "incident", "controversy",
+      "collapse", "disaster"
+    ]);
 
+    return normalizeTitle(title)
+      .split(" ")
+      .filter(word => word.length > 2 && !stopWords.has(word));
+  }
+
+  function similarityScore(titleA, titleB) {
+    const wordsA = getImportantWords(titleA);
+    const wordsB = getImportantWords(titleB);
+
+    if (wordsA.length === 0 || wordsB.length === 0) return 0;
+
+    const setA = new Set(wordsA);
+    const setB = new Set(wordsB);
+
+    let matches = 0;
+    setA.forEach(word => {
+      if (setB.has(word)) matches++;
+    });
+
+    return matches / Math.max(setA.size, setB.size);
+  }
+
+  function parseRows(raw) {
     const lines = raw.split("\n").map(line => line.trim()).filter(Boolean);
     const rows = [];
 
@@ -69,8 +100,7 @@ Seahawks Goal-Line Pass | NFL | 2015 | Coaching Mistake | Play Calling | Seattle
       const parts = lines[i].split("|").map(p => p.trim());
 
       if (parts.length < 10) {
-        message.innerText = `Line ${i + 1} has ${parts.length} fields. It needs 10 fields separated by |`;
-        return;
+        throw new Error(`Line ${i + 1} has ${parts.length} fields. It needs 10 fields separated by |`);
       }
 
       rows.push({
@@ -88,19 +118,97 @@ Seahawks Goal-Line Pass | NFL | 2015 | Coaching Mistake | Play Calling | Seattle
       });
     }
 
-    message.innerText = `Importing ${rows.length} mistakes...`;
+    return rows;
+  }
 
-    const { error } = await client
-      .from("mistakes")
-      .insert(rows);
+  async function checkAndImportMistakes() {
+    const message = document.getElementById("message");
+    const raw = document.getElementById("bulkText").value.trim();
 
-    if (error) {
-      console.error(error);
-      message.innerText = "Import failed. Check console for error.";
+    if (!raw) {
+      message.innerText = "Paste at least one row first.";
       return;
     }
 
-    message.innerText = `Success! Imported ${rows.length} mistakes.`;
+    let newRows;
+
+    try {
+      newRows = parseRows(raw);
+    } catch (err) {
+      message.innerHTML = `<span class="error">${err.message}</span>`;
+      return;
+    }
+
+    message.innerText = "Checking for duplicates...";
+
+    const { data: existing, error } = await client
+      .from("mistakes")
+      .select("id,title,year,sport");
+
+    if (error) {
+      console.error(error);
+      message.innerHTML = `<span class="error">Could not check existing mistakes.</span>`;
+      return;
+    }
+
+    const duplicateWarnings = [];
+
+    newRows.forEach((row, index) => {
+      const newTitle = normalizeTitle(row.title);
+
+      (existing || []).forEach(old => {
+        const oldTitle = normalizeTitle(old.title);
+        const score = similarityScore(row.title, old.title);
+
+        const exactMatch = newTitle === oldTitle;
+        const containedMatch =
+          newTitle.length > 8 &&
+          oldTitle.length > 8 &&
+          (newTitle.includes(oldTitle) || oldTitle.includes(newTitle));
+
+        const sameYearSimilar =
+          row.year &&
+          old.year &&
+          Number(row.year) === Number(old.year) &&
+          score >= 0.45;
+
+        if (exactMatch || containedMatch || sameYearSimilar || score >= 0.7) {
+          duplicateWarnings.push(
+            `Line ${index + 1}: "${row.title}" may duplicate existing "${old.title}" (${old.sport || ""} ${old.year || ""})`
+          );
+        }
+      });
+    });
+
+    if (duplicateWarnings.length > 0) {
+      const proceed = confirm(
+        "Possible duplicates found:\n\n" +
+        duplicateWarnings.slice(0, 10).join("\n") +
+        (duplicateWarnings.length > 10 ? `\n\n...and ${duplicateWarnings.length - 10} more.` : "") +
+        "\n\nImport anyway?"
+      );
+
+      if (!proceed) {
+        message.innerHTML =
+          `<span class="warning">Import cancelled. Possible duplicates:</span>\n\n` +
+          duplicateWarnings.join("\n");
+        return;
+      }
+    }
+
+    message.innerText = `Importing ${newRows.length} mistakes...`;
+
+    const { error: insertError } = await client
+      .from("mistakes")
+      .insert(newRows);
+
+    if (insertError) {
+      console.error(insertError);
+      message.innerHTML = `<span class="error">Import failed. Check console for error.</span>`;
+      return;
+    }
+
+    message.innerText = `Success! Imported ${newRows.length} mistakes.`;
     document.getElementById("bulkText").value = "";
   }
 </script>
