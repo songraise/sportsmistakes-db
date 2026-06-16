@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Hall of Fame | SportsMistakes</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    body { margin:0; font-family:Arial,sans-serif; background:#07111f; color:#fff; }
+    .top-nav { display:flex; justify-content:space-between; align-items:center; background:#0d1b2e; border-bottom:1px solid #203852; padding:14px 20px; }
+    .nav-brand { font-weight:bold; font-size:20px; color:#fff; cursor:pointer; }
+    .nav-links a { color:#74b9ff; text-decoration:none; font-weight:bold; margin-left:18px; }
+    .nav-links a:hover { color:#ffcc00; }
+
+    header { padding:48px 20px; text-align:center; background:linear-gradient(135deg,#07111f,#12365f); }
+    h1 { margin:0; font-size:44px; }
+    .sub { max-width:780px; margin:16px auto 0; color:#b7c7d9; line-height:1.5; }
+
+    .container { max-width:1120px; margin:35px auto 60px; padding:0 20px; }
+    .tabs { display:flex; flex-wrap:wrap; gap:10px; margin-bottom:24px; }
+    button {
+      padding:11px 14px; border:none; border-radius:8px; cursor:pointer;
+      background:#203852; color:white; font-weight:bold;
+    }
+    button.active { background:#ffcc00; color:#111; }
+
+    .hero-board {
+      background:#0d1b2e; border:1px solid #203852; border-radius:16px;
+      padding:22px; margin-bottom:22px;
+    }
+
+    .board-title { font-size:28px; margin:0 0 6px; }
+    .board-desc { color:#b7c7d9; margin-bottom:18px; line-height:1.5; }
+
+    .podium {
+      display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin-bottom:24px;
+    }
+    .podium-card {
+      background:#07111f; border:1px solid #203852; border-radius:14px;
+      padding:18px; cursor:pointer;
+    }
+    .podium-card:hover { border-color:#1e90ff; }
+    .podium-rank { color:#ffcc00; font-weight:bold; font-size:18px; }
+    .podium-card h2 { margin:10px 0; font-size:20px; }
+    .meta { color:#9fb2c7; font-size:14px; margin-bottom:10px; }
+    .score { display:inline-block; background:#ffcc00; color:#111; padding:5px 8px; border-radius:8px; font-weight:bold; font-size:12px; }
+    .views { color:#ffcc00; font-size:13px; margin-left:8px; }
+
+    .list { display:grid; gap:12px; }
+    .row {
+      display:grid; grid-template-columns:54px 1fr auto; gap:14px; align-items:center;
+      background:#0d1b2e; border:1px solid #203852; border-radius:12px;
+      padding:14px; cursor:pointer;
+    }
+    .row:hover { border-color:#1e90ff; }
+    .rank { color:#ffcc00; font-weight:bold; font-size:18px; }
+    .row h3 { margin:0 0 6px; font-size:18px; }
+    .row-score { background:#ffcc00; color:#111; padding:6px 9px; border-radius:8px; font-weight:bold; font-size:12px; white-space:nowrap; }
+
+    .empty { text-align:center; padding:35px; color:#b9c8da; }
+
+    @media (max-width: 760px) {
+      .podium { grid-template-columns:1fr; }
+      .row { grid-template-columns:42px 1fr; }
+      .row-score { grid-column:2; width:max-content; }
+      h1 { font-size:36px; }
+    }
+  </style>
+</head>
+
+<body>
+
+<nav class="top-nav">
+  <div class="nav-brand" onclick="window.location.href='index.html'">SportsMistakes</div>
+  <div class="nav-links">
+    <a href="index.html">Home</a>
+    <a href="rankings.html">Rankings</a>
+    <a href="collections.html">Collections</a>
+    <a href="hall-of-fame.html">Hall of Fame</a>
+    <a href="submit.html">Submit</a>
+  </div>
+</nav>
+
+<header>
+  <h1>SportsMistakes Hall of Fame</h1>
+  <p class="sub">
+    The most infamous mistakes in sports history, ranked by controversy score,
+    with views used as a tiebreaker.
+  </p>
+</header>
+
+<div class="container">
+  <div class="tabs">
+    <button class="active" onclick="setHall('overall', this)">🏆 Top 25 Overall</button>
+    <button onclick="setHall('referee', this)">⚖️ Referee Calls</button>
+    <button onclick="setHall('coaching', this)">🧠 Coaching Decisions</button>
+    <button onclick="setHall('player', this)">💥 Player Blunders</button>
+    <button onclick="setHall('frontoffice', this)">📉 Front Office</button>
+    <button onclick="setHall('mostviewed', this)">👁 Most Viewed</button>
+  </div>
+
+  <div class="hero-board">
+    <h2 class="board-title" id="boardTitle">Top 25 Sports Mistakes Ever</h2>
+    <div class="board-desc" id="boardDesc">The highest-ranked mistakes across the entire database.</div>
+
+    <div id="podium" class="podium"></div>
+    <div id="hallList" class="list"></div>
+    <div id="message" class="empty">Loading Hall of Fame...</div>
+  </div>
+</div>
+
+<script>
+  const SUPABASE_URL = "https://scwjlljurircxuufhqih.supabase.co";
+  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNjd2psbGp1cmlyY3h1dWZocWloIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyNjUyMjcsImV4cCI6MjA5Njg0MTIyN30.WF0HRRb9mAkuOySjabTd8CZXVZRqF0MhMl0N2mafnns";
+
+  const client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  let mistakes = [];
+  let currentHall = "overall";
+
+  const hallInfo = {
+    overall: {
+      title: "Top 25 Sports Mistakes Ever",
+      desc: "The highest-ranked mistakes across the entire database."
+    },
+    referee: {
+      title: "Worst Referee Calls Hall of Fame",
+      desc: "The most debated missed calls, judging failures, and officiating controversies."
+    },
+    coaching: {
+      title: "Worst Coaching Decisions Hall of Fame",
+      desc: "The play calls, clock decisions, tactical experiments, and lineup choices fans still question."
+    },
+    player: {
+      title: "Biggest Player Blunders Hall of Fame",
+      desc: "The missed kicks, errors, turnovers, penalties, and mental mistakes that became sports history."
+    },
+    frontoffice: {
+      title: "Worst Front Office Decisions Hall of Fame",
+      desc: "The trades, drafts, ownership decisions, and free-agency failures that reshaped franchises."
+    },
+    mostviewed: {
+      title: "Most Viewed Mistakes",
+      desc: "The mistake pages visitors are opening most."
+    }
+  };
+
+  async function loadMistakes() {
+    const { data, error } = await client
+      .from("mistakes")
+      .select("*")
+      .order("controversy_score", { ascending:false });
+
+    if (error) {
+      console.error(error);
+      document.getElementById("message").innerText = "Could not load Hall of Fame.";
+      return;
+    }
+
+    mistakes = data || [];
+    renderHall();
+  }
+
+  function setHall(type, button) {
+    currentHall = type;
+    document.querySelectorAll(".tabs button").forEach(btn => btn.classList.remove("active"));
+    button.classList.add("active");
+    renderHall();
+  }
+
+  function getHallMistakes() {
+    let filtered = [...mistakes];
+
+    if (currentHall === "referee") {
+      filtered = mistakes.filter(m => m.category === "Referee Mistake");
+    } else if (currentHall === "coaching") {
+      filtered = mistakes.filter(m => m.category === "Coaching Mistake");
+    } else if (currentHall === "player") {
+      filtered = mistakes.filter(m => m.category === "Player Mistake");
+    } else if (currentHall === "frontoffice") {
+      filtered = mistakes.filter(m =>
+        m.category === "Front Office Mistake" ||
+        m.category === "Ownership Mistake" ||
+        String(m.subcategory || "").toLowerCase().includes("draft") ||
+        String(m.subcategory || "").toLowerCase().includes("trade")
+      );
+    }
+
+    if (currentHall === "mostviewed") {
+      return filtered
+        .filter(m => (m.views || 0) > 0)
+        .sort((a,b) => (b.views || 0) - (a.views || 0))
+        .slice(0,25);
+    }
+
+    return filtered
+      .sort((a,b) => {
+        const scoreDiff = (b.controversy_score || 0) - (a.controversy_score || 0);
+        if (scoreDiff !== 0) return scoreDiff;
+        return (b.views || 0) - (a.views || 0);
+      })
+      .slice(0,25);
+  }
+
+  function renderHall() {
+    const info = hallInfo[currentHall] || hallInfo.overall;
+    const items = getHallMistakes();
+
+    document.getElementById("boardTitle").innerText = info.title;
+    document.getElementById("boardDesc").innerText = info.desc;
+
+    const podium = document.getElementById("podium");
+    const list = document.getElementById("hallList");
+    const message = document.getElementById("message");
+
+    if (items.length === 0) {
+      podium.innerHTML = "";
+      list.innerHTML = "";
+      message.style.display = "block";
+      message.innerText = "No entries found for this Hall of Fame yet.";
+      return;
+    }
+
+    message.style.display = "none";
+
+    const topThree = items.slice(0,3);
+    const rest = items.slice(3);
+
+    podium.innerHTML = topThree.map((m, index) => `
+      <div class="podium-card" onclick="window.location.href='mistake.html?id=${m.id}'">
+        <div class="podium-rank">${rankLabel(index + 1)}</div>
+        <h2>${escapeHtml(m.title || "Untitled Mistake")}</h2>
+        <div class="meta">
+          ${escapeHtml(m.sport || "")}
+          ${m.year ? " • " + escapeHtml(m.year) : ""}
+          ${m.category ? " • " + escapeHtml(m.category) : ""}
+        </div>
+        <span class="score">${escapeHtml(m.controversy_score || 0)}/100</span>
+        <span class="views">👁 ${m.views || 0}</span>
+      </div>
+    `).join("");
+
+    list.innerHTML = rest.map((m, index) => {
+      const rank = index + 4;
+      return `
+        <div class="row" onclick="window.location.href='mistake.html?id=${m.id}'">
+          <div class="rank">#${rank}</div>
+          <div>
+            <h3>${escapeHtml(m.title || "Untitled Mistake")}</h3>
+            <div class="meta">
+              ${escapeHtml(m.sport || "")}
+              ${m.year ? " • " + escapeHtml(m.year) : ""}
+              ${m.category ? " • " + escapeHtml(m.category) : ""}
+              ${m.subcategory ? " • " + escapeHtml(m.subcategory) : ""}
+              ${m.views ? " • 👁 " + escapeHtml(m.views) : ""}
+            </div>
+          </div>
+          <div class="row-score">${escapeHtml(m.controversy_score || 0)}/100</div>
+        </div>
+      `;
+    }).join("");
+  }
+
+  function rankLabel(rank) {
+    if (rank === 1) return "🥇 #1";
+    if (rank === 2) return "🥈 #2";
+    if (rank === 3) return "🥉 #3";
+    return "#" + rank;
+  }
+
+  function escapeHtml(value) {
+    return String(value)
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#039;");
+  }
+
+  loadMistakes();
+</script>
+
+</body>
+</html>
