@@ -23,6 +23,7 @@
     .scan { background:#1e90ff; margin-top:18px; }
     .delete { background:#8b1e1e; margin-top:12px; }
     .open { background:#444; margin-top:12px; }
+    .ignore { background:#6b5b1e; margin-top:14px; }
     .score { color:#ffcc00; font-weight:bold; }
     .message { color:#d8e4f2; margin:18px 0; white-space:pre-wrap; }
   </style>
@@ -41,7 +42,7 @@
 
 <div class="container">
   <h1>Duplicate Finder</h1>
-  <p>Find likely duplicate mistake records and delete the weaker one.</p>
+  <p>Find likely duplicate mistake records, delete the weaker one, or ignore false positives.</p>
 
   <button class="scan" onclick="findDuplicates()">Scan for Duplicates</button>
 
@@ -107,17 +108,21 @@
     `;
   }
 
+  function sortPairIds(id1, id2) {
+    return [id1, id2].sort();
+  }
+
   async function findDuplicates() {
     const message = document.getElementById("message");
     const results = document.getElementById("results");
 
-    message.innerText = "Loading mistakes and scanning...";
+    message.innerText = "Loading mistakes and ignored pairs...";
     results.innerHTML = "";
 
-    const { data, error } = await client
-      .from("mistakes")
-      .select("*")
-      .order("title", { ascending: true });
+    const [{ data, error }, { data: ignoredPairs, error: ignoreError }] = await Promise.all([
+      client.from("mistakes").select("*").order("title", { ascending: true }),
+      client.from("duplicate_ignores").select("mistake_id_1,mistake_id_2")
+    ]);
 
     if (error) {
       console.error(error);
@@ -125,7 +130,22 @@
       return;
     }
 
+    if (ignoreError) {
+      console.error(ignoreError);
+      message.innerText = "Could not load ignored pairs. Did you run the duplicate_ignores SQL setup?";
+      return;
+    }
+
     mistakes = data || [];
+
+    const ignoredSet = new Set(
+      (ignoredPairs || []).map(p => {
+        const ids = [p.mistake_id_1, p.mistake_id_2].sort();
+        return ids.join("|");
+      })
+    );
+
+    message.innerText = "Scanning for duplicates...";
 
     const pairs = [];
 
@@ -133,6 +153,9 @@
       for (let j = i + 1; j < mistakes.length; j++) {
         const a = mistakes[i];
         const b = mistakes[j];
+
+        const pairKey = [a.id, b.id].sort().join("|");
+        if (ignoredSet.has(pairKey)) continue;
 
         const titleScore = similarity(a.title, b.title);
         const fullScore = similarity(combinedText(a), combinedText(b));
@@ -163,18 +186,24 @@
       return;
     }
 
-    message.innerText = `${pairs.length} possible duplicate pair${pairs.length === 1 ? "" : "s"} found. Review carefully before deleting.`;
+    message.innerText = `${pairs.length} possible duplicate pair${pairs.length === 1 ? "" : "s"} found. Review carefully before deleting or ignoring.`;
 
     results.innerHTML = pairs.map((pair, index) => `
       <div class="card" id="pair-${index}">
         <div class="score">
           Possible duplicate score: ${Math.round(pair.score * 100)}%
+          | Title: ${Math.round(pair.titleScore * 100)}%
+          | Full: ${Math.round(pair.fullScore * 100)}%
         </div>
 
         <div class="pair">
           ${renderMistakeBox(pair.a)}
           ${renderMistakeBox(pair.b)}
         </div>
+
+        <button class="ignore" onclick="ignorePair('${pair.a.id}', '${pair.b.id}', 'pair-${index}')">
+          Ignore This Pair
+        </button>
       </div>
     `).join("");
   }
@@ -194,6 +223,31 @@
         <button class="delete" onclick="deleteMistake('${m.id}', '${escapeJs(m.title || "")}')">Delete This</button>
       </div>
     `;
+  }
+
+  async function ignorePair(id1, id2, cardId) {
+    const sorted = sortPairIds(id1, id2);
+
+    const ok = confirm("Ignore this duplicate suggestion in future scans?");
+    if (!ok) return;
+
+    const { error } = await client
+      .from("duplicate_ignores")
+      .insert({
+        mistake_id_1: sorted[0],
+        mistake_id_2: sorted[1]
+      });
+
+    if (error) {
+      console.error(error);
+      alert("Could not ignore pair. It may already be ignored.");
+      return;
+    }
+
+    const card = document.getElementById(cardId);
+    if (card) card.remove();
+
+    alert("Pair ignored.");
   }
 
   async function deleteMistake(id, title) {
