@@ -7,198 +7,44 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
-    .top-nav {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background: #0d1b2e;
-  border-bottom: 1px solid #203852;
-  padding: 14px 20px;
-}
+    body { margin:0; font-family:Arial,sans-serif; background:#07111f; color:#fff; }
+    .top-nav { display:flex; justify-content:space-between; align-items:center; background:#0d1b2e; border-bottom:1px solid #203852; padding:14px 20px; }
+    .nav-brand { font-weight:bold; font-size:20px; color:#fff; cursor:pointer; }
+    .nav-links a { color:#74b9ff; text-decoration:none; font-weight:bold; margin-left:18px; }
+    .nav-links a:hover { color:#ffcc00; }
 
-.nav-brand {
-  font-weight: bold;
-  font-size: 20px;
-  color: #ffffff;
-  cursor: pointer;
-}
+    .container { max-width:850px; margin:40px auto; padding:0 20px; }
+    .card { background:#0d1b2e; border:1px solid #203852; border-radius:16px; padding:26px; }
+    .badge { display:inline-block; font-size:13px; padding:6px 10px; border-radius:999px; background:#1e90ff; margin-bottom:14px; }
+    .score { float:right; background:#ffcc00; color:#111; padding:6px 10px; border-radius:8px; font-weight:bold; font-size:13px; }
+    h1 { font-size:34px; margin:10px 0; }
+    .meta { color:#9fb2c7; margin-bottom:12px; font-size:15px; }
+    .views { color:#ffcc00; font-weight:bold; margin-bottom:20px; font-size:15px; }
+    .section { margin-top:24px; padding-top:20px; border-top:1px solid #203852; }
+    .section h2 { font-size:20px; margin-bottom:10px; }
+    p { color:#d8e4f2; line-height:1.6; font-size:16px; }
 
-.nav-links a {
-  color: #74b9ff;
-  text-decoration: none;
-  font-weight: bold;
-  margin-left: 18px;
-}
+    .vote-buttons { margin-top:15px; }
+    .vote-buttons button { padding:12px 18px; border:none; border-radius:8px; color:white; font-weight:bold; cursor:pointer; margin-right:10px; margin-bottom:10px; }
+    .yes-btn { background:#1e90ff; }
+    .no-btn { background:#444; }
+    #voteResults { margin-top:18px; color:#d8e4f2; font-size:16px; }
 
-.nav-links a:hover {
-  color: #ffcc00;
-}
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: #07111f;
-      color: #fff;
-    }
+    .sources a { display:inline-block; color:#74b9ff; text-decoration:none; margin-right:16px; margin-top:8px; }
 
-    header {
-      padding: 28px 20px;
-      background: #0d1b2e;
-      border-bottom: 1px solid #203852;
-    }
+    .related-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(230px,1fr)); gap:14px; margin-top:14px; }
+    .related-card { background:#07111f; border:1px solid #203852; border-radius:12px; padding:14px; cursor:pointer; }
+    .related-card:hover { border-color:#1e90ff; }
+    .related-card h3 { font-size:16px; margin:6px 0; }
+    .related-meta { font-size:13px; color:#9fb2c7; }
+    .related-score { display:inline-block; background:#ffcc00; color:#111; padding:4px 7px; border-radius:8px; font-weight:bold; font-size:12px; margin-top:8px; }
 
-    header a {
-      color: #74b9ff;
-      text-decoration: none;
-      font-weight: bold;
-      margin-right: 16px;
-    }
-
-    .container {
-      max-width: 850px;
-      margin: 40px auto;
-      padding: 0 20px;
-    }
-
-    .card {
-      background: #0d1b2e;
-      border: 1px solid #203852;
-      border-radius: 16px;
-      padding: 26px;
-    }
-
-    .badge {
-      display: inline-block;
-      font-size: 13px;
-      padding: 6px 10px;
-      border-radius: 999px;
-      background: #1e90ff;
-      margin-bottom: 14px;
-    }
-
-    .score {
-      float: right;
-      background: #ffcc00;
-      color: #111;
-      padding: 6px 10px;
-      border-radius: 8px;
-      font-weight: bold;
-      font-size: 13px;
-    }
-
-    h1 {
-      font-size: 34px;
-      margin: 10px 0;
-    }
-
-    .meta {
-      color: #9fb2c7;
-      margin-bottom: 22px;
-      font-size: 15px;
-    }
-
-    .section {
-      margin-top: 24px;
-      padding-top: 20px;
-      border-top: 1px solid #203852;
-    }
-
-    .section h2 {
-      font-size: 20px;
-      margin-bottom: 10px;
-    }
-
-    p {
-      color: #d8e4f2;
-      line-height: 1.6;
-      font-size: 16px;
-    }
-
-    .vote-buttons {
-      margin-top: 15px;
-    }
-
-    .vote-buttons button {
-      padding: 12px 18px;
-      border: none;
-      border-radius: 8px;
-      color: white;
-      font-weight: bold;
-      cursor: pointer;
-      margin-right: 10px;
-      margin-bottom: 10px;
-    }
-
-    .yes-btn {
-      background: #1e90ff;
-    }
-
-    .no-btn {
-      background: #444;
-    }
-
-    #voteResults {
-      margin-top: 18px;
-      color: #d8e4f2;
-      font-size: 16px;
-    }
-
-    .sources a {
-      display: inline-block;
-      color: #74b9ff;
-      text-decoration: none;
-      margin-right: 16px;
-      margin-top: 8px;
-    }
-
-    .related-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
-      gap: 14px;
-      margin-top: 14px;
-    }
-
-    .related-card {
-      background: #07111f;
-      border: 1px solid #203852;
-      border-radius: 12px;
-      padding: 14px;
-      cursor: pointer;
-    }
-
-    .related-card:hover {
-      border-color: #1e90ff;
-    }
-
-    .related-card h3 {
-      font-size: 16px;
-      margin: 6px 0;
-    }
-
-    .related-meta {
-      font-size: 13px;
-      color: #9fb2c7;
-    }
-
-    .related-score {
-      display: inline-block;
-      background: #ffcc00;
-      color: #111;
-      padding: 4px 7px;
-      border-radius: 8px;
-      font-weight: bold;
-      font-size: 12px;
-      margin-top: 8px;
-    }
-
-    .loading, .error {
-      text-align: center;
-      color: #b9c8da;
-      padding: 40px;
-    }
+    .loading, .error { text-align:center; color:#b9c8da; padding:40px; }
   </style>
 </head>
 
 <body>
+
 <nav class="top-nav">
   <div class="nav-brand" onclick="window.location.href='index.html'">SportsMistakes</div>
   <div class="nav-links">
@@ -207,11 +53,6 @@
     <a href="submit.html">Submit</a>
   </div>
 </nav>
-<header>
-  <a href="index.html">Home</a>
-  <a href="rankings.html">Rankings</a>
-  <a href="submit.html">Submit Mistake</a>
-</header>
 
 <div class="container">
   <div id="content" class="loading">Loading mistake...</div>
@@ -222,7 +63,6 @@
   const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNjd2psbGp1cmlyY3h1dWZocWloIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyNjUyMjcsImV4cCI6MjA5Njg0MTIyN30.WF0HRRb9mAkuOySjabTd8CZXVZRqF0MhMl0N2mafnns";
 
   const client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
   const params = new URLSearchParams(window.location.search);
   const id = params.get("id");
 
@@ -250,6 +90,13 @@
 
     currentMistake = data;
 
+    const newViewCount = (data.views || 0) + 1;
+
+    await client
+      .from("mistakes")
+      .update({ views: newViewCount })
+      .eq("id", id);
+
     content.className = "card";
     content.innerHTML = `
       <span class="badge">${escapeHtml(data.sport || "Sport")}</span>
@@ -262,6 +109,8 @@
         ${data.category ? " • " + escapeHtml(data.category) : ""}
         ${data.subcategory ? " • " + escapeHtml(data.subcategory) : ""}
       </div>
+
+      <div class="views">👁 ${newViewCount} view${newViewCount === 1 ? "" : "s"}</div>
 
       ${data.teams_people ? `
         <div class="section">
@@ -291,9 +140,7 @@
           <button class="no-btn" onclick="submitVote('no')">NO — Not a Mistake</button>
         </div>
 
-        <div id="voteResults">
-          Loading votes...
-        </div>
+        <div id="voteResults">Loading votes...</div>
       </div>
 
       <div class="section sources">
@@ -411,9 +258,7 @@
               ${m.year ? " • " + escapeHtml(m.year) : ""}
             </div>
             <h3>${escapeHtml(m.title || "Untitled Mistake")}</h3>
-            <div class="related-meta">
-              ${escapeHtml(m.category || "")}
-            </div>
+            <div class="related-meta">${escapeHtml(m.category || "")}</div>
             <span class="related-score">${escapeHtml(m.controversy_score || 0)}/100</span>
           </div>
         `).join("")}
