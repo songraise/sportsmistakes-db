@@ -205,6 +205,18 @@
   const client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
   let mistakes = [];
 
+  function applySearchFromUrl() {
+    const params = new URLSearchParams(window.location.search);
+    const searchQuery = params.get("search");
+
+    if (searchQuery) {
+      const input = document.getElementById("searchInput");
+      if (input) {
+        input.value = searchQuery;
+      }
+    }
+  }
+
   async function loadMistakes() {
     const { data, error } = await client
       .from("mistakes")
@@ -218,6 +230,7 @@
     }
 
     mistakes = data || [];
+    applySearchFromUrl();
     renderMistakes();
     renderMostViewed();
     renderFeaturedMistake();
