@@ -404,7 +404,16 @@
           ${m.category ? " • " + escapeHtml(m.category) : ""}
           ${m.subcategory ? " • " + escapeHtml(m.subcategory) : ""}
         </div>
-
+<div style="
+  display:flex;
+  gap:15px;
+  color:#ffcc00;
+  font-size:14px;
+  margin-bottom:10px;
+">
+  <span>👁 ${m.views || 0}</span>
+  <span>🔥 ${m.controversy_score || 0}/100</span>
+</div>
         <div class="summary">
           ${escapeHtml(m.summary || "No summary added yet.")}
         </div>
