@@ -12,6 +12,7 @@
     .nav-brand { font-weight: bold; font-size: 20px; color: #ffffff; cursor: pointer; }
     .nav-links a { color: #74b9ff; text-decoration: none; font-weight: bold; margin-left: 18px; }
     .nav-links a:hover { color: #ffcc00; }
+
     header { padding: 55px 20px; text-align: center; background: linear-gradient(135deg, #07111f, #12365f); }
     h1 { font-size: 46px; margin: 0; }
     .tagline { font-size: 22px; color: #d8e8ff; margin-top: 10px; }
@@ -20,10 +21,24 @@
     .hero-buttons a { display: inline-block; text-decoration: none; padding: 14px 20px; border-radius: 8px; font-weight: bold; margin: 5px; }
     .submit-btn { background: #1e90ff; color: white; }
     .rankings-btn { background: #ffcc00; color: #111; }
+    .collections-btn { background: #203852; color: white; }
+
     .site-stats { margin: 25px auto 0; max-width: 760px; display: flex; justify-content: center; gap: 14px; flex-wrap: wrap; color: #d8e4f2; }
     .stat-box { background: #0d1b2e; border: 1px solid #203852; border-radius: 12px; padding: 14px 18px; min-width: 130px; }
     .stat-number { display: block; font-size: 26px; font-weight: bold; color: #ffcc00; }
     .stat-label { font-size: 13px; color: #b7c7d9; }
+
+    .hook-zone { max-width: 1100px; margin: 25px auto 0; padding: 0 20px; display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 18px; text-align: left; }
+    .hook-card { background: #0d1b2e; border: 1px solid #203852; border-radius: 14px; padding: 20px; }
+    .hook-card h2 { margin: 0 0 12px; font-size: 24px; }
+    .featured-title { font-size: 22px; font-weight: bold; margin: 10px 0; }
+    .featured-meta { color: #9fb2c7; font-size: 14px; margin-bottom: 10px; }
+    .featured-summary { color: #d8e4f2; line-height: 1.45; }
+    .hook-button { display: inline-block; margin-top: 14px; background: #1e90ff; color: white; padding: 10px 14px; border-radius: 8px; text-decoration: none; font-weight: bold; cursor: pointer; }
+    .debate-results { color: #d8e4f2; line-height: 1.6; }
+    .debate-bar { height: 12px; background: #203852; border-radius: 99px; overflow: hidden; margin: 12px 0; }
+    .debate-fill { height: 100%; background: #ffcc00; width: 0%; }
+
     .most-viewed { max-width: 1100px; margin: 25px auto 0; padding: 0 20px; }
     .most-viewed-card { background: #0d1b2e; border: 1px solid #203852; border-radius: 14px; padding: 20px; text-align: left; }
     .most-viewed-card h2 { margin: 0 0 14px; font-size: 24px; }
@@ -32,10 +47,12 @@
     .most-viewed-item:hover { border-color: #1e90ff; color: #ffcc00; }
     .most-viewed-title { font-weight: bold; }
     .most-viewed-count { color: #ffcc00; white-space: nowrap; font-size: 14px; }
+
     .controls { max-width: 1100px; margin: 25px auto; padding: 0 20px; display: flex; gap: 12px; flex-wrap: wrap; }
     input, select { padding: 12px; border-radius: 8px; border: none; font-size: 15px; }
     input { flex: 1; min-width: 240px; }
     select { min-width: 170px; }
+
     .container { max-width: 1100px; margin: 0 auto 50px; padding: 0 20px; }
     .stats { margin-bottom: 20px; color: #b7c7d9; }
     .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(310px, 1fr)); gap: 18px; }
@@ -52,6 +69,11 @@
     .sources a { color: #74b9ff; text-decoration: none; margin-right: 10px; }
     .empty { text-align: center; padding: 40px; color: #b9c8da; }
     footer { text-align: center; padding: 25px; color: #8094aa; font-size: 14px; }
+
+    @media (max-width: 800px) {
+      .hook-zone { grid-template-columns: 1fr; }
+      h1 { font-size: 38px; }
+    }
   </style>
 </head>
 
@@ -61,6 +83,7 @@
   <div class="nav-links">
     <a href="index.html">Home</a>
     <a href="rankings.html">Rankings</a>
+    <a href="collections.html">Collections</a>
     <a href="submit.html">Submit</a>
   </div>
 </nav>
@@ -72,9 +95,21 @@
   <div class="hero-buttons">
     <a href="submit.html" class="submit-btn">Submit a Sports Mistake</a>
     <a href="rankings.html" class="rankings-btn">View Rankings</a>
+    <a href="collections.html" class="collections-btn">Browse Collections</a>
   </div>
 
   <div class="site-stats" id="siteStats">Loading SportsMistakes stats...</div>
+
+  <div class="hook-zone">
+    <div class="hook-card">
+      <h2>⭐ Today's Featured Mistake</h2>
+      <div id="featuredMistake">Loading featured mistake...</div>
+    </div>
+    <div class="hook-card">
+      <h2>🔥 Trending Debate</h2>
+      <div id="trendingDebate">Loading debate...</div>
+    </div>
+  </div>
 
   <div class="most-viewed">
     <div class="most-viewed-card">
@@ -146,6 +181,8 @@
     mistakes = data || [];
     renderMistakes();
     renderMostViewed();
+    renderFeaturedMistake();
+    await renderTrendingDebate();
   }
 
   async function loadSiteStats() {
@@ -162,6 +199,87 @@
       <div class="stat-box"><span class="stat-number">${mistakesResult.count || 0}</span><span class="stat-label">Mistakes</span></div>
       <div class="stat-box"><span class="stat-number">${votesResult.count || 0}</span><span class="stat-label">Fan Votes</span></div>
       <div class="stat-box"><span class="stat-number">${submissionsResult.count || 0}</span><span class="stat-label">Pending Reviews</span></div>
+    `;
+  }
+
+  function renderFeaturedMistake() {
+    const box = document.getElementById("featuredMistake");
+    if (!box || mistakes.length === 0) return;
+
+    const dayNumber = Math.floor(Date.now() / 86400000);
+    const featured = mistakes[dayNumber % mistakes.length];
+
+    box.innerHTML = `
+      <div class="featured-meta">
+        ${escapeHtml(featured.sport || "")}
+        ${featured.year ? " • " + escapeHtml(featured.year) : ""}
+        ${featured.category ? " • " + escapeHtml(featured.category) : ""}
+      </div>
+      <div class="featured-title">${escapeHtml(featured.title || "Untitled Mistake")}</div>
+      <div class="featured-summary">${escapeHtml(featured.summary || "No summary added yet.")}</div>
+      <a class="hook-button" href="mistake.html?id=${featured.id}">Open Featured Mistake</a>
+    `;
+  }
+
+  async function renderTrendingDebate() {
+    const box = document.getElementById("trendingDebate");
+    if (!box) return;
+
+    const { data, error } = await client
+      .from("mistake_votes")
+      .select("mistake_id,vote");
+
+    if (error) {
+      console.error(error);
+      box.innerHTML = "Could not load debate.";
+      return;
+    }
+
+    const grouped = {};
+    (data || []).forEach(v => {
+      if (!grouped[v.mistake_id]) grouped[v.mistake_id] = { yes: 0, no: 0, total: 0 };
+      grouped[v.mistake_id][v.vote] = (grouped[v.mistake_id][v.vote] || 0) + 1;
+      grouped[v.mistake_id].total++;
+    });
+
+    let best = null;
+    Object.keys(grouped).forEach(id => {
+      const item = grouped[id];
+      if (!best || item.total > best.total) best = { id, ...item };
+    });
+
+    if (!best) {
+      const fallback = [...mistakes].sort((a,b) => (b.controversy_score || 0) - (a.controversy_score || 0))[0];
+      if (!fallback) {
+        box.innerHTML = "No debates yet.";
+        return;
+      }
+
+      box.innerHTML = `
+        <div class="featured-title">Was ${escapeHtml(fallback.title || "this")} actually a mistake?</div>
+        <div class="featured-summary">Be the first to vote on this debate.</div>
+        <a class="hook-button" href="mistake.html?id=${fallback.id}">Vote Now</a>
+      `;
+      return;
+    }
+
+    const mistake = mistakes.find(m => m.id === best.id);
+    if (!mistake) {
+      box.innerHTML = "No debate found.";
+      return;
+    }
+
+    const yesPercent = best.total ? Math.round((best.yes / best.total) * 100) : 0;
+    const noPercent = 100 - yesPercent;
+
+    box.innerHTML = `
+      <div class="featured-title">Was ${escapeHtml(mistake.title || "this")} actually a mistake?</div>
+      <div class="debate-results">
+        <strong>${yesPercent}% YES</strong> / ${noPercent}% NO<br>
+        ${best.total} total vote${best.total === 1 ? "" : "s"}
+      </div>
+      <div class="debate-bar"><div class="debate-fill" style="width:${yesPercent}%"></div></div>
+      <a class="hook-button" href="mistake.html?id=${mistake.id}">Join the Debate</a>
     `;
   }
 
