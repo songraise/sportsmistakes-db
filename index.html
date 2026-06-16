@@ -13,7 +13,7 @@
     .nav-links a { color: #74b9ff; text-decoration: none; font-weight: bold; margin-left: 18px; }
     .nav-links a:hover { color: #ffcc00; }
 
-    header { padding: 55px 20px; text-align: center; background: linear-gradient(135deg, #07111f, #12365f); }
+    header { padding: 55px 20px 35px; text-align: center; background: linear-gradient(135deg, #07111f, #12365f); }
     h1 { font-size: 46px; margin: 0; }
     .tagline { font-size: 22px; color: #d8e8ff; margin-top: 10px; }
     .sub { max-width: 760px; margin: 18px auto 0; color: #b7c7d9; line-height: 1.5; }
@@ -28,9 +28,10 @@
     .stat-number { display: block; font-size: 26px; font-weight: bold; color: #ffcc00; }
     .stat-label { font-size: 13px; color: #b7c7d9; }
 
-    .hook-zone { max-width: 1100px; margin: 25px auto 0; padding: 0 20px; display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 18px; text-align: left; }
-    .hook-card { background: #0d1b2e; border: 1px solid #203852; border-radius: 14px; padding: 20px; }
-    .hook-card h2 { margin: 0 0 12px; font-size: 24px; }
+    .section-wrap { max-width: 1100px; margin: 25px auto 0; padding: 0 20px; text-align: left; }
+    .hook-zone { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+    .panel { background: #0d1b2e; border: 1px solid #203852; border-radius: 14px; padding: 20px; }
+    .panel h2 { margin: 0 0 12px; font-size: 24px; }
     .featured-title { font-size: 22px; font-weight: bold; margin: 10px 0; }
     .featured-meta { color: #9fb2c7; font-size: 14px; margin-bottom: 10px; }
     .featured-summary { color: #d8e4f2; line-height: 1.45; }
@@ -39,9 +40,12 @@
     .debate-bar { height: 12px; background: #203852; border-radius: 99px; overflow: hidden; margin: 12px 0; }
     .debate-fill { height: 100%; background: #ffcc00; width: 0%; }
 
-    .most-viewed { max-width: 1100px; margin: 25px auto 0; padding: 0 20px; }
-    .most-viewed-card { background: #0d1b2e; border: 1px solid #203852; border-radius: 14px; padding: 20px; text-align: left; }
-    .most-viewed-card h2 { margin: 0 0 14px; font-size: 24px; }
+    .collections-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(245px, 1fr)); gap: 12px; }
+    .collection-card { background: #07111f; border: 1px solid #203852; border-radius: 12px; padding: 16px; cursor: pointer; color: #d8e4f2; }
+    .collection-card:hover { border-color: #1e90ff; color: #ffcc00; }
+    .collection-title { font-size: 18px; font-weight: bold; margin-bottom: 8px; }
+    .collection-desc { color: #9fb2c7; font-size: 14px; line-height: 1.4; }
+
     .most-viewed-list { display: grid; gap: 10px; }
     .most-viewed-item { display: flex; justify-content: space-between; align-items: center; gap: 12px; background: #07111f; border: 1px solid #203852; border-radius: 10px; padding: 12px 14px; cursor: pointer; color: #d8e4f2; }
     .most-viewed-item:hover { border-color: #1e90ff; color: #ffcc00; }
@@ -84,6 +88,7 @@
     <a href="index.html">Home</a>
     <a href="rankings.html">Rankings</a>
     <a href="collections.html">Collections</a>
+    <a href="hall-of-fame.html">Hall of Fame</a>
     <a href="submit.html">Submit</a>
   </div>
 </nav>
@@ -100,30 +105,64 @@
 
   <div class="site-stats" id="siteStats">Loading SportsMistakes stats...</div>
 
-  <div class="hook-zone">
-    <div class="hook-card">
-      <h2>⭐ Today's Featured Mistake</h2>
-      <div id="featuredMistake">Loading featured mistake...</div>
-    </div>
-    <div class="hook-card">
-      <h2>🔥 Trending Debate</h2>
-      <div id="trendingDebate">Loading debate...</div>
-    </div>
-  </div>
-
-  <div class="most-viewed">
-    <div class="most-viewed-card">
-      <h2>🔥 Most Viewed</h2>
-      <div id="mostViewedList">Loading most viewed...</div>
-    </div>
-  </div>
-
   <p class="sub">
     Search, rank, debate, and discover the biggest coaching blunders,
     referee controversies, player errors, front-office disasters, and
     unforgettable mistakes in sports history.
   </p>
 </header>
+
+<div class="section-wrap">
+  <div class="hook-zone">
+    <div class="panel">
+      <h2>🔥 Trending Debate</h2>
+      <div id="trendingDebate">Loading debate...</div>
+    </div>
+    <div class="panel">
+      <h2>⭐ Today's Featured Mistake</h2>
+      <div id="featuredMistake">Loading featured mistake...</div>
+    </div>
+  </div>
+</div>
+
+<div class="section-wrap">
+  <div class="panel">
+    <h2>🏆 Browse Hall of Fame Collections</h2>
+    <div class="collections-grid">
+      <div class="collection-card" onclick="window.location.href='hall-of-fame.html'">
+        <div class="collection-title">🏆 Top 25 Overall</div>
+        <div class="collection-desc">The most infamous mistakes across all sports.</div>
+      </div>
+      <div class="collection-card" onclick="window.location.href='hall-of-fame.html'">
+        <div class="collection-title">⚖️ Worst Referee Calls</div>
+        <div class="collection-desc">Missed calls, reviews, judging, and officiating disasters.</div>
+      </div>
+      <div class="collection-card" onclick="window.location.href='hall-of-fame.html'">
+        <div class="collection-title">🧠 Coaching Blunders</div>
+        <div class="collection-desc">Bad play calls, clock management, and tactical disasters.</div>
+      </div>
+      <div class="collection-card" onclick="window.location.href='hall-of-fame.html'">
+        <div class="collection-title">💥 Player Blunders</div>
+        <div class="collection-desc">Errors, missed kicks, turnovers, and mental mistakes.</div>
+      </div>
+      <div class="collection-card" onclick="window.location.href='hall-of-fame.html'">
+        <div class="collection-title">📉 Front Office Mistakes</div>
+        <div class="collection-desc">Draft regrets, bad trades, ownership and roster failures.</div>
+      </div>
+      <div class="collection-card" onclick="window.location.href='collections.html'">
+        <div class="collection-title">🗂 All Collections</div>
+        <div class="collection-desc">Browse curated mistake lists by sport and category.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section-wrap">
+  <div class="panel">
+    <h2>🔥 Most Viewed</h2>
+    <div id="mostViewedList">Loading most viewed...</div>
+  </div>
+</div>
 
 <div class="controls">
   <input id="searchInput" type="text" placeholder="Search mistakes, teams, people..." />
