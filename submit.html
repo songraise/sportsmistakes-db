@@ -163,21 +163,22 @@
       .trim();
   }
 
-  function getImportantWords(title) {
+  function getImportantWords(text) {
     const stopWords = new Set([
       "the", "a", "an", "and", "or", "of", "to", "in", "on", "for",
       "vs", "v", "game", "mistake", "error", "incident", "controversy",
-      "collapse", "disaster", "blunder"
+      "collapse", "disaster", "blunder", "ball", "through", "with", "from",
+      "into", "his", "her", "their", "team", "teams", "play", "player"
     ]);
 
-    return normalizeTitle(title)
+    return normalizeTitle(text)
       .split(" ")
       .filter(word => word.length > 2 && !stopWords.has(word));
   }
 
-  function similarityScore(titleA, titleB) {
-    const wordsA = getImportantWords(titleA);
-    const wordsB = getImportantWords(titleB);
+  function similarityScore(textA, textB) {
+    const wordsA = getImportantWords(textA);
+    const wordsB = getImportantWords(textB);
 
     if (wordsA.length === 0 || wordsB.length === 0) return 0;
 
@@ -192,30 +193,52 @@
     return matches / Math.max(setA.size, setB.size);
   }
 
-  async function findPossibleDuplicate(title) {
+  async function findPossibleDuplicate(title, description) {
     const { data, error } = await client
       .from("mistakes")
-      .select("title,sport,year")
-      .limit(1000);
+      .select("title,sport,year,teams_people,summary,why_it_matters")
+      .limit(3000);
 
     if (error) {
       console.error(error);
       return null;
     }
 
-    const newTitle = normalizeTitle(title);
+    const submissionText = `${title} ${description}`;
+    const submissionNormalized = normalizeTitle(submissionText);
+    const submissionWords = getImportantWords(submissionText);
 
     for (const old of data || []) {
-      const oldTitle = normalizeTitle(old.title);
-      const score = similarityScore(title, old.title);
+      const oldText = `
+        ${old.title || ""}
+        ${old.teams_people || ""}
+        ${old.summary || ""}
+        ${old.why_it_matters || ""}
+      `;
 
-      const exactMatch = newTitle === oldTitle;
-      const containedMatch =
-        newTitle.length > 8 &&
-        oldTitle.length > 8 &&
-        (newTitle.includes(oldTitle) || oldTitle.includes(newTitle));
+      const oldNormalized = normalizeTitle(oldText);
 
-      if (exactMatch || containedMatch || score >= 0.7) {
+      const titleScore = similarityScore(title, old.title || "");
+      const fullTextScore = similarityScore(submissionText, oldText);
+
+      const sharedImportantWords = submissionWords.filter(word =>
+        word.length >= 5 && oldNormalized.includes(word)
+      );
+
+      const hasStrongNameMatch = sharedImportantWords.length >= 1;
+      const hasMultipleWordMatch = sharedImportantWords.length >= 2;
+
+      const phraseMatch =
+        submissionNormalized.length > 12 &&
+        oldNormalized.includes(submissionNormalized);
+
+      if (
+        titleScore >= 0.45 ||
+        fullTextScore >= 0.28 ||
+        phraseMatch ||
+        hasMultipleWordMatch ||
+        (hasStrongNameMatch && fullTextScore >= 0.16)
+      ) {
         return old;
       }
     }
@@ -260,7 +283,7 @@
 
     message.innerText = "Checking for possible duplicates...";
 
-    const possibleDuplicate = await findPossibleDuplicate(title);
+    const possibleDuplicate = await findPossibleDuplicate(title, description);
 
     if (possibleDuplicate) {
       message.innerText =
