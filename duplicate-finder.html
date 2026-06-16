@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Duplicate Finder | SportsMistakes</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    body { margin:0; font-family:Arial,sans-serif; background:#07111f; color:#fff; }
+    .top-nav { display:flex; justify-content:space-between; align-items:center; background:#0d1b2e; border-bottom:1px solid #203852; padding:14px 20px; }
+    .nav-brand { font-weight:bold; font-size:20px; cursor:pointer; }
+    .nav-links a { color:#74b9ff; text-decoration:none; font-weight:bold; margin-left:18px; }
+    .container { max-width:1100px; margin:35px auto; padding:0 20px; }
+    .card { background:#0d1b2e; border:1px solid #203852; border-radius:16px; padding:20px; margin-bottom:18px; }
+    .pair { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-top:14px; }
+    .item { background:#07111f; border:1px solid #203852; border-radius:12px; padding:16px; }
+    h1 { margin-bottom:6px; }
+    h2 { margin:0 0 8px; font-size:20px; }
+    .meta { color:#9fb2c7; margin-bottom:10px; }
+    p { color:#d8e4f2; line-height:1.5; }
+    button { padding:11px 15px; border:none; border-radius:8px; color:white; font-weight:bold; cursor:pointer; margin-right:8px; }
+    .scan { background:#1e90ff; margin-top:18px; }
+    .delete { background:#8b1e1e; margin-top:12px; }
+    .open { background:#444; margin-top:12px; }
+    .score { color:#ffcc00; font-weight:bold; }
+    .message { color:#d8e4f2; margin:18px 0; white-space:pre-wrap; }
+  </style>
+</head>
+
+<body>
+
+<nav class="top-nav">
+  <div class="nav-brand" onclick="window.location.href='index.html'">SportsMistakes</div>
+  <div class="nav-links">
+    <a href="index.html">Home</a>
+    <a href="rankings.html">Rankings</a>
+    <a href="submit.html">Submit</a>
+  </div>
+</nav>
+
+<div class="container">
+  <h1>Duplicate Finder</h1>
+  <p>Find likely duplicate mistake records and delete the weaker one.</p>
+
+  <button class="scan" onclick="findDuplicates()">Scan for Duplicates</button>
+
+  <div id="message" class="message">Click scan to begin.</div>
+  <div id="results"></div>
+</div>
+
+<script>
+  const SUPABASE_URL = "https://scwjlljurircxuufhqih.supabase.co";
+  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNjd2psbGp1cmlyY3h1dWZocWloIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyNjUyMjcsImV4cCI6MjA5Njg0MTIyN30.WF0HRRb9mAkuOySjabTd8CZXVZRqF0MhMl0N2mafnns";
+
+  const client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  let mistakes = [];
+
+  function normalizeText(text) {
+    return String(text || "")
+      .toLowerCase()
+      .replace(/[^a-z0-9 ]/g, " ")
+      .replace(/\s+/g, " ")
+      .trim();
+  }
+
+  function importantWords(text) {
+    const stopWords = new Set([
+      "the","a","an","and","or","of","to","in","on","for","vs","v",
+      "game","mistake","error","incident","controversy","collapse",
+      "disaster","blunder","goal","call","miss","missed"
+    ]);
+
+    return normalizeText(text)
+      .split(" ")
+      .filter(w => w.length > 2 && !stopWords.has(w));
+  }
+
+  function similarity(a, b) {
+    const wordsA = importantWords(a);
+    const wordsB = importantWords(b);
+
+    if (!wordsA.length || !wordsB.length) return 0;
+
+    const setA = new Set(wordsA);
+    const setB = new Set(wordsB);
+
+    let matches = 0;
+    setA.forEach(w => {
+      if (setB.has(w)) matches++;
+    });
+
+    return matches / Math.max(setA.size, setB.size);
+  }
+
+  function combinedText(m) {
+    return `
+      ${m.title || ""}
+      ${m.sport || ""}
+      ${m.year || ""}
+      ${m.category || ""}
+      ${m.subcategory || ""}
+      ${m.teams_people || ""}
+      ${m.summary || ""}
+      ${m.why_it_matters || ""}
+    `;
+  }
+
+  async function findDuplicates() {
+    const message = document.getElementById("message");
+    const results = document.getElementById("results");
+
+    message.innerText = "Loading mistakes and scanning...";
+    results.innerHTML = "";
+
+    const { data, error } = await client
+      .from("mistakes")
+      .select("*")
+      .order("title", { ascending: true });
+
+    if (error) {
+      console.error(error);
+      message.innerText = "Could not load mistakes.";
+      return;
+    }
+
+    mistakes = data || [];
+
+    const pairs = [];
+
+    for (let i = 0; i < mistakes.length; i++) {
+      for (let j = i + 1; j < mistakes.length; j++) {
+        const a = mistakes[i];
+        const b = mistakes[j];
+
+        const titleScore = similarity(a.title, b.title);
+        const fullScore = similarity(combinedText(a), combinedText(b));
+
+        const sameSport = a.sport && b.sport && a.sport === b.sport;
+        const sameYear = a.year && b.year && Number(a.year) === Number(b.year);
+
+        const finalScore =
+          (titleScore * 0.65) +
+          (fullScore * 0.25) +
+          (sameSport ? 0.05 : 0) +
+          (sameYear ? 0.05 : 0);
+
+        if (
+          titleScore >= 0.45 ||
+          finalScore >= 0.38 ||
+          (sameSport && sameYear && fullScore >= 0.25)
+        ) {
+          pairs.push({ a, b, score: finalScore, titleScore, fullScore });
+        }
+      }
+    }
+
+    pairs.sort((x, y) => y.score - x.score);
+
+    if (!pairs.length) {
+      message.innerText = "No likely duplicates found.";
+      return;
+    }
+
+    message.innerText = `${pairs.length} possible duplicate pair${pairs.length === 1 ? "" : "s"} found. Review carefully before deleting.`;
+
+    results.innerHTML = pairs.map((pair, index) => `
+      <div class="card" id="pair-${index}">
+        <div class="score">
+          Possible duplicate score: ${Math.round(pair.score * 100)}%
+        </div>
+
+        <div class="pair">
+          ${renderMistakeBox(pair.a)}
+          ${renderMistakeBox(pair.b)}
+        </div>
+      </div>
+    `).join("");
+  }
+
+  function renderMistakeBox(m) {
+    return `
+      <div class="item" id="mistake-${m.id}">
+        <h2>${escapeHtml(m.title || "Untitled")}</h2>
+        <div class="meta">
+          ${escapeHtml(m.sport || "")}
+          ${m.year ? " • " + escapeHtml(m.year) : ""}
+          ${m.category ? " • " + escapeHtml(m.category) : ""}
+        </div>
+        <p>${escapeHtml(m.summary || "")}</p>
+
+        <button class="open" onclick="window.open('mistake.html?id=${m.id}', '_blank')">Open</button>
+        <button class="delete" onclick="deleteMistake('${m.id}', '${escapeJs(m.title || "")}')">Delete This</button>
+      </div>
+    `;
+  }
+
+  async function deleteMistake(id, title) {
+    const ok = confirm(`Delete this mistake?\n\n${title}\n\nThis cannot be undone.`);
+    if (!ok) return;
+
+    const { error } = await client
+      .from("mistakes")
+      .delete()
+      .eq("id", id);
+
+    if (error) {
+      console.error(error);
+      alert("Delete failed.");
+      return;
+    }
+
+    alert("Deleted.");
+    findDuplicates();
+  }
+
+  function escapeHtml(value) {
+    return String(value)
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#039;");
+  }
+
+  function escapeJs(value) {
+    return String(value).replaceAll("\\", "\\\\").replaceAll("'", "\\'");
+  }
+</script>
+
+</body>
+</html>
