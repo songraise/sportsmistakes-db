@@ -5,267 +5,68 @@
   <title>SportsMistakes | Mistake Detail</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
   <style>
-    body { margin:0; font-family:Arial,sans-serif; background:#07111f; color:#fff; }
-    .top-nav { display:flex; justify-content:space-between; align-items:center; background:#0d1b2e; border-bottom:1px solid #203852; padding:14px 20px; }
-    .nav-brand { font-weight:bold; font-size:20px; color:#fff; cursor:pointer; }
-    .nav-links a { color:#74b9ff; text-decoration:none; font-weight:bold; margin-left:18px; }
-    .nav-links a:hover { color:#ffcc00; }
-    .container { max-width:850px; margin:40px auto; padding:0 20px; }
-    .card { background:#0d1b2e; border:1px solid #203852; border-radius:16px; padding:26px; }
-    .badge { display:inline-block; font-size:13px; padding:6px 10px; border-radius:999px; background:#1e90ff; margin-bottom:14px; }
-    .score { float:right; background:#ffcc00; color:#111; padding:6px 10px; border-radius:8px; font-weight:bold; font-size:13px; }
-    h1 { font-size:34px; margin:10px 0; }
-    .meta { color:#9fb2c7; margin-bottom:12px; font-size:15px; }
-    .views { color:#ffcc00; font-weight:bold; margin-bottom:20px; font-size:15px; }
-    .section { margin-top:24px; padding-top:20px; border-top:1px solid #203852; }
-    .section h2 { font-size:20px; margin-bottom:10px; }
-    p { color:#d8e4f2; line-height:1.6; font-size:16px; }
-    .vote-buttons { margin-top:15px; }
-    .vote-buttons button { padding:12px 18px; border:none; border-radius:8px; color:white; font-weight:bold; cursor:pointer; margin-right:10px; margin-bottom:10px; }
-    .yes-btn { background:#1e90ff; }
-    .no-btn { background:#444; }
-    #voteResults { margin-top:18px; color:#d8e4f2; font-size:16px; }
-    .share-buttons { display:flex; flex-wrap:wrap; gap:10px; margin-top:14px; }
-    .share-buttons button, .share-buttons a { display:inline-block; border:none; border-radius:8px; padding:11px 14px; color:white; text-decoration:none; font-weight:bold; cursor:pointer; font-size:14px; }
-    .share-x { background:#111; }
-    .share-facebook { background:#1877f2; }
-    .share-reddit { background:#ff4500; }
-    .share-copy { background:#1e90ff; }
-    .share-message { margin-top:12px; color:#ffcc00; font-size:14px; }
-    .sources a { display:inline-block; color:#74b9ff; text-decoration:none; margin-right:16px; margin-top:8px; }
-    .related-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(230px,1fr)); gap:14px; margin-top:14px; }
-    .related-card { background:#07111f; border:1px solid #203852; border-radius:12px; padding:14px; cursor:pointer; }
-    .related-card:hover { border-color:#1e90ff; }
-    .related-card h3 { font-size:16px; margin:6px 0; }
-    .related-meta { font-size:13px; color:#9fb2c7; }
-    .related-score { display:inline-block; background:#ffcc00; color:#111; padding:4px 7px; border-radius:8px; font-weight:bold; font-size:12px; margin-top:8px; }
-    .loading, .error { text-align:center; color:#b9c8da; padding:40px; }
+    body{margin:0;font-family:Arial,sans-serif;background:#07111f;color:#fff}
+    .top-nav{display:flex;justify-content:space-between;align-items:center;background:#0d1b2e;border-bottom:1px solid #203852;padding:14px 20px}
+    .nav-brand{font-weight:bold;font-size:20px;color:#fff;cursor:pointer}.nav-links a{color:#74b9ff;text-decoration:none;font-weight:bold;margin-left:18px}.nav-links a:hover{color:#ffcc00}
+    .container{max-width:850px;margin:40px auto;padding:0 20px}.card{background:#0d1b2e;border:1px solid #203852;border-radius:16px;padding:26px}
+    .badge{display:inline-block;font-size:13px;padding:6px 10px;border-radius:999px;background:#1e90ff;margin-bottom:14px}.score{float:right;background:#ffcc00;color:#111;padding:6px 10px;border-radius:8px;font-weight:bold;font-size:13px}
+    h1{font-size:34px;margin:10px 0}.meta{color:#9fb2c7;margin-bottom:12px;font-size:15px}.views{color:#ffcc00;font-weight:bold;margin-bottom:20px;font-size:15px}
+    .section{margin-top:24px;padding-top:20px;border-top:1px solid #203852}.section h2{font-size:20px;margin-bottom:10px}p{color:#d8e4f2;line-height:1.6;font-size:16px}
+    .vote-buttons{margin-top:15px}.vote-buttons button{padding:12px 18px;border:none;border-radius:8px;color:#fff;font-weight:bold;cursor:pointer;margin-right:10px;margin-bottom:10px}.yes-btn{background:#1e90ff}.no-btn{background:#444}#voteResults{margin-top:18px;color:#d8e4f2;font-size:16px}
+    .court-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px}.court-side{background:#07111f;border:1px solid #203852;border-radius:12px;padding:16px}.court-side h3{margin:0 0 12px;font-size:18px}
+    .argument{background:#0d1b2e;border:1px solid #203852;border-radius:10px;padding:12px;margin-bottom:10px}.argument-text{color:#d8e4f2;line-height:1.45;font-size:15px}.argument-meta{margin-top:8px;color:#9fb2c7;font-size:13px}
+    .upvote-btn{margin-top:10px;background:#203852;color:#fff;border:none;border-radius:8px;padding:8px 10px;font-weight:bold;cursor:pointer}.upvote-btn:hover{background:#1e90ff}
+    .court-form{margin-top:18px;background:#07111f;border:1px solid #203852;border-radius:12px;padding:16px}.court-form label{display:block;margin-top:12px;color:#d8e4f2;font-weight:bold}
+    .court-form select,.court-form textarea,.court-form input{width:100%;box-sizing:border-box;margin-top:8px;padding:12px;border-radius:8px;border:1px solid #203852;background:#0d1b2e;color:#fff;font-size:15px}.court-form textarea{min-height:95px;resize:vertical}.court-form button{margin-top:14px;background:#1e90ff;color:#fff;border:none;border-radius:8px;padding:12px 16px;font-weight:bold;cursor:pointer}.court-note{color:#9fb2c7;font-size:14px;line-height:1.45}.court-message{margin-top:12px;color:#ffcc00;font-size:14px;white-space:pre-wrap}
+    .share-buttons{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px}.share-buttons button,.share-buttons a{display:inline-block;border:none;border-radius:8px;padding:11px 14px;color:#fff;text-decoration:none;font-weight:bold;cursor:pointer;font-size:14px}.share-x{background:#111}.share-facebook{background:#1877f2}.share-reddit{background:#ff4500}.share-copy{background:#1e90ff}.share-message{margin-top:12px;color:#ffcc00;font-size:14px}
+    .sources a{display:inline-block;color:#74b9ff;text-decoration:none;margin-right:16px;margin-top:8px}.related-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px;margin-top:14px}.related-card{background:#07111f;border:1px solid #203852;border-radius:12px;padding:14px;cursor:pointer}.related-card:hover{border-color:#1e90ff}.related-card h3{font-size:16px;margin:6px 0}.related-meta{font-size:13px;color:#9fb2c7}.related-score{display:inline-block;background:#ffcc00;color:#111;padding:4px 7px;border-radius:8px;font-weight:bold;font-size:12px;margin-top:8px}.loading,.error{text-align:center;color:#b9c8da;padding:40px}
+    @media(max-width:760px){.court-grid{grid-template-columns:1fr}h1{font-size:30px}.nav-links a{margin-left:10px;font-size:14px}}
   </style>
 </head>
 <body>
-<nav class="top-nav">
-  <div class="nav-brand" onclick="window.location.href='index.html'">SportsMistakes</div>
-  <div class="nav-links">
-    <a href="index.html">Home</a>
-    <a href="rankings.html">Rankings</a>
-    <a href="collections.html">Collections</a>
-    <a href="submit.html">Submit</a>
-  </div>
-</nav>
-
-<div class="container">
-  <div id="content" class="loading">Loading mistake...</div>
-</div>
-
+<nav class="top-nav"><div class="nav-brand" onclick="window.location.href='index.html'">SportsMistakes</div><div class="nav-links"><a href="index.html">Home</a><a href="rankings.html">Rankings</a><a href="collections.html">Collections</a><a href="submit.html">Submit</a></div></nav>
+<div class="container"><div id="content" class="loading">Loading mistake...</div></div>
 <script>
-  const SUPABASE_URL = "https://scwjlljurircxuufhqih.supabase.co";
-  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNjd2psbGp1cmlyY3h1dWZocWloIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyNjUyMjcsImV4cCI6MjA5Njg0MTIyN30.WF0HRRb9mAkuOySjabTd8CZXVZRqF0MhMl0N2mafnns";
-  const client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-  const params = new URLSearchParams(window.location.search);
-  const id = params.get("id");
-  let currentMistake = null;
+const SUPABASE_URL="https://scwjlljurircxuufhqih.supabase.co";
+const SUPABASE_ANON_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNjd2psbGp1cmlyY3h1dWZocWloIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyNjUyMjcsImV4cCI6MjA5Njg0MTIyN30.WF0HRRb9mAkuOySjabTd8CZXVZRqF0MhMl0N2mafnns";
+const client=supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);const params=new URLSearchParams(window.location.search);const id=params.get("id");let currentMistake=null;
 
-  async function loadMistake() {
-    const content = document.getElementById("content");
-    if (!id) {
-      content.innerHTML = `<div class="error">No mistake ID provided.</div>`;
-      return;
-    }
+async function loadMistake(){const content=document.getElementById("content");if(!id){content.innerHTML=`<div class="error">No mistake ID provided.</div>`;return}
+const{data,error}=await client.from("mistakes").select("*").eq("id",id).single();if(error||!data){console.error(error);content.innerHTML=`<div class="error">Mistake not found.</div>`;return}
+currentMistake=data;const newViewCount=(data.views||0)+1;await client.from("mistakes").update({views:newViewCount}).eq("id",id);
+const shareText=getShareText(data),shareUrl=getShareUrl(),xUrl=`https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`,facebookUrl=`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`,redditUrl=`https://www.reddit.com/submit?url=${encodeURIComponent(shareUrl)}&title=${encodeURIComponent(shareText)}`;
+content.className="card";content.innerHTML=`
+<span class="badge">${escapeHtml(data.sport||"Sport")}</span><span class="score">${escapeHtml(data.controversy_score||0)}/100</span>
+<h1>${escapeHtml(data.title||"Untitled Mistake")}</h1>
+<div class="meta">${escapeHtml(data.year||"")}${data.category?" • "+escapeHtml(data.category):""}${data.subcategory?" • "+escapeHtml(data.subcategory):""}</div>
+<div class="views">👁 ${newViewCount} view${newViewCount===1?"":"s"}</div>
+${data.teams_people?`<div class="section"><h2>Teams / People</h2><p>${escapeHtml(data.teams_people)}</p></div>`:""}
+<div class="section"><h2>What Happened</h2><p>${escapeHtml(data.summary||"No summary added yet.")}</p></div>
+${data.why_it_matters?`<div class="section"><h2>Why It Matters</h2><p>${escapeHtml(data.why_it_matters)}</p></div>`:""}
+<div class="section"><h2>Fan Verdict</h2><p>Was this actually a mistake?</p><div class="vote-buttons"><button class="yes-btn" onclick="submitVote('yes')">YES — Mistake</button><button class="no-btn" onclick="submitVote('no')">NO — Not a Mistake</button></div><div id="voteResults">Loading votes...</div></div>
+<div class="section"><h2>⚖️ Sports Court</h2><p class="court-note">Add a constructive argument. Choose Prosecution if you believe this WAS a mistake. Choose Defense if you believe it was NOT a mistake or is overblown.</p><div class="court-grid"><div class="court-side"><h3>Prosecution: Why it WAS a mistake</h3><div id="prosecutionArguments">Loading arguments...</div></div><div class="court-side"><h3>Defense: Why it was NOT a mistake</h3><div id="defenseArguments">Loading arguments...</div></div></div><div class="court-form"><h3>Add Your Argument</h3><label>Side</label><select id="courtSide"><option value="prosecution">Prosecution — It was a mistake</option><option value="defense">Defense — Not a mistake / overblown</option></select><label>Your argument</label><textarea id="courtArgument" placeholder="Focus on the play, decision, referee call, strategy, or historical context."></textarea><label>Name or nickname optional</label><input id="courtName" placeholder="Anonymous fan" /><button onclick="submitCourtArgument()">Submit Argument</button><div id="courtMessage" class="court-message"></div></div></div>
+<div class="section"><h2>Share This Debate</h2><p>${escapeHtml(shareText)}</p><div class="share-buttons"><a class="share-x" href="${xUrl}" target="_blank">Share on X</a><a class="share-facebook" href="${facebookUrl}" target="_blank">Share on Facebook</a><a class="share-reddit" href="${redditUrl}" target="_blank">Share on Reddit</a><button class="share-copy" onclick="copyShareLink()">Copy Link</button></div><div id="shareMessage" class="share-message"></div></div>
+<div class="section sources"><h2>Sources</h2>${data.source_1?`<a href="${escapeHtml(data.source_1)}" target="_blank">Source 1</a>`:""}${data.source_2?`<a href="${escapeHtml(data.source_2)}" target="_blank">Source 2</a>`:""}</div>
+<div class="section"><h2>Related Mistakes</h2><div id="relatedMistakes">Loading related mistakes...</div></div>`;
+await loadVotes();await loadCourtArguments();await loadRelatedMistakes();}
 
-    const { data, error } = await client.from("mistakes").select("*").eq("id", id).single();
+function getShareUrl(){return window.location.origin+window.location.pathname+"?id="+encodeURIComponent(id)}
+function getShareText(m){return `Was "${m.title||"this sports mistake"}" actually a sports mistake? Vote on SportsMistakes. Controversy score: ${m.controversy_score||0}/100.`}
+async function copyShareLink(){const msg=document.getElementById("shareMessage"),text=`${getShareText(currentMistake)} ${getShareUrl()}`;try{await navigator.clipboard.writeText(text);msg.innerText="Share link copied."}catch(err){console.error(err);msg.innerText="Copy failed. You can copy the URL from your browser."}}
 
-    if (error || !data) {
-      console.error(error);
-      content.innerHTML = `<div class="error">Mistake not found.</div>`;
-      return;
-    }
+async function loadVotes(){const box=document.getElementById("voteResults");if(!box||!id)return;const{data,error}=await client.from("mistake_votes").select("vote").eq("mistake_id",id);if(error){box.innerText="Could not load votes.";console.error(error);return}const votes=data||[],total=votes.length,yes=votes.filter(v=>v.vote==="yes").length,no=votes.filter(v=>v.vote==="no").length;if(total===0){box.innerHTML="No votes yet. Be the first to vote.";return}const yesPercent=Math.round((yes/total)*100),noPercent=Math.round((no/total)*100);box.innerHTML=`<strong>${yesPercent}% YES</strong> / ${noPercent}% NO<br>${total} total vote${total===1?"":"s"}`}
+async function submitVote(vote){const voteKey="sportsmistakes_vote_"+id;if(localStorage.getItem(voteKey)){alert("You already voted on this mistake.");return}let voterId=localStorage.getItem("sportsmistakes_voter_id");if(!voterId){voterId=crypto.randomUUID();localStorage.setItem("sportsmistakes_voter_id",voterId)}const{error}=await client.from("mistake_votes").insert({mistake_id:id,vote:vote,voter_id:voterId});if(error){alert("Vote failed. Please try again.");console.error(error);return}localStorage.setItem(voteKey,vote);await loadVotes()}
 
-    currentMistake = data;
-    const newViewCount = (data.views || 0) + 1;
-    await client.from("mistakes").update({ views: newViewCount }).eq("id", id);
+function containsUnsafeText(text){const banned=[/\bfuck\b/i,/\bfucking\b/i,/\bshit\b/i,/\basshole\b/i,/\bbitch\b/i,/\bcunt\b/i,/\bmotherfucker\b/i,/\bporn\b/i,/\bxxx\b/i,/\bnude\b/i,/\bnudes\b/i,/\bnsfw\b/i,/\bkill yourself\b/i,/\bkys\b/i,/\bnazi\b/i,/\bhitler\b/i,/\bwhite power\b/i,/\bcasino\b/i,/\bcrypto\b/i,/\bbitcoin\b/i,/\btelegram\b/i,/\bwhatsapp\b/i,/\bviagra\b/i,/\bescort\b/i,/\byou are an idiot\b/i,/\byou're an idiot\b/i,/\bmoron\b/i];return banned.some(p=>p.test(text))}
+async function loadCourtArguments(){const p=document.getElementById("prosecutionArguments"),d=document.getElementById("defenseArguments");if(!p||!d||!id)return;const{data,error}=await client.from("sports_court_arguments").select("*").eq("mistake_id",id).eq("status","approved").order("upvotes",{ascending:false}).order("created_at",{ascending:false});if(error){console.error(error);p.innerHTML="Could not load arguments. Did you run the Sports Court SQL?";d.innerHTML="Could not load arguments.";return}const list=data||[];p.innerHTML=renderArguments(list.filter(a=>a.side==="prosecution"),"prosecution");d.innerHTML=renderArguments(list.filter(a=>a.side==="defense"),"defense")}
+function renderArguments(list,side){if(!list||list.length===0)return`<div class="court-note">No ${side} arguments yet. Be the first to make the case.</div>`;return list.map(arg=>`<div class="argument"><div class="argument-text">${escapeHtml(arg.argument_text||"")}</div><div class="argument-meta">${escapeHtml(arg.author_name||"Anonymous fan")}${arg.created_at?" • "+new Date(arg.created_at).toLocaleDateString():""}</div><button class="upvote-btn" onclick="upvoteArgument('${arg.id}')">👍 ${arg.upvotes||0}</button></div>`).join("")}
+async function submitCourtArgument(){const msg=document.getElementById("courtMessage"),side=document.getElementById("courtSide").value,text=document.getElementById("courtArgument").value.trim(),name=document.getElementById("courtName").value.trim()||"Anonymous fan";if(!text||text.length<20){msg.innerText="Please write a constructive argument of at least 20 characters.";return}if(text.length>800){msg.innerText="Please keep the argument under 800 characters.";return}if(containsUnsafeText(text+" "+name)){msg.innerText="This argument appears to violate the safety rules. Please focus on the sports decision, play, call, or context.";return}msg.innerText="Submitting argument...";const{error}=await client.from("sports_court_arguments").insert({mistake_id:id,side:side,argument_text:text,author_name:name,status:"approved",upvotes:0});if(error){console.error(error);msg.innerText="Argument failed to submit. Check the SQL table and policies.";return}document.getElementById("courtArgument").value="";document.getElementById("courtName").value="";msg.innerText="Argument added to Sports Court.";await loadCourtArguments()}
+async function upvoteArgument(argumentId){const key="sports_court_upvote_"+argumentId;if(localStorage.getItem(key)){alert("You already upvoted this argument.");return}const{data,error}=await client.from("sports_court_arguments").select("upvotes").eq("id",argumentId).single();if(error||!data){console.error(error);alert("Could not upvote.");return}const{error:updateError}=await client.from("sports_court_arguments").update({upvotes:(data.upvotes||0)+1}).eq("id",argumentId);if(updateError){console.error(updateError);alert("Could not upvote.");return}localStorage.setItem(key,"true");await loadCourtArguments()}
 
-    const shareText = getShareText(data);
-    const shareUrl = getShareUrl();
-    const xUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`;
-    const facebookUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`;
-    const redditUrl = `https://www.reddit.com/submit?url=${encodeURIComponent(shareUrl)}&title=${encodeURIComponent(shareText)}`;
-
-    content.className = "card";
-    content.innerHTML = `
-      <span class="badge">${escapeHtml(data.sport || "Sport")}</span>
-      <span class="score">${escapeHtml(data.controversy_score || 0)}/100</span>
-      <h1>${escapeHtml(data.title || "Untitled Mistake")}</h1>
-      <div class="meta">${escapeHtml(data.year || "")}${data.category ? " • " + escapeHtml(data.category) : ""}${data.subcategory ? " • " + escapeHtml(data.subcategory) : ""}</div>
-      <div class="views">👁 ${newViewCount} view${newViewCount === 1 ? "" : "s"}</div>
-
-      ${data.teams_people ? `<div class="section"><h2>Teams / People</h2><p>${escapeHtml(data.teams_people)}</p></div>` : ""}
-
-      <div class="section"><h2>What Happened</h2><p>${escapeHtml(data.summary || "No summary added yet.")}</p></div>
-
-      ${data.why_it_matters ? `<div class="section"><h2>Why It Matters</h2><p>${escapeHtml(data.why_it_matters)}</p></div>` : ""}
-
-      <div class="section">
-        <h2>Fan Verdict</h2>
-        <p>Was this actually a mistake?</p>
-        <div class="vote-buttons">
-          <button class="yes-btn" onclick="submitVote('yes')">YES — Mistake</button>
-          <button class="no-btn" onclick="submitVote('no')">NO — Not a Mistake</button>
-        </div>
-        <div id="voteResults">Loading votes...</div>
-      </div>
-
-      <div class="section">
-        <h2>Share This Debate</h2>
-        <p>${escapeHtml(shareText)}</p>
-        <div class="share-buttons">
-          <a class="share-x" href="${xUrl}" target="_blank">Share on X</a>
-          <a class="share-facebook" href="${facebookUrl}" target="_blank">Share on Facebook</a>
-          <a class="share-reddit" href="${redditUrl}" target="_blank">Share on Reddit</a>
-          <button class="share-copy" onclick="copyShareLink()">Copy Link</button>
-        </div>
-        <div id="shareMessage" class="share-message"></div>
-      </div>
-
-      <div class="section sources">
-        <h2>Sources</h2>
-        ${data.source_1 ? `<a href="${escapeHtml(data.source_1)}" target="_blank">Source 1</a>` : ""}
-        ${data.source_2 ? `<a href="${escapeHtml(data.source_2)}" target="_blank">Source 2</a>` : ""}
-      </div>
-
-      <div class="section">
-        <h2>Related Mistakes</h2>
-        <div id="relatedMistakes">Loading related mistakes...</div>
-      </div>
-    `;
-
-    await loadVotes();
-    await loadRelatedMistakes();
-  }
-
-  function getShareUrl() {
-    return window.location.origin + window.location.pathname + "?id=" + encodeURIComponent(id);
-  }
-
-  function getShareText(mistake) {
-    const title = mistake.title || "this sports mistake";
-    const score = mistake.controversy_score || 0;
-    return `Was "${title}" actually a sports mistake? Vote on SportsMistakes. Controversy score: ${score}/100.`;
-  }
-
-  async function copyShareLink() {
-    const shareMessage = document.getElementById("shareMessage");
-    const text = `${getShareText(currentMistake)} ${getShareUrl()}`;
-    try {
-      await navigator.clipboard.writeText(text);
-      shareMessage.innerText = "Share link copied.";
-    } catch (err) {
-      console.error(err);
-      shareMessage.innerText = "Copy failed. You can copy the URL from your browser.";
-    }
-  }
-
-  async function loadVotes() {
-    const voteResults = document.getElementById("voteResults");
-    if (!voteResults || !id) return;
-
-    const { data, error } = await client.from("mistake_votes").select("vote").eq("mistake_id", id);
-
-    if (error) {
-      voteResults.innerText = "Could not load votes.";
-      console.error(error);
-      return;
-    }
-
-    const votes = data || [];
-    const total = votes.length;
-    const yes = votes.filter(v => v.vote === "yes").length;
-    const no = votes.filter(v => v.vote === "no").length;
-
-    if (total === 0) {
-      voteResults.innerHTML = "No votes yet. Be the first to vote.";
-      return;
-    }
-
-    const yesPercent = Math.round((yes / total) * 100);
-    const noPercent = Math.round((no / total) * 100);
-
-    voteResults.innerHTML = `<strong>${yesPercent}% YES</strong> / ${noPercent}% NO<br>${total} total vote${total === 1 ? "" : "s"}`;
-  }
-
-  async function submitVote(vote) {
-    const voteKey = "sportsmistakes_vote_" + id;
-    if (localStorage.getItem(voteKey)) {
-      alert("You already voted on this mistake.");
-      return;
-    }
-
-    let voterId = localStorage.getItem("sportsmistakes_voter_id");
-    if (!voterId) {
-      voterId = crypto.randomUUID();
-      localStorage.setItem("sportsmistakes_voter_id", voterId);
-    }
-
-    const { error } = await client.from("mistake_votes").insert({ mistake_id: id, vote: vote, voter_id: voterId });
-
-    if (error) {
-      alert("Vote failed. Please try again.");
-      console.error(error);
-      return;
-    }
-
-    localStorage.setItem(voteKey, vote);
-    await loadVotes();
-  }
-
-  async function loadRelatedMistakes() {
-    const relatedBox = document.getElementById("relatedMistakes");
-    if (!relatedBox || !currentMistake) return;
-
-    const { data, error } = await client
-      .from("mistakes")
-      .select("*")
-      .neq("id", id)
-      .or(`sport.eq.${currentMistake.sport},category.eq.${currentMistake.category},subcategory.eq.${currentMistake.subcategory}`)
-      .order("controversy_score", { ascending: false })
-      .limit(6);
-
-    if (error) {
-      console.error(error);
-      relatedBox.innerHTML = "Could not load related mistakes.";
-      return;
-    }
-
-    if (!data || data.length === 0) {
-      relatedBox.innerHTML = "No related mistakes yet.";
-      return;
-    }
-
-    relatedBox.innerHTML = `
-      <div class="related-grid">
-        ${data.map(m => `
-          <div class="related-card" onclick="window.location.href='mistake.html?id=${m.id}'">
-            <div class="related-meta">${escapeHtml(m.sport || "")}${m.year ? " • " + escapeHtml(m.year) : ""}</div>
-            <h3>${escapeHtml(m.title || "Untitled Mistake")}</h3>
-            <div class="related-meta">${escapeHtml(m.category || "")}</div>
-            <span class="related-score">${escapeHtml(m.controversy_score || 0)}/100</span>
-          </div>
-        `).join("")}
-      </div>
-    `;
-  }
-
-  function escapeHtml(value) {
-    return String(value)
-      .replaceAll("&", "&amp;")
-      .replaceAll("<", "&lt;")
-      .replaceAll(">", "&gt;")
-      .replaceAll('"', "&quot;")
-      .replaceAll("'", "&#039;");
-  }
-
-  loadMistake();
+async function loadRelatedMistakes(){const box=document.getElementById("relatedMistakes");if(!box||!currentMistake)return;const{data,error}=await client.from("mistakes").select("*").neq("id",id).or(`sport.eq.${currentMistake.sport},category.eq.${currentMistake.category},subcategory.eq.${currentMistake.subcategory}`).order("controversy_score",{ascending:false}).limit(6);if(error){console.error(error);box.innerHTML="Could not load related mistakes.";return}if(!data||data.length===0){box.innerHTML="No related mistakes yet.";return}box.innerHTML=`<div class="related-grid">${data.map(m=>`<div class="related-card" onclick="window.location.href='mistake.html?id=${m.id}'"><div class="related-meta">${escapeHtml(m.sport||"")}${m.year?" • "+escapeHtml(m.year):""}</div><h3>${escapeHtml(m.title||"Untitled Mistake")}</h3><div class="related-meta">${escapeHtml(m.category||"")}</div><span class="related-score">${escapeHtml(m.controversy_score||0)}/100</span></div>`).join("")}</div>`}
+function escapeHtml(value){return String(value).replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;")}
+loadMistake();
 </script>
 </body>
 </html>
