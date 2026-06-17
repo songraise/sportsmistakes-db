@@ -11,7 +11,7 @@
     .top-nav { display:flex; justify-content:space-between; align-items:center; background:#0d1b2e; border-bottom:1px solid #203852; padding:14px 20px; }
     .nav-brand { font-weight:bold; font-size:20px; cursor:pointer; }
     .nav-links a { color:#74b9ff; text-decoration:none; font-weight:bold; margin-left:18px; }
-    .container { max-width:1100px; margin:35px auto; padding:0 20px; }
+    .container { max-width:1150px; margin:35px auto; padding:0 20px; }
     .card { background:#0d1b2e; border:1px solid #203852; border-radius:16px; padding:20px; margin-bottom:18px; }
     .pair { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-top:14px; }
     .item { background:#07111f; border:1px solid #203852; border-radius:12px; padding:16px; }
@@ -19,13 +19,19 @@
     h2 { margin:0 0 8px; font-size:20px; }
     .meta { color:#9fb2c7; margin-bottom:10px; }
     p { color:#d8e4f2; line-height:1.5; }
-    button { padding:11px 15px; border:none; border-radius:8px; color:white; font-weight:bold; cursor:pointer; margin-right:8px; }
+    button { padding:11px 15px; border:none; border-radius:8px; color:white; font-weight:bold; cursor:pointer; margin-right:8px; margin-top:10px; }
     .scan { background:#1e90ff; margin-top:18px; }
-    .delete { background:#8b1e1e; margin-top:12px; }
-    .open { background:#444; margin-top:12px; }
-    .ignore { background:#6b5b1e; margin-top:14px; }
+    .delete { background:#8b1e1e; }
+    .open { background:#444; }
+    .ignore { background:#6b5b1e; }
+    .related { background:#166534; }
     .score { color:#ffcc00; font-weight:bold; }
     .message { color:#d8e4f2; margin:18px 0; white-space:pre-wrap; }
+    .actions { margin-top:14px; padding-top:14px; border-top:1px solid #203852; }
+    .explain { color:#b7c7d9; font-size:14px; line-height:1.45; margin-top:8px; }
+    .filters { display:flex; gap:10px; flex-wrap:wrap; margin-top:18px; }
+    .filters select { padding:10px; border-radius:8px; border:none; }
+    @media(max-width:800px){ .pair{grid-template-columns:1fr;} }
   </style>
 </head>
 
@@ -36,15 +42,29 @@
   <div class="nav-links">
     <a href="index.html">Home</a>
     <a href="rankings.html">Rankings</a>
+    <a href="collections.html">Collections</a>
     <a href="submit.html">Submit</a>
   </div>
 </nav>
 
 <div class="container">
   <h1>Duplicate Finder</h1>
-  <p>Find likely duplicate mistake records, delete the weaker one, or ignore false positives.</p>
+  <p>
+    Review likely duplicate records. You can now choose:
+    <strong>Delete</strong> for true duplicates,
+    <strong>Mark Related</strong> for same-event/different-angle records,
+    or <strong>Ignore</strong> for false positives.
+  </p>
 
   <button class="scan" onclick="findDuplicates()">Scan for Duplicates</button>
+
+  <div class="filters">
+    <select id="minimumScore">
+      <option value="0.38">Normal scan</option>
+      <option value="0.50">Stricter scan</option>
+      <option value="0.65">Very strict scan</option>
+    </select>
+  </div>
 
   <div id="message" class="message">Click scan to begin.</div>
   <div id="results"></div>
@@ -52,7 +72,7 @@
 
 <script>
   const SUPABASE_URL = "https://scwjlljurircxuufhqih.supabase.co";
-  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNjd2psbGp1cmlyY3h1dWZocWloIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyNjUyMjcsImV4cCI6MjA5Njg0MTIyN30.WF0HRRb9mAkuOySjabTd8CZXVZRqF0MhMl0N2mafnns";
+  const SUPABASE_ANON_KEY = "PASTE_YOUR_ANON_KEY_HERE";
 
   const client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
@@ -70,7 +90,8 @@
     const stopWords = new Set([
       "the","a","an","and","or","of","to","in","on","for","vs","v",
       "game","mistake","error","incident","controversy","collapse",
-      "disaster","blunder","goal","call","miss","missed"
+      "disaster","blunder","goal","call","miss","missed","sports",
+      "team","player","referee","coaching","front","office"
     ]);
 
     return normalizeText(text)
@@ -108,44 +129,57 @@
     `;
   }
 
-  function sortPairIds(id1, id2) {
-    return [id1, id2].sort();
+  function sortedPairKey(id1, id2) {
+    return [id1, id2].sort().join("|");
   }
 
   async function findDuplicates() {
     const message = document.getElementById("message");
     const results = document.getElementById("results");
+    const minScore = Number(document.getElementById("minimumScore").value || 0.38);
 
-    message.innerText = "Loading mistakes and ignored pairs...";
+    message.innerText = "Loading mistakes, ignored pairs, and related pairs...";
     results.innerHTML = "";
 
-    const [{ data, error }, { data: ignoredPairs, error: ignoreError }] = await Promise.all([
+    const [
+      mistakesResult,
+      ignoredResult,
+      relatedResult
+    ] = await Promise.all([
       client.from("mistakes").select("*").order("title", { ascending: true }),
-      client.from("duplicate_ignores").select("mistake_id_1,mistake_id_2")
+      client.from("duplicate_ignores").select("mistake_id_1,mistake_id_2"),
+      client.from("related_mistakes").select("mistake_id_1,mistake_id_2")
     ]);
 
-    if (error) {
-      console.error(error);
+    if (mistakesResult.error) {
+      console.error(mistakesResult.error);
       message.innerText = "Could not load mistakes.";
       return;
     }
 
-    if (ignoreError) {
-      console.error(ignoreError);
+    if (ignoredResult.error) {
+      console.error(ignoredResult.error);
       message.innerText = "Could not load ignored pairs. Did you run the duplicate_ignores SQL setup?";
       return;
     }
 
-    mistakes = data || [];
+    if (relatedResult.error) {
+      console.error(relatedResult.error);
+      message.innerText = "Could not load related pairs. Did you run the related_mistakes SQL setup?";
+      return;
+    }
+
+    mistakes = mistakesResult.data || [];
 
     const ignoredSet = new Set(
-      (ignoredPairs || []).map(p => {
-        const ids = [p.mistake_id_1, p.mistake_id_2].sort();
-        return ids.join("|");
-      })
+      (ignoredResult.data || []).map(p => sortedPairKey(p.mistake_id_1, p.mistake_id_2))
     );
 
-    message.innerText = "Scanning for duplicates...";
+    const relatedSet = new Set(
+      (relatedResult.data || []).map(p => sortedPairKey(p.mistake_id_1, p.mistake_id_2))
+    );
+
+    message.innerText = "Scanning for likely duplicates...";
 
     const pairs = [];
 
@@ -154,25 +188,29 @@
         const a = mistakes[i];
         const b = mistakes[j];
 
-        const pairKey = [a.id, b.id].sort().join("|");
+        const pairKey = sortedPairKey(a.id, b.id);
+
         if (ignoredSet.has(pairKey)) continue;
+        if (relatedSet.has(pairKey)) continue;
 
         const titleScore = similarity(a.title, b.title);
         const fullScore = similarity(combinedText(a), combinedText(b));
 
         const sameSport = a.sport && b.sport && a.sport === b.sport;
         const sameYear = a.year && b.year && Number(a.year) === Number(b.year);
+        const sameCategory = a.category && b.category && a.category === b.category;
 
         const finalScore =
           (titleScore * 0.65) +
           (fullScore * 0.25) +
-          (sameSport ? 0.05 : 0) +
-          (sameYear ? 0.05 : 0);
+          (sameSport ? 0.04 : 0) +
+          (sameYear ? 0.04 : 0) +
+          (sameCategory ? 0.02 : 0);
 
         if (
-          titleScore >= 0.45 ||
-          finalScore >= 0.38 ||
-          (sameSport && sameYear && fullScore >= 0.25)
+          titleScore >= 0.58 ||
+          finalScore >= minScore ||
+          (sameSport && sameYear && titleScore >= 0.36 && fullScore >= 0.32)
         ) {
           pairs.push({ a, b, score: finalScore, titleScore, fullScore });
         }
@@ -186,7 +224,9 @@
       return;
     }
 
-    message.innerText = `${pairs.length} possible duplicate pair${pairs.length === 1 ? "" : "s"} found. Review carefully before deleting or ignoring.`;
+    message.innerText =
+      `${pairs.length} possible duplicate pair${pairs.length === 1 ? "" : "s"} found.\n\n` +
+      `Use Delete for true duplicates, Mark Related for same-event/different-angle records, and Ignore for false positives.`;
 
     results.innerHTML = pairs.map((pair, index) => `
       <div class="card" id="pair-${index}">
@@ -196,14 +236,27 @@
           | Full: ${Math.round(pair.fullScore * 100)}%
         </div>
 
+        <div class="explain">
+          Decision guide:
+          <strong>Delete</strong> if they are the same record.
+          <strong>Mark Related</strong> if they are connected but deserve separate pages.
+          <strong>Ignore</strong> if this is a false positive.
+        </div>
+
         <div class="pair">
           ${renderMistakeBox(pair.a)}
           ${renderMistakeBox(pair.b)}
         </div>
 
-        <button class="ignore" onclick="ignorePair('${pair.a.id}', '${pair.b.id}', 'pair-${index}')">
-          Ignore This Pair
-        </button>
+        <div class="actions">
+          <button class="related" onclick="markRelated('${pair.a.id}', '${pair.b.id}', 'pair-${index}')">
+            Mark Related
+          </button>
+
+          <button class="ignore" onclick="ignorePair('${pair.a.id}', '${pair.b.id}', 'pair-${index}')">
+            Ignore This Pair
+          </button>
+        </div>
       </div>
     `).join("");
   }
@@ -216,6 +269,7 @@
           ${escapeHtml(m.sport || "")}
           ${m.year ? " • " + escapeHtml(m.year) : ""}
           ${m.category ? " • " + escapeHtml(m.category) : ""}
+          ${m.subcategory ? " • " + escapeHtml(m.subcategory) : ""}
         </div>
         <p>${escapeHtml(m.summary || "")}</p>
 
@@ -225,11 +279,35 @@
     `;
   }
 
-  async function ignorePair(id1, id2, cardId) {
-    const sorted = sortPairIds(id1, id2);
+  async function markRelated(id1, id2, cardId) {
+    const ok = confirm("Mark these as related but NOT duplicates?\n\nThey will be hidden from future duplicate scans.");
+    if (!ok) return;
 
+    const sorted = [id1, id2].sort();
+
+    const { error } = await client
+      .from("related_mistakes")
+      .insert({
+        mistake_id_1: sorted[0],
+        mistake_id_2: sorted[1],
+        relationship_type: "related"
+      });
+
+    if (error) {
+      console.error(error);
+      alert("Could not mark related. It may already be related.");
+      return;
+    }
+
+    removeCard(cardId);
+    alert("Marked as related.");
+  }
+
+  async function ignorePair(id1, id2, cardId) {
     const ok = confirm("Ignore this duplicate suggestion in future scans?");
     if (!ok) return;
+
+    const sorted = [id1, id2].sort();
 
     const { error } = await client
       .from("duplicate_ignores")
@@ -244,9 +322,7 @@
       return;
     }
 
-    const card = document.getElementById(cardId);
-    if (card) card.remove();
-
+    removeCard(cardId);
     alert("Pair ignored.");
   }
 
@@ -267,6 +343,16 @@
 
     alert("Deleted.");
     findDuplicates();
+  }
+
+  function removeCard(cardId) {
+    const card = document.getElementById(cardId);
+    if (card) card.remove();
+
+    const remaining = document.querySelectorAll(".card").length;
+    if (remaining === 0) {
+      document.getElementById("message").innerText = "All visible duplicate suggestions reviewed.";
+    }
   }
 
   function escapeHtml(value) {
