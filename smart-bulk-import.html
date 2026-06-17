@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Smart Bulk Import | SportsMistakes</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    body{margin:0;font-family:Arial,sans-serif;background:#07111f;color:#fff}
+    .top-nav{display:flex;justify-content:space-between;align-items:center;background:#0d1b2e;border-bottom:1px solid #203852;padding:14px 20px}
+    .nav-brand{font-weight:bold;font-size:20px;color:#fff;cursor:pointer}
+    .nav-links a{color:#74b9ff;text-decoration:none;font-weight:bold;margin-left:18px}
+    .nav-links a:hover{color:#ffcc00}
+    .container{max-width:1200px;margin:35px auto 70px;padding:0 20px}
+    h1{margin-bottom:8px}
+    .sub{color:#b7c7d9;line-height:1.5;margin-bottom:22px}
+    .box{background:#0d1b2e;border:1px solid #203852;border-radius:16px;padding:20px;margin-bottom:20px}
+    textarea{width:100%;min-height:220px;box-sizing:border-box;border-radius:10px;border:1px solid #203852;background:#07111f;color:#fff;padding:14px;font-size:14px;line-height:1.45}
+    button{border:none;border-radius:8px;padding:12px 15px;margin-right:8px;margin-top:12px;font-weight:bold;cursor:pointer;color:#fff}
+    .preview-btn{background:#1e90ff}
+    .import-btn{background:#166534}
+    .clear-btn{background:#444}
+    .skip-btn{background:#6b5b1e}
+    .status{color:#ffcc00;margin:12px 0;white-space:pre-wrap}
+    .legend{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+    .pill{display:inline-block;padding:6px 9px;border-radius:999px;font-size:12px;font-weight:bold}
+    .new{background:#166534;color:white}
+    .duplicate{background:#8b1e1e;color:white}
+    .related{background:#6b5b1e;color:white}
+    .uncertain{background:#203852;color:white}
+    .bad{background:#5c1a1a;color:white}
+    .preview-grid{display:grid;gap:14px}
+    .row{background:#0d1b2e;border:1px solid #203852;border-radius:14px;padding:16px}
+    .row-title{font-size:19px;font-weight:bold;margin-bottom:6px}
+    .meta{color:#9fb2c7;font-size:14px;margin-bottom:10px}
+    .summary{color:#d8e4f2;line-height:1.45;font-size:14px}
+    .matches{margin-top:12px;padding-top:12px;border-top:1px solid #203852}
+    .match{background:#07111f;border:1px solid #203852;border-radius:10px;padding:10px;margin-top:8px}
+    .match-title{font-weight:bold}
+    .match-score{color:#ffcc00;font-size:13px;margin-top:4px}
+    .controls{margin-top:12px}
+    .controls label{display:inline-block;margin-right:14px;color:#d8e4f2}
+    input[type="checkbox"]{transform:scale(1.15);margin-right:6px}
+    .format{font-size:13px;color:#b7c7d9;line-height:1.5}
+    .small{font-size:13px;color:#9fb2c7}
+    @media(max-width:760px){.nav-links a{margin-left:10px;font-size:14px}}
+  </style>
+</head>
+
+<body>
+<nav class="top-nav">
+  <div class="nav-brand" onclick="window.location.href='index.html'">SportsMistakes Admin</div>
+  <div class="nav-links">
+    <a href="index.html">Home</a>
+    <a href="admin-mistakes.html">Admin Mistakes</a>
+    <a href="duplicate-finder.html">Duplicates</a>
+    <a href="bulk-import.html">Old Importer</a>
+  </div>
+</nav>
+
+<div class="container">
+  <h1>Smart Bulk Import</h1>
+  <p class="sub">
+    Paste bulk rows, preview them first, and automatically flag likely duplicates or related records before importing.
+    This prevents hundreds of cleanup items after upload.
+  </p>
+
+  <div class="box">
+    <h2>Paste Import Rows</h2>
+    <div class="format">
+      Format per row:<br>
+      <strong>title | sport | year | category | subcategory | teams_people | summary | why_it_matters | controversy_score | source_1 | source_2 optional</strong>
+    </div>
+
+    <textarea id="bulkText" placeholder="Bill Buckner Error | MLB | 1986 | Player Mistake | Fielding Error | Boston Red Sox, New York Mets | Buckner let Mookie Wilson's grounder go through his legs... | One of the most famous baseball mistakes ever. | 100 | https://..."></textarea>
+
+    <button class="preview-btn" onclick="previewImport()">Preview & Flag Duplicates</button>
+    <button class="import-btn" onclick="importSelected()">Import Selected New Rows</button>
+    <button class="skip-btn" onclick="selectNewOnly()">Select New Only</button>
+    <button class="clear-btn" onclick="clearPreview()">Clear</button>
+
+    <div class="legend">
+      <span class="pill new">NEW: safe to import</span>
+      <span class="pill duplicate">DUPLICATE: likely already exists</span>
+      <span class="pill related">RELATED: connected but may deserve separate page</span>
+      <span class="pill uncertain">UNCERTAIN: review manually</span>
+      <span class="pill bad">BAD ROW: formatting issue</span>
+    </div>
+
+    <div id="status" class="status">Paste rows and click Preview.</div>
+  </div>
+
+  <div id="previewList" class="preview-grid"></div>
+</div>
+
+<script>
+  const SUPABASE_URL = "https://scwjlljurircxuufhqih.supabase.co";
+  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNjd2psbGp1cmlyY3h1dWZocWloIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyNjUyMjcsImV4cCI6MjA5Njg0MTIyN30.WF0HRRb9mAkuOySjabTd8CZXVZRqF0MhMl0N2mafnns";
+
+  const client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  let existingMistakes = [];
+  let previewRows = [];
+
+  function normalizeText(text) {
+    return String(text || "")
+      .toLowerCase()
+      .replace(/[^a-z0-9 ]/g, " ")
+      .replace(/\s+/g, " ")
+      .trim();
+  }
+
+  function importantWords(text) {
+    const stopWords = new Set([
+      "the","a","an","and","or","of","to","in","on","for","vs","v",
+      "game","mistake","error","incident","controversy","collapse",
+      "disaster","blunder","goal","call","miss","missed","sports",
+      "team","player","referee","coaching","front","office","top",
+      "ever","worst","famous","infamous","historic","history"
+    ]);
+
+    return normalizeText(text)
+      .split(" ")
+      .filter(w => w.length > 2 && !stopWords.has(w));
+  }
+
+  function similarity(a, b) {
+    const wordsA = importantWords(a);
+    const wordsB = importantWords(b);
+
+    if (!wordsA.length || !wordsB.length) return 0;
+
+    const setA = new Set(wordsA);
+    const setB = new Set(wordsB);
+
+    let matches = 0;
+    setA.forEach(w => {
+      if (setB.has(w)) matches++;
+    });
+
+    return matches / Math.max(setA.size, setB.size);
+  }
+
+  function combinedText(m) {
+    return `
+      ${m.title || ""}
+      ${m.sport || ""}
+      ${m.year || ""}
+      ${m.category || ""}
+      ${m.subcategory || ""}
+      ${m.teams_people || ""}
+      ${m.summary || ""}
+      ${m.why_it_matters || ""}
+    `;
+  }
+
+  function classifyRow(row, existing) {
+    const matches = existing.map(m => {
+      const titleScore = similarity(row.title, m.title);
+      const fullScore = similarity(combinedText(row), combinedText(m));
+      const sameSport = row.sport && m.sport && row.sport === m.sport;
+      const sameYear = row.year && m.year && Number(row.year) === Number(m.year);
+      const sameCategory = row.category && m.category && row.category === m.category;
+
+      const score =
+        (titleScore * 0.66) +
+        (fullScore * 0.24) +
+        (sameSport ? 0.04 : 0) +
+        (sameYear ? 0.04 : 0) +
+        (sameCategory ? 0.02 : 0);
+
+      return { existing: m, score, titleScore, fullScore, sameSport, sameYear, sameCategory };
+    })
+    .sort((a,b) => b.score - a.score)
+    .slice(0, 5);
+
+    const best = matches[0];
+
+    if (!best) {
+      return { status: "new", matches: [] };
+    }
+
+    if (
+      best.titleScore >= 0.78 ||
+      best.score >= 0.70 ||
+      (best.sameSport && best.sameYear && best.titleScore >= 0.58)
+    ) {
+      return { status: "duplicate", matches };
+    }
+
+    if (
+      best.score >= 0.45 ||
+      (best.sameSport && best.sameYear && best.fullScore >= 0.32) ||
+      (best.sameSport && best.titleScore >= 0.42)
+    ) {
+      return { status: "related", matches };
+    }
+
+    if (best.score >= 0.35) {
+      return { status: "uncertain", matches };
+    }
+
+    return { status: "new", matches };
+  }
+
+  function parseRows(text) {
+    const lines = text
+      .split(/\r?\n/)
+      .map(line => line.trim())
+      .filter(Boolean);
+
+    return lines.map((line, index) => {
+      const parts = line.split("|").map(p => p.trim());
+
+      if (parts.length < 10) {
+        return {
+          rowNumber: index + 1,
+          status: "bad",
+          selected: false,
+          error: `Row needs at least 10 fields. Found ${parts.length}.`,
+          raw: line
+        };
+      }
+
+      const score = Number(parts[8]) || 0;
+      const year = Number(parts[2]) || null;
+
+      return {
+        rowNumber: index + 1,
+        selected: false,
+        title: parts[0],
+        sport: parts[1],
+        year,
+        category: parts[3],
+        subcategory: parts[4],
+        teams_people: parts[5],
+        summary: parts[6],
+        why_it_matters: parts[7],
+        controversy_score: score,
+        source_1: parts[9],
+        source_2: parts[10] || "",
+        raw: line
+      };
+    });
+  }
+
+  async function loadExistingMistakes() {
+    const { data, error } = await client
+      .from("mistakes")
+      .select("*")
+      .order("title", { ascending: true });
+
+    if (error) {
+      console.error(error);
+      throw new Error("Could not load existing mistakes.");
+    }
+
+    existingMistakes = data || [];
+  }
+
+  async function previewImport() {
+    const status = document.getElementById("status");
+    const text = document.getElementById("bulkText").value.trim();
+
+    if (!text) {
+      alert("Paste import rows first.");
+      return;
+    }
+
+    status.innerText = "Loading existing database and checking rows...";
+    document.getElementById("previewList").innerHTML = "";
+
+    try {
+      await loadExistingMistakes();
+    } catch (err) {
+      status.innerText = err.message;
+      return;
+    }
+
+    const parsed = parseRows(text);
+
+    previewRows = parsed.map(row => {
+      if (row.status === "bad") return row;
+
+      const classification = classifyRow(row, existingMistakes);
+
+      return {
+        ...row,
+        status: classification.status,
+        matches: classification.matches,
+        selected: classification.status === "new"
+      };
+    });
+
+    renderPreview();
+
+    const counts = {
+      new: previewRows.filter(r => r.status === "new").length,
+      duplicate: previewRows.filter(r => r.status === "duplicate").length,
+      related: previewRows.filter(r => r.status === "related").length,
+      uncertain: previewRows.filter(r => r.status === "uncertain").length,
+      bad: previewRows.filter(r => r.status === "bad").length
+    };
+
+    status.innerText =
+      `Preview complete.\n` +
+      `NEW: ${counts.new}\n` +
+      `DUPLICATE: ${counts.duplicate}\n` +
+      `RELATED: ${counts.related}\n` +
+      `UNCERTAIN: ${counts.uncertain}\n` +
+      `BAD ROWS: ${counts.bad}\n\n` +
+      `Only NEW rows are selected by default.`;
+  }
+
+  function renderPreview() {
+    const list = document.getElementById("previewList");
+
+    if (!previewRows.length) {
+      list.innerHTML = "";
+      return;
+    }
+
+    list.innerHTML = previewRows.map((row, index) => renderPreviewRow(row, index)).join("");
+  }
+
+  function renderPreviewRow(row, index) {
+    if (row.status === "bad") {
+      return `
+        <div class="row">
+          <span class="pill bad">BAD ROW</span>
+          <div class="row-title">Row ${row.rowNumber}</div>
+          <div class="summary">${escapeHtml(row.error)}</div>
+          <div class="small">${escapeHtml(row.raw)}</div>
+        </div>
+      `;
+    }
+
+    const pillClass = row.status;
+    const label = row.status.toUpperCase();
+
+    return `
+      <div class="row">
+        <span class="pill ${pillClass}">${label}</span>
+
+        <div class="row-title">${escapeHtml(row.title || "Untitled")}</div>
+
+        <div class="meta">
+          ${escapeHtml(row.sport || "")}
+          ${row.year ? " • " + escapeHtml(row.year) : ""}
+          ${row.category ? " • " + escapeHtml(row.category) : ""}
+          ${row.subcategory ? " • " + escapeHtml(row.subcategory) : ""}
+        </div>
+
+        <div class="summary">${escapeHtml(row.summary || "")}</div>
+
+        <div class="controls">
+          <label>
+            <input type="checkbox" ${row.selected ? "checked" : ""} onchange="toggleSelected(${index}, this.checked)" />
+            Import this row
+          </label>
+        </div>
+
+        ${renderMatches(row.matches || [])}
+      </div>
+    `;
+  }
+
+  function renderMatches(matches) {
+    if (!matches || matches.length === 0) {
+      return `<div class="matches small">No close matches found.</div>`;
+    }
+
+    return `
+      <div class="matches">
+        <strong>Closest existing records:</strong>
+        ${matches.map(match => `
+          <div class="match">
+            <div class="match-title">${escapeHtml(match.existing.title || "Untitled")}</div>
+            <div class="meta">
+              ${escapeHtml(match.existing.sport || "")}
+              ${match.existing.year ? " • " + escapeHtml(match.existing.year) : ""}
+              ${match.existing.category ? " • " + escapeHtml(match.existing.category) : ""}
+            </div>
+            <div class="match-score">
+              Match: ${Math.round(match.score * 100)}%
+              | Title: ${Math.round(match.titleScore * 100)}%
+              | Full: ${Math.round(match.fullScore * 100)}%
+            </div>
+            <button class="clear-btn" onclick="window.open('mistake.html?id=${match.existing.id}', '_blank')">Open Existing</button>
+          </div>
+        `).join("")}
+      </div>
+    `;
+  }
+
+  function toggleSelected(index, checked) {
+    if (!previewRows[index]) return;
+    previewRows[index].selected = checked;
+  }
+
+  function selectNewOnly() {
+    previewRows = previewRows.map(row => ({
+      ...row,
+      selected: row.status === "new"
+    }));
+
+    renderPreview();
+    document.getElementById("status").innerText = "Selected NEW rows only.";
+  }
+
+  async function importSelected() {
+    const status = document.getElementById("status");
+
+    if (!previewRows.length) {
+      alert("Preview rows first.");
+      return;
+    }
+
+    const selected = previewRows
+      .filter(row => row.selected && row.status !== "bad")
+      .map(row => ({
+        title: row.title,
+        sport: row.sport,
+        year: row.year,
+        category: row.category,
+        subcategory: row.subcategory,
+        teams_people: row.teams_people,
+        summary: row.summary,
+        why_it_matters: row.why_it_matters,
+        controversy_score: row.controversy_score,
+        source_1: row.source_1,
+        source_2: row.source_2
+      }));
+
+    if (!selected.length) {
+      alert("No rows selected for import.");
+      return;
+    }
+
+    const riskCount = previewRows.filter(row =>
+      row.selected && (row.status === "duplicate" || row.status === "related" || row.status === "uncertain")
+    ).length;
+
+    let warning = `Import ${selected.length} selected row${selected.length === 1 ? "" : "s"}?`;
+
+    if (riskCount > 0) {
+      warning += `\n\nWarning: ${riskCount} selected row${riskCount === 1 ? "" : "s"} were flagged as duplicate, related, or uncertain.`;
+    }
+
+    const ok = confirm(warning);
+    if (!ok) return;
+
+    status.innerText = "Importing selected rows...";
+
+    const { data, error } = await client
+      .from("mistakes")
+      .insert(selected)
+      .select();
+
+    if (error) {
+      console.error(error);
+      status.innerText = "Import failed. Check Supabase policies and row formatting.";
+      return;
+    }
+
+    status.innerText = `Import complete. ${selected.length} row${selected.length === 1 ? "" : "s"} added.`;
+
+    await loadExistingMistakes();
+
+    previewRows = previewRows.map(row => {
+      if (row.selected && row.status !== "bad") {
+        return { ...row, selected: false, status: "duplicate" };
+      }
+      return row;
+    });
+
+    renderPreview();
+  }
+
+  function clearPreview() {
+    previewRows = [];
+    document.getElementById("previewList").innerHTML = "";
+    document.getElementById("status").innerText = "Paste rows and click Preview.";
+  }
+
+  function escapeHtml(value) {
+    return String(value)
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#039;");
+  }
+</script>
+</body>
+</html>
