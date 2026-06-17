@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Admin Mistakes | SportsMistakes</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    body{margin:0;font-family:Arial,sans-serif;background:#07111f;color:#fff}
+    .top-nav{display:flex;justify-content:space-between;align-items:center;background:#0d1b2e;border-bottom:1px solid #203852;padding:14px 20px}
+    .nav-brand{font-weight:bold;font-size:20px;color:#fff;cursor:pointer}.nav-links a{color:#74b9ff;text-decoration:none;font-weight:bold;margin-left:18px}.nav-links a:hover{color:#ffcc00}
+    .container{max-width:1150px;margin:35px auto 60px;padding:0 20px}.sub{color:#b7c7d9;line-height:1.5;margin-bottom:22px}
+    .admin-box,.mistake-row{background:#0d1b2e;border:1px solid #203852;border-radius:16px;padding:20px;margin-bottom:16px}
+    .search-row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+    input,select,textarea{padding:12px;border-radius:8px;border:1px solid #203852;background:#07111f;color:white;font-size:15px;box-sizing:border-box}
+    input{flex:1;min-width:240px}select{min-width:170px}
+    button{padding:11px 14px;border:none;border-radius:8px;color:white;font-weight:bold;cursor:pointer;margin-right:8px;margin-top:8px}
+    .search-btn{background:#1e90ff}.save-btn{background:#166534}.delete-btn{background:#8b1e1e}.open-btn{background:#444}.cancel-btn{background:#6b5b1e}
+    .status{color:#ffcc00;margin:12px 0;white-space:pre-wrap}.mistake-list{display:grid;gap:12px}
+    .mistake-title{font-size:20px;font-weight:bold;margin-bottom:6px}.meta{color:#9fb2c7;font-size:14px;margin-bottom:10px}.summary{color:#d8e4f2;line-height:1.45;font-size:15px}
+    .edit-form{display:none;margin-top:15px;padding-top:15px;border-top:1px solid #203852}.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}.form-full{grid-column:1/-1}
+    label{display:block;color:#d8e4f2;font-weight:bold;margin-bottom:6px;font-size:14px}textarea{width:100%;min-height:90px;resize:vertical}.form-grid input,.form-grid select{width:100%}
+    @media(max-width:760px){.form-grid{grid-template-columns:1fr}.nav-links a{margin-left:10px;font-size:14px}}
+  </style>
+</head>
+<body>
+<nav class="top-nav">
+  <div class="nav-brand" onclick="window.location.href='index.html'">SportsMistakes Admin</div>
+  <div class="nav-links">
+    <a href="index.html">Home</a>
+    <a href="admin-submissions.html">Submissions</a>
+    <a href="duplicate-finder.html">Duplicates</a>
+    <a href="bulk-import.html">Bulk Import</a>
+  </div>
+</nav>
+
+<div class="container">
+  <h1>Admin Mistakes</h1>
+  <p class="sub">Search, edit, open, or delete existing SportsMistakes records. Use carefully — deleting a mistake cannot be undone.</p>
+
+  <div class="admin-box">
+    <div class="search-row">
+      <input id="searchInput" type="text" placeholder="Search title, teams, people, summary..." />
+      <select id="sportFilter">
+        <option value="">All Sports</option><option value="NFL">NFL</option><option value="NHL">NHL</option><option value="NBA">NBA</option><option value="MLB">MLB</option><option value="Soccer">Soccer</option><option value="Olympics">Olympics</option><option value="Tennis">Tennis</option><option value="Golf">Golf</option><option value="NCAA">NCAA</option><option value="F1">F1</option><option value="Boxing">Boxing</option>
+      </select>
+      <select id="categoryFilter">
+        <option value="">All Categories</option><option value="Coaching Mistake">Coaching Mistake</option><option value="Referee Mistake">Referee Mistake</option><option value="Player Mistake">Player Mistake</option><option value="Front Office Mistake">Front Office Mistake</option><option value="Ownership Mistake">Ownership Mistake</option><option value="League Mistake">League Mistake</option><option value="Fan Interference">Fan Interference</option><option value="Team Mistake">Team Mistake</option>
+      </select>
+      <button class="search-btn" onclick="renderMistakes()">Search</button>
+    </div>
+    <div id="status" class="status">Loading mistakes...</div>
+  </div>
+
+  <div id="mistakeList" class="mistake-list"></div>
+</div>
+
+<script>
+  const SUPABASE_URL="https://scwjlljurircxuufhqih.supabase.co";
+  const SUPABASE_ANON_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNjd2psbGp1cmlyY3h1dWZocWloIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyNjUyMjcsImV4cCI6MjA5Njg0MTIyN30.WF0HRRb9mAkuOySjabTd8CZXVZRqF0MhMl0N2mafnns";
+  const client=supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
+  let mistakes=[];
+
+  async function loadMistakes(){
+    const {data,error}=await client.from("mistakes").select("*").order("title",{ascending:true});
+    if(error){console.error(error);document.getElementById("status").innerText="Could not load mistakes.";return}
+    mistakes=data||[];renderMistakes();
+  }
+
+  function renderMistakes(){
+    const list=document.getElementById("mistakeList"),status=document.getElementById("status");
+    const search=document.getElementById("searchInput").value.toLowerCase().trim();
+    const sport=document.getElementById("sportFilter").value;
+    const category=document.getElementById("categoryFilter").value;
+    const filtered=mistakes.filter(m=>{
+      const text=`${m.title||""} ${m.sport||""} ${m.category||""} ${m.subcategory||""} ${m.teams_people||""} ${m.summary||""} ${m.why_it_matters||""}`.toLowerCase();
+      return (!search||text.includes(search))&&(!sport||m.sport===sport)&&(!category||m.category===category);
+    });
+    status.innerText=`${filtered.length} mistake${filtered.length===1?"":"s"} shown.`;
+    list.innerHTML=filtered.slice(0,100).map(m=>renderMistakeRow(m)).join("");
+    if(filtered.length>100)status.innerText+="\nShowing first 100 results. Search or filter to narrow the list.";
+  }
+
+  function renderMistakeRow(m){
+    return `
+      <div class="mistake-row" id="row-${m.id}">
+        <div class="mistake-title">${escapeHtml(m.title||"Untitled Mistake")}</div>
+        <div class="meta">${escapeHtml(m.sport||"")}${m.year?" • "+escapeHtml(m.year):""}${m.category?" • "+escapeHtml(m.category):""}${m.subcategory?" • "+escapeHtml(m.subcategory):""}${m.views?" • 👁 "+escapeHtml(m.views):""}</div>
+        <div class="summary">${escapeHtml(m.summary||"No summary added.")}</div>
+        <button class="open-btn" onclick="window.open('mistake.html?id=${m.id}','_blank')">Open</button>
+        <button class="search-btn" onclick="toggleEdit('${m.id}')">Edit</button>
+        <button class="delete-btn" onclick="deleteMistake('${m.id}','${escapeJs(m.title||"")}')">Delete</button>
+        <div class="edit-form" id="edit-${m.id}">
+          <div class="form-grid">
+            <div><label>Title</label><input id="title-${m.id}" value="${escapeAttribute(m.title||"")}" /></div>
+            <div><label>Sport</label><input id="sport-${m.id}" value="${escapeAttribute(m.sport||"")}" /></div>
+            <div><label>Year</label><input id="year-${m.id}" value="${escapeAttribute(m.year||"")}" /></div>
+            <div><label>Category</label><input id="category-${m.id}" value="${escapeAttribute(m.category||"")}" /></div>
+            <div><label>Subcategory</label><input id="subcategory-${m.id}" value="${escapeAttribute(m.subcategory||"")}" /></div>
+            <div><label>Controversy Score</label><input id="score-${m.id}" type="number" min="0" max="100" value="${escapeAttribute(m.controversy_score||0)}" /></div>
+            <div class="form-full"><label>Teams / People</label><input id="teams-${m.id}" value="${escapeAttribute(m.teams_people||"")}" /></div>
+            <div class="form-full"><label>Summary</label><textarea id="summary-${m.id}">${escapeHtml(m.summary||"")}</textarea></div>
+            <div class="form-full"><label>Why It Matters</label><textarea id="why-${m.id}">${escapeHtml(m.why_it_matters||"")}</textarea></div>
+            <div class="form-full"><label>Source 1</label><input id="source1-${m.id}" value="${escapeAttribute(m.source_1||"")}" /></div>
+            <div class="form-full"><label>Source 2</label><input id="source2-${m.id}" value="${escapeAttribute(m.source_2||"")}" /></div>
+          </div>
+          <button class="save-btn" onclick="saveMistake('${m.id}')">Save Changes</button>
+          <button class="cancel-btn" onclick="toggleEdit('${m.id}')">Cancel</button>
+        </div>
+      </div>`;
+  }
+
+  function toggleEdit(id){const form=document.getElementById("edit-"+id);if(!form)return;form.style.display=form.style.display==="block"?"none":"block";}
+
+  async function saveMistake(id){
+    const updated={
+      title:document.getElementById("title-"+id).value.trim(),
+      sport:document.getElementById("sport-"+id).value.trim(),
+      year:Number(document.getElementById("year-"+id).value)||null,
+      category:document.getElementById("category-"+id).value.trim(),
+      subcategory:document.getElementById("subcategory-"+id).value.trim(),
+      teams_people:document.getElementById("teams-"+id).value.trim(),
+      summary:document.getElementById("summary-"+id).value.trim(),
+      why_it_matters:document.getElementById("why-"+id).value.trim(),
+      controversy_score:Number(document.getElementById("score-"+id).value)||0,
+      source_1:document.getElementById("source1-"+id).value.trim(),
+      source_2:document.getElementById("source2-"+id).value.trim()
+    };
+    if(!confirm("Save changes to this mistake?"))return;
+    const {error}=await client.from("mistakes").update(updated).eq("id",id);
+    if(error){console.error(error);alert("Save failed. Run the admin mistakes SQL policies if needed.");return}
+    alert("Mistake updated.");await loadMistakes();
+  }
+
+  async function deleteMistake(id,title){
+    if(!confirm("Delete this mistake?\n\n"+title+"\n\nThis cannot be undone."))return;
+    const {error}=await client.from("mistakes").delete().eq("id",id);
+    if(error){console.error(error);alert("Delete failed. Run the admin mistakes SQL policies if needed.");return}
+    alert("Mistake deleted.");mistakes=mistakes.filter(m=>m.id!==id);renderMistakes();
+  }
+
+  function escapeHtml(value){return String(value).replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;")}
+  function escapeAttribute(value){return escapeHtml(value).replaceAll("\\n"," ")}
+  function escapeJs(value){return String(value).replaceAll("\\","\\\\").replaceAll("'","\\'")}
+
+  document.getElementById("searchInput").addEventListener("input",renderMistakes);
+  document.getElementById("sportFilter").addEventListener("change",renderMistakes);
+  document.getElementById("categoryFilter").addEventListener("change",renderMistakes);
+  loadMistakes();
+</script>
+</body>
+</html>
