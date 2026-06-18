@@ -168,7 +168,10 @@
       "the", "a", "an", "and", "or", "of", "to", "in", "on", "for",
       "vs", "v", "game", "mistake", "error", "incident", "controversy",
       "collapse", "disaster", "blunder", "ball", "through", "with", "from",
-      "into", "his", "her", "their", "team", "teams", "play", "player"
+      "into", "his", "her", "their", "team", "teams", "play", "player",
+      "bad", "taken", "away", "cost", "costs", "tying", "tie", "late",
+      "goal", "call", "called", "offside", "offsides", "penalty", "review",
+      "ref", "referee", "official", "officials"
     ]);
 
     return normalizeTitle(text)
@@ -193,10 +196,21 @@
     return matches / Math.max(setA.size, setB.size);
   }
 
-  async function findPossibleDuplicate(title, description) {
+  function combinedMistakeText(old) {
+    return `
+      ${old.title || ""}
+      ${old.sport || ""}
+      ${old.year || ""}
+      ${old.teams_people || ""}
+      ${old.summary || ""}
+      ${old.why_it_matters || ""}
+    `;
+  }
+
+  async function findPossibleDuplicate(title, description, sport, category) {
     const { data, error } = await client
       .from("mistakes")
-      .select("title,sport,year,teams_people,summary,why_it_matters")
+      .select("title,sport,year,category,teams_people,summary,why_it_matters")
       .limit(3000);
 
     if (error) {
@@ -204,18 +218,15 @@
       return null;
     }
 
-    const submissionText = `${title} ${description}`;
-    const submissionNormalized = normalizeTitle(submissionText);
+    const submissionText = `${title} ${sport || ""} ${category || ""} ${description}`;
     const submissionWords = getImportantWords(submissionText);
 
-    for (const old of data || []) {
-      const oldText = `
-        ${old.title || ""}
-        ${old.teams_people || ""}
-        ${old.summary || ""}
-        ${old.why_it_matters || ""}
-      `;
+    let bestMatch = null;
+    let bestScore = 0;
+    let bestDetails = null;
 
+    for (const old of data || []) {
+      const oldText = combinedMistakeText(old);
       const oldNormalized = normalizeTitle(oldText);
 
       const titleScore = similarityScore(title, old.title || "");
@@ -225,22 +236,56 @@
         word.length >= 5 && oldNormalized.includes(word)
       );
 
-      const hasStrongNameMatch = sharedImportantWords.length >= 1;
-      const hasMultipleWordMatch = sharedImportantWords.length >= 2;
-
       const phraseMatch =
-        submissionNormalized.length > 12 &&
-        oldNormalized.includes(submissionNormalized);
+        normalizeTitle(title).length > 12 &&
+        oldNormalized.includes(normalizeTitle(title));
 
-      if (
-        titleScore >= 0.45 ||
-        fullTextScore >= 0.28 ||
-        phraseMatch ||
-        hasMultipleWordMatch ||
-        (hasStrongNameMatch && fullTextScore >= 0.16)
-      ) {
-        return old;
+      const sameSport = sport && old.sport && sport === old.sport;
+      const sameCategory = category && old.category && category === old.category;
+
+      const score =
+        (titleScore * 0.60) +
+        (fullTextScore * 0.30) +
+        (sameSport ? 0.06 : 0) +
+        (sameCategory ? 0.04 : 0);
+
+      if (score > bestScore) {
+        bestScore = score;
+        bestMatch = old;
+        bestDetails = {
+          score,
+          titleScore,
+          fullTextScore,
+          sharedImportantWords,
+          phraseMatch,
+          sameSport,
+          sameCategory
+        };
       }
+    }
+
+    if (!bestMatch || !bestDetails) return null;
+
+    const highConfidence =
+      bestDetails.phraseMatch ||
+      bestDetails.titleScore >= 0.70 ||
+      bestDetails.fullTextScore >= 0.50 ||
+      (bestDetails.sameSport && bestDetails.titleScore >= 0.58 && bestDetails.fullTextScore >= 0.30);
+
+    const possible =
+      bestScore >= 0.42 ||
+      bestDetails.titleScore >= 0.45 ||
+      bestDetails.fullTextScore >= 0.35 ||
+      (bestDetails.sameSport && bestDetails.sharedImportantWords.length >= 2 && bestDetails.fullTextScore >= 0.25);
+
+    if (highConfidence || possible) {
+      return {
+        ...bestMatch,
+        duplicate_strength: highConfidence ? "high" : "possible",
+        match_score: Math.round(bestScore * 100),
+        title_score: Math.round(bestDetails.titleScore * 100),
+        full_score: Math.round(bestDetails.fullTextScore * 100)
+      };
     }
 
     return null;
@@ -283,16 +328,32 @@
 
     message.innerText = "Checking for possible duplicates...";
 
-    const possibleDuplicate = await findPossibleDuplicate(title, description);
+    const possibleDuplicate = await findPossibleDuplicate(title, description, sport, category);
 
     if (possibleDuplicate) {
-      message.innerText =
-        `Possible duplicate found: "${possibleDuplicate.title}" (${possibleDuplicate.sport || ""} ${possibleDuplicate.year || ""}).\n\n` +
-        `Please search the database before submitting.`;
-      return;
+      const strengthText =
+        possibleDuplicate.duplicate_strength === "high"
+          ? "This looks like a strong possible duplicate."
+          : "This may be related or a possible duplicate.";
+
+      const proceed = confirm(
+        `${strengthText}\n\n` +
+        `Closest existing record:\n` +
+        `"${possibleDuplicate.title}" (${possibleDuplicate.sport || ""} ${possibleDuplicate.year || ""})\n\n` +
+        `Match score: ${possibleDuplicate.match_score || 0}%\n\n` +
+        `If this is truly a different event, click OK and it will still go to the admin review queue.\n\n` +
+        `If it is the same event, click Cancel.`
+      );
+
+      if (!proceed) {
+        message.innerText =
+          `Possible duplicate found: "${possibleDuplicate.title}" (${possibleDuplicate.sport || ""} ${possibleDuplicate.year || ""}).\n\n` +
+          `Submission cancelled. Please search the database before submitting.`;
+        return;
+      }
     }
 
-    message.innerText = "Submitting...";
+    message.innerText = "Submitting to review queue...";
 
     const { error } = await client
       .from("mistake_submissions")
