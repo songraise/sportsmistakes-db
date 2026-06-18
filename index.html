@@ -179,6 +179,20 @@
     <option value="NCAA">NCAA</option>
     <option value="F1">F1</option>
     <option value="Boxing">Boxing</option>
+    <option value="Horse Racing">Horse Racing</option>
+    <option value="Curling">Curling</option>
+    <option value="Lacrosse">Lacrosse</option>
+    <option value="Sailing">Sailing</option>
+    <option value="Paralympics">Paralympics</option>
+    <option value="Track">Track</option>
+    <option value="Cycling">Cycling</option>
+    <option value="Running">Running</option>
+    <option value="CFL">CFL</option>
+    <option value="Rugby">Rugby</option>
+    <option value="Cricket">Cricket</option>
+    <option value="UFC">UFC</option>
+    <option value="Wrestling">Wrestling</option>
+    <option value="Other">Other</option>
   </select>
   <select id="categoryFilter">
     <option value="">All Categories</option>
@@ -217,41 +231,79 @@
     }
   }
 
-  async function loadMistakes() {
-    const { data, error } = await client
-      .from("mistakes")
-      .select("*")
-      .order("controversy_score", { ascending: false });
+  async function fetchAllMistakes() {
+    const pageSize = 500;
+    let from = 0;
+    let allRows = [];
 
-    if (error) {
+    while (true) {
+      const { data, error } = await client
+        .from("mistakes")
+        .select("*")
+        .order("controversy_score", { ascending: false })
+        .range(from, from + pageSize - 1);
+
+      if (error) {
+        throw error;
+      }
+
+      const rows = data || [];
+      allRows = allRows.concat(rows);
+
+      if (rows.length < pageSize) {
+        break;
+      }
+
+      from += pageSize;
+    }
+
+    return allRows;
+  }
+
+  async function loadMistakes() {
+    try {
+      mistakes = await fetchAllMistakes();
+    } catch (error) {
       document.getElementById("stats").innerText = "Error loading mistakes.";
       console.error(error);
       return;
     }
 
-    mistakes = data || [];
     applySearchFromUrl();
     renderMistakes();
     renderMostViewed();
     renderFeaturedMistake();
     await renderTrendingDebate();
+    renderSiteStatsFromLoadedData();
+  }
+
+  function renderSiteStatsFromLoadedData(voteCount = null, pendingCount = null) {
+    const statsBox = document.getElementById("siteStats");
+    if (!statsBox) return;
+
+    const votesDisplay = voteCount === null ? "…" : voteCount;
+    const pendingDisplay = pendingCount === null ? "…" : pendingCount;
+
+    statsBox.innerHTML = `
+      <div class="stat-box"><span class="stat-number">${mistakes.length || 0}</span><span class="stat-label">Mistakes</span></div>
+      <div class="stat-box"><span class="stat-number">${votesDisplay}</span><span class="stat-label">Fan Votes</span></div>
+      <div class="stat-box"><span class="stat-number">${pendingDisplay}</span><span class="stat-label">Pending Reviews</span></div>
+    `;
   }
 
   async function loadSiteStats() {
     const statsBox = document.getElementById("siteStats");
     if (!statsBox) return;
 
-    const [mistakesResult, votesResult, submissionsResult] = await Promise.all([
-      client.from("mistakes").select("id", { count: "exact", head: true }),
+    const [votesResult, submissionsResult] = await Promise.all([
       client.from("mistake_votes").select("id", { count: "exact", head: true }),
       client.from("mistake_submissions").select("id", { count: "exact", head: true }).eq("status", "pending")
     ]);
 
-    statsBox.innerHTML = `
-      <div class="stat-box"><span class="stat-number">${mistakesResult.count || 0}</span><span class="stat-label">Mistakes</span></div>
-      <div class="stat-box"><span class="stat-number">${votesResult.count || 0}</span><span class="stat-label">Fan Votes</span></div>
-      <div class="stat-box"><span class="stat-number">${submissionsResult.count || 0}</span><span class="stat-label">Pending Reviews</span></div>
-    `;
+    renderSiteStatsFromLoadedData(
+      votesResult.count || 0,
+      submissionsResult.count || 0
+    );
   }
 
   function renderFeaturedMistake() {
@@ -410,8 +462,7 @@
   document.getElementById("sportFilter").addEventListener("change", renderMistakes);
   document.getElementById("categoryFilter").addEventListener("change", renderMistakes);
 
-  loadMistakes();
-  loadSiteStats();
+  loadMistakes().then(loadSiteStats);
 </script>
 </body>
 </html>
