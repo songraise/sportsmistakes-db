@@ -62,7 +62,7 @@
 <div class="container">
   <h1>Smart Bulk Import</h1>
   <p class="sub">
-    Paste bulk rows, preview them first, and automatically flag likely duplicates or related records before importing.
+    Paste bulk rows, preview them first, and aggressively flag likely duplicates, related records, and uncertain records before importing.
     This prevents hundreds of cleanup items after upload.
   </p>
 
@@ -181,23 +181,44 @@
       return { status: "new", matches: [] };
     }
 
+    /*
+      More aggressive SportsMistakes matching rules.
+
+      Goal:
+      - Catch same-event duplicate names earlier.
+      - Push borderline same-sport/same-year records into RELATED or UNCERTAIN.
+      - Keep truly different events as NEW.
+
+      Examples this should catch better:
+      - Hand of God / Maradona Hand of God
+      - Bill Buckner Error / Buckner Ball Through Legs
+      - Tuck Rule / Tuck Rule Game
+      - Leon Lett Thanksgiving / Leon Lett Snow Game
+    */
+
     if (
-      best.titleScore >= 0.78 ||
-      best.score >= 0.70 ||
-      (best.sameSport && best.sameYear && best.titleScore >= 0.58)
+      best.titleScore >= 0.62 ||
+      best.score >= 0.58 ||
+      (best.sameSport && best.sameYear && best.titleScore >= 0.42) ||
+      (best.sameSport && best.sameYear && best.fullScore >= 0.36)
     ) {
       return { status: "duplicate", matches };
     }
 
     if (
-      best.score >= 0.45 ||
-      (best.sameSport && best.sameYear && best.fullScore >= 0.32) ||
-      (best.sameSport && best.titleScore >= 0.42)
+      best.score >= 0.34 ||
+      best.titleScore >= 0.36 ||
+      (best.sameSport && best.sameYear && best.fullScore >= 0.24) ||
+      (best.sameSport && best.titleScore >= 0.30)
     ) {
       return { status: "related", matches };
     }
 
-    if (best.score >= 0.35) {
+    if (
+      best.score >= 0.25 ||
+      best.titleScore >= 0.28 ||
+      best.fullScore >= 0.24
+    ) {
       return { status: "uncertain", matches };
     }
 
