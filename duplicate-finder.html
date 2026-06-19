@@ -4,7 +4,8 @@
   <meta charset="UTF-8" />
   <title>Duplicate Finder | SportsMistakes</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="admin-auth.js"></script>
 
   <style>
     body { margin:0; font-family:Arial,sans-serif; background:#07111f; color:#fff; }
@@ -56,8 +57,9 @@
     or <strong>Ignore</strong> for false positives.
   </p>
 
-  <button class="scan" onclick="findDuplicates()">Scan for Duplicates</button>
-
+<button id="scanButton" class="scan" disabled onclick="findDuplicates()">
+  Scan for Duplicates
+</button>
   <div class="filters">
     <select id="minimumScore">
       <option value="0.38">Normal scan</option>
@@ -66,7 +68,7 @@
     </select>
   </div>
 
-  <div id="message" class="message">Click scan to begin.</div>
+<div id="message" class="message">Checking admin access...</div>
   <div id="results"></div>
 </div>
 
@@ -367,7 +369,11 @@
   function escapeJs(value) {
     return String(value).replaceAll("\\", "\\\\").replaceAll("'", "\\'");
   }
-</script>
+requireSportsMistakesAdmin(client).then(ok => {
+  if (ok) {
+    document.getElementById("message").innerText =
+      "Click scan to begin.";
 
-</body>
-</html>
+    document.getElementById("scanButton").disabled = false;
+  }
+});
