@@ -4,7 +4,8 @@
   <meta charset="UTF-8" />
   <title>Admin Mistakes | SportsMistakes</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+ <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="admin-auth.js"></script>
   <style>
     body{margin:0;font-family:Arial,sans-serif;background:#07111f;color:#fff}
     .top-nav{display:flex;justify-content:space-between;align-items:center;background:#0d1b2e;border-bottom:1px solid #203852;padding:14px 20px}
@@ -49,7 +50,7 @@
       </select>
       <button class="search-btn" onclick="renderMistakes()">Search</button>
     </div>
-    <div id="status" class="status">Loading mistakes...</div>
+    <div id="status" class="status">Checking admin access...</div>
   </div>
 
   <div id="mistakeList" class="mistake-list"></div>
@@ -146,7 +147,9 @@
   document.getElementById("searchInput").addEventListener("input",renderMistakes);
   document.getElementById("sportFilter").addEventListener("change",renderMistakes);
   document.getElementById("categoryFilter").addEventListener("change",renderMistakes);
-  loadMistakes();
+ requireSportsMistakesAdmin(client).then(ok => {
+  if (ok) loadMistakes();
+});
 </script>
 </body>
 </html>
