@@ -18,7 +18,7 @@
     .box{background:#0d1b2e;border:1px solid #203852;border-radius:16px;padding:20px;margin-bottom:20px}
     textarea{width:100%;min-height:220px;box-sizing:border-box;border-radius:10px;border:1px solid #203852;background:#07111f;color:#fff;padding:14px;font-size:14px;line-height:1.45}
     button{border:none;border-radius:8px;padding:12px 15px;margin-right:8px;margin-top:12px;font-weight:bold;cursor:pointer;color:#fff}
-    .preview-btn{background:#1e90ff}
+    button:disabled{opacity:0.45;cursor:not-allowed}.preview-btn{background:#1e90ff}
     .import-btn{background:#166534}
     .clear-btn{background:#444}
     .skip-btn{background:#6b5b1e}
@@ -75,10 +75,10 @@
 
     <textarea id="bulkText" placeholder="Bill Buckner Error | MLB | 1986 | Player Mistake | Fielding Error | Boston Red Sox, New York Mets | Buckner let Mookie Wilson's grounder go through his legs... | One of the most famous baseball mistakes ever. | 100 | https://..."></textarea>
 
-    <button class="preview-btn" onclick="previewImport()">Preview & Flag Duplicates</button>
-    <button class="import-btn" onclick="importSelected()">Import Selected New Rows</button>
-    <button class="skip-btn" onclick="selectNewOnly()">Select New Only</button>
-    <button class="clear-btn" onclick="clearPreview()">Clear</button>
+    <button id="previewButton" class="preview-btn" disabled onclick="previewImport()">Preview & Flag Duplicates</button>
+    <button id="importButton" class="import-btn" disabled onclick="importSelected()">Import Selected New Rows</button>
+    <button id="selectNewButton" class="skip-btn" disabled onclick="selectNewOnly()">Select New Only</button>
+    <button id="clearButton" class="clear-btn" disabled onclick="clearPreview()">Clear</button>
 
     <div class="legend">
       <span class="pill new">NEW: safe to import</span>
@@ -88,7 +88,7 @@
       <span class="pill bad">BAD ROW: formatting issue</span>
     </div>
 
-    <div id="status" class="status">Paste rows and click Preview.</div>
+    <div id="status" class="status">Checking admin access...</div>
   </div>
 
   <div id="previewList" class="preview-grid"></div>
@@ -99,6 +99,46 @@
   const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNjd2psbGp1cmlyY3h1dWZocWloIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyNjUyMjcsImV4cCI6MjA5Njg0MTIyN30.WF0HRRb9mAkuOySjabTd8CZXVZRqF0MhMl0N2mafnns";
 
   const client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  const SPORTS_MISTAKES_ADMIN_EMAIL = "jason.susnick@gmail.com";
+
+  async function requireSportsMistakesAdminInline() {
+    const { data, error } = await client.auth.getSession();
+    const session = data && data.session;
+
+    if (error) {
+      console.error(error);
+    }
+
+    if (!session) {
+      window.location.href = "admin-login.html?redirect=smart-bulk-import.html";
+      return false;
+    }
+
+    const email = (session.user && session.user.email ? session.user.email : "").toLowerCase();
+
+    if (email !== SPORTS_MISTAKES_ADMIN_EMAIL.toLowerCase()) {
+      document.body.innerHTML = `
+        <div style="max-width:600px;margin:80px auto;background:#0d1b2e;color:white;border:1px solid #203852;border-radius:16px;padding:24px;font-family:Arial,sans-serif;">
+          <h1>Admin Access Denied</h1>
+          <p>You are signed in as <strong>${email || "unknown"}</strong>.</p>
+          <p>This admin page is restricted.</p>
+          <a href="admin-login.html" style="color:#74b9ff;">Log in as admin</a>
+        </div>
+      `;
+      return false;
+    }
+
+    return true;
+  }
+
+  function enableAdminControls() {
+    document.getElementById("previewButton").disabled = false;
+    document.getElementById("importButton").disabled = false;
+    document.getElementById("selectNewButton").disabled = false;
+    document.getElementById("clearButton").disabled = false;
+    document.getElementById("status").innerText = "Paste rows and click Preview.";
+  }
 
   let existingMistakes = [];
   let previewRows = [];
@@ -513,6 +553,12 @@
       .replaceAll('"', "&quot;")
       .replaceAll("'", "&#039;");
   }
+  requireSportsMistakesAdminInline().then(ok => {
+    if (ok) {
+      enableAdminControls();
+    }
+  });
+
 </script>
 </body>
 </html>
