@@ -41,7 +41,7 @@ const client=supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
 
 function getRedirectTarget(){
   const params=new URLSearchParams(window.location.search);
-  return params.get("redirect") || "admin-submissions.html";
+  return params.get("redirect") || "admin-dashboard.html";
 }
 
 async function login(){
