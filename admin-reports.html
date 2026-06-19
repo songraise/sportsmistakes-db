@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Admin Reports | SportsMistakes</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    body{margin:0;font-family:Arial,sans-serif;background:#07111f;color:#fff}
+    .top-nav{display:flex;justify-content:space-between;align-items:center;background:#0d1b2e;border-bottom:1px solid #203852;padding:14px 20px}
+    .nav-brand{font-weight:bold;font-size:20px;color:#fff;cursor:pointer}.nav-links a{color:#74b9ff;text-decoration:none;font-weight:bold;margin-left:18px}
+    .container{max-width:1100px;margin:35px auto 60px;padding:0 20px}.sub{color:#b7c7d9;line-height:1.5}
+    .filters{display:flex;gap:10px;flex-wrap:wrap;margin:20px 0}select,input{padding:11px;border-radius:8px;border:1px solid #203852;background:#07111f;color:white;font-size:15px}input{flex:1;min-width:240px}
+    .status{color:#ffcc00;margin:12px 0;white-space:pre-wrap}.report-card{background:#0d1b2e;border:1px solid #203852;border-radius:14px;padding:18px;margin-bottom:14px}
+    .report-title{font-size:20px;font-weight:bold;margin-bottom:6px}.meta{color:#9fb2c7;font-size:14px;margin-bottom:10px}.type{display:inline-block;background:#6b5b1e;color:white;padding:5px 8px;border-radius:999px;font-size:12px;font-weight:bold;margin-bottom:10px}
+    .details{color:#d8e4f2;line-height:1.45;margin-top:8px}button{border:none;border-radius:8px;padding:10px 13px;margin-right:8px;margin-top:12px;color:white;font-weight:bold;cursor:pointer}
+    .open-btn{background:#444}.resolved-btn{background:#166534}.dismiss-btn{background:#8b1e1e}.review-btn{background:#1e90ff}
+    textarea{width:100%;box-sizing:border-box;margin-top:10px;min-height:70px;border-radius:8px;border:1px solid #203852;background:#07111f;color:white;padding:11px}
+  </style>
+</head>
+<body>
+<nav class="top-nav"><div class="nav-brand" onclick="window.location.href='index.html'">SportsMistakes Admin</div><div class="nav-links"><a href="index.html">Home</a><a href="admin-submissions.html">Submissions</a><a href="admin-mistakes.html">Mistakes</a><a href="duplicate-finder.html">Duplicates</a></div></nav>
+<div class="container"><h1>Issue Reports</h1><p class="sub">Review user reports about incorrect facts, duplicates, broken links, typos, or unsafe content.</p><div class="filters"><input id="searchInput" placeholder="Search reports or mistake titles..." /><select id="statusFilter"><option value="open">Open reports</option><option value="reviewing">Reviewing</option><option value="resolved">Resolved</option><option value="dismissed">Dismissed</option><option value="">All statuses</option></select></div><div id="status" class="status">Loading reports...</div><div id="reportsList"></div></div>
+<script>
+const SUPABASE_URL="https://scwjlljurircxuufhqih.supabase.co";
+const SUPABASE_ANON_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNjd2psbGp1cmlyY3h1dWZocWloIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyNjUyMjcsImV4cCI6MjA5Njg0MTIyN30.WF0HRRb9mAkuOySjabTd8CZXVZRqF0MhMl0N2mafnns";
+const client=supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);let reports=[];
+async function loadReports(){const {data,error}=await client.from("mistake_reports").select("*, mistakes(title,sport,year,category)").order("created_at",{ascending:false});if(error){console.error(error);document.getElementById("status").innerText="Could not load reports.";return}reports=data||[];renderReports();}
+function renderReports(){const list=document.getElementById("reportsList"),status=document.getElementById("status");const q=document.getElementById("searchInput").value.toLowerCase().trim();const statusFilter=document.getElementById("statusFilter").value;const filtered=reports.filter(r=>{const m=r.mistakes||{};const text=`${r.report_type||""} ${r.details||""} ${r.status||""} ${m.title||""} ${m.sport||""} ${m.year||""} ${m.category||""}`.toLowerCase();return(!q||text.includes(q))&&(!statusFilter||r.status===statusFilter)});status.innerText=`${filtered.length} report${filtered.length===1?"":"s"} shown.`;list.innerHTML=filtered.length?filtered.map(renderReportCard).join(""):`<div class="report-card">No reports found.</div>`;}
+function renderReportCard(r){const m=r.mistakes||{};return `<div class="report-card" id="report-${r.id}"><div class="type">${escapeHtml(r.report_type||"Issue")}</div><div class="report-title">${escapeHtml(m.title||"Unknown mistake")}</div><div class="meta">${escapeHtml(m.sport||"")}${m.year?" • "+escapeHtml(m.year):""}${m.category?" • "+escapeHtml(m.category):""} • Status: ${escapeHtml(r.status||"open")} • ${new Date(r.created_at).toLocaleString()}</div><div class="details">${escapeHtml(r.details||"")}</div><textarea id="notes-${r.id}" placeholder="Admin notes optional...">${escapeHtml(r.admin_notes||"")}</textarea><button class="open-btn" onclick="window.open('mistake.html?id=${r.mistake_id}','_blank')">Open Mistake</button><button class="review-btn" onclick="updateReport('${r.id}','reviewing')">Mark Reviewing</button><button class="resolved-btn" onclick="updateReport('${r.id}','resolved')">Mark Resolved</button><button class="dismiss-btn" onclick="updateReport('${r.id}','dismissed')">Dismiss</button></div>`}
+async function updateReport(id,newStatus){const notes=document.getElementById("notes-"+id)?.value||"";const {error}=await client.from("mistake_reports").update({status:newStatus,admin_notes:notes}).eq("id",id);if(error){console.error(error);alert("Update failed.");return}reports=reports.map(r=>r.id===id?{...r,status:newStatus,admin_notes:notes}:r);renderReports();}
+function escapeHtml(value){return String(value).replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;")}
+document.getElementById("searchInput").addEventListener("input",renderReports);document.getElementById("statusFilter").addEventListener("change",renderReports);loadReports();
+</script></body></html>
