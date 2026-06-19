@@ -4,8 +4,7 @@
   <meta charset="UTF-8" />
   <title>Duplicate Finder | SportsMistakes</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="admin-auth.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
     body { margin:0; font-family:Arial,sans-serif; background:#07111f; color:#fff; }
@@ -57,9 +56,8 @@
     or <strong>Ignore</strong> for false positives.
   </p>
 
-<button id="scanButton" class="scan" disabled onclick="findDuplicates()">
-  Scan for Duplicates
-</button>
+  <button id="scanButton" class="scan" disabled onclick="findDuplicates()">Scan for Duplicates</button>
+
   <div class="filters">
     <select id="minimumScore">
       <option value="0.38">Normal scan</option>
@@ -68,7 +66,7 @@
     </select>
   </div>
 
-<div id="message" class="message">Checking admin access...</div>
+  <div id="message" class="message">Checking admin access...</div>
   <div id="results"></div>
 </div>
 
@@ -77,6 +75,38 @@
   const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNjd2psbGp1cmlyY3h1dWZocWloIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyNjUyMjcsImV4cCI6MjA5Njg0MTIyN30.WF0HRRb9mAkuOySjabTd8CZXVZRqF0MhMl0N2mafnns";
 
   const client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  const SPORTS_MISTAKES_ADMIN_EMAIL = "jason.susnick@gmail.com";
+
+  async function requireSportsMistakesAdminInline() {
+    const { data, error } = await client.auth.getSession();
+    const session = data && data.session;
+
+    if (error) {
+      console.error(error);
+    }
+
+    if (!session) {
+      window.location.href = "admin-login.html?redirect=duplicate-finder.html";
+      return false;
+    }
+
+    const email = (session.user && session.user.email ? session.user.email : "").toLowerCase();
+
+    if (email !== SPORTS_MISTAKES_ADMIN_EMAIL.toLowerCase()) {
+      document.body.innerHTML = `
+        <div style="max-width:600px;margin:80px auto;background:#0d1b2e;color:white;border:1px solid #203852;border-radius:16px;padding:24px;font-family:Arial,sans-serif;">
+          <h1>Admin Access Denied</h1>
+          <p>You are signed in as <strong>${email || "unknown"}</strong>.</p>
+          <p>This admin page is restricted.</p>
+          <a href="admin-login.html" style="color:#74b9ff;">Log in as admin</a>
+        </div>
+      `;
+      return false;
+    }
+
+    return true;
+  }
 
   let mistakes = [];
 
@@ -369,11 +399,14 @@
   function escapeJs(value) {
     return String(value).replaceAll("\\", "\\\\").replaceAll("'", "\\'");
   }
-requireSportsMistakesAdmin(client).then(ok => {
-  if (ok) {
-    document.getElementById("message").innerText =
-      "Click scan to begin.";
+  requireSportsMistakesAdminInline().then(ok => {
+    if (ok) {
+      document.getElementById("message").innerText = "Click scan to begin.";
+      document.getElementById("scanButton").disabled = false;
+    }
+  });
 
-    document.getElementById("scanButton").disabled = false;
-  }
-});
+</script>
+
+</body>
+</html>
