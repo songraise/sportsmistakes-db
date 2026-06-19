@@ -19,16 +19,120 @@
   </style>
 </head>
 <body>
-<nav class="top-nav"><div class="nav-brand" onclick="window.location.href='index.html'">SportsMistakes Admin</div><div class="nav-links"><a href="index.html">Home</a><a href="admin-submissions.html">Submissions</a><a href="admin-mistakes.html">Mistakes</a><a href="duplicate-finder.html">Duplicates</a></div></nav>
-<div class="container"><h1>Issue Reports</h1><p class="sub">Review user reports about incorrect facts, duplicates, broken links, typos, or unsafe content.</p><div class="filters"><input id="searchInput" placeholder="Search reports or mistake titles..." /><select id="statusFilter"><option value="open">Open reports</option><option value="reviewing">Reviewing</option><option value="resolved">Resolved</option><option value="dismissed">Dismissed</option><option value="">All statuses</option></select></div><div id="status" class="status">Loading reports...</div><div id="reportsList"></div></div>
+<nav class="top-nav">
+  <div class="nav-brand" onclick="window.location.href='index.html'">SportsMistakes Admin</div>
+  <div class="nav-links">
+    <a href="index.html">Home</a>
+    <a href="admin-submissions.html">Submissions</a>
+    <a href="admin-mistakes.html">Mistakes</a>
+    <a href="duplicate-finder.html">Duplicates</a>
+  </div>
+</nav>
+
+<div class="container">
+  <h1>Issue Reports</h1>
+  <p class="sub">Review user reports about incorrect facts, duplicates, broken links, typos, or unsafe content.</p>
+  <div class="filters">
+    <input id="searchInput" placeholder="Search reports or mistake titles..." />
+    <select id="statusFilter">
+      <option value="open">Open reports</option>
+      <option value="reviewing">Reviewing</option>
+      <option value="resolved">Resolved</option>
+      <option value="dismissed">Dismissed</option>
+      <option value="">All statuses</option>
+    </select>
+  </div>
+  <div id="status" class="status">Loading reports...</div>
+  <div id="reportsList"></div>
+</div>
+
 <script>
 const SUPABASE_URL="https://scwjlljurircxuufhqih.supabase.co";
 const SUPABASE_ANON_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNjd2psbGp1cmlyY3h1dWZocWloIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyNjUyMjcsImV4cCI6MjA5Njg0MTIyN30.WF0HRRb9mAkuOySjabTd8CZXVZRqF0MhMl0N2mafnns";
-const client=supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);let reports=[];
-async function loadReports(){const {data,error}=await client.from("mistake_reports").select("*, mistakes(title,sport,year,category)").order("created_at",{ascending:false});if(error){console.error(error);document.getElementById("status").innerText="Could not load reports.";return}reports=data||[];renderReports();}
-function renderReports(){const list=document.getElementById("reportsList"),status=document.getElementById("status");const q=document.getElementById("searchInput").value.toLowerCase().trim();const statusFilter=document.getElementById("statusFilter").value;const filtered=reports.filter(r=>{const m=r.mistakes||{};const text=`${r.report_type||""} ${r.details||""} ${r.status||""} ${m.title||""} ${m.sport||""} ${m.year||""} ${m.category||""}`.toLowerCase();return(!q||text.includes(q))&&(!statusFilter||r.status===statusFilter)});status.innerText=`${filtered.length} report${filtered.length===1?"":"s"} shown.`;list.innerHTML=filtered.length?filtered.map(renderReportCard).join(""):`<div class="report-card">No reports found.</div>`;}
-function renderReportCard(r){const m=r.mistakes||{};return `<div class="report-card" id="report-${r.id}"><div class="type">${escapeHtml(r.report_type||"Issue")}</div><div class="report-title">${escapeHtml(m.title||"Unknown mistake")}</div><div class="meta">${escapeHtml(m.sport||"")}${m.year?" • "+escapeHtml(m.year):""}${m.category?" • "+escapeHtml(m.category):""} • Status: ${escapeHtml(r.status||"open")} • ${new Date(r.created_at).toLocaleString()}</div><div class="details">${escapeHtml(r.details||"")}</div><textarea id="notes-${r.id}" placeholder="Admin notes optional...">${escapeHtml(r.admin_notes||"")}</textarea><button class="open-btn" onclick="window.open('mistake.html?id=${r.mistake_id}','_blank')">Open Mistake</button><button class="review-btn" onclick="updateReport('${r.id}','reviewing')">Mark Reviewing</button><button class="resolved-btn" onclick="updateReport('${r.id}','resolved')">Mark Resolved</button><button class="dismiss-btn" onclick="updateReport('${r.id}','dismissed')">Dismiss</button></div>`}
-async function updateReport(id,newStatus){const notes=document.getElementById("notes-"+id)?.value||"";const {error}=await client.from("mistake_reports").update({status:newStatus,admin_notes:notes}).eq("id",id);if(error){console.error(error);alert("Update failed.");return}reports=reports.map(r=>r.id===id?{...r,status:newStatus,admin_notes:notes}:r);renderReports();}
-function escapeHtml(value){return String(value).replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;")}
-document.getElementById("searchInput").addEventListener("input",renderReports);document.getElementById("statusFilter").addEventListener("change",renderReports);loadReports();
-</script></body></html>
+const client=supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
+let reports=[];
+let mistakesById={};
+
+async function loadReports(){
+  document.getElementById("status").innerText="Loading reports...";
+
+  const reportsResult=await client
+    .from("mistake_reports")
+    .select("*")
+    .order("created_at",{ascending:false});
+
+  if(reportsResult.error){
+    console.error(reportsResult.error);
+    document.getElementById("status").innerText="Could not load reports. Check mistake_reports SELECT policy.";
+    return;
+  }
+
+  reports=reportsResult.data||[];
+  const ids=[...new Set(reports.map(r=>r.mistake_id).filter(Boolean))];
+  mistakesById={};
+
+  if(ids.length){
+    const mistakesResult=await client
+      .from("mistakes")
+      .select("id,title,sport,year,category")
+      .in("id",ids);
+
+    if(mistakesResult.error){
+      console.error(mistakesResult.error);
+    } else {
+      (mistakesResult.data||[]).forEach(m=>{mistakesById[m.id]=m;});
+    }
+  }
+
+  renderReports();
+}
+
+function renderReports(){
+  const list=document.getElementById("reportsList");
+  const status=document.getElementById("status");
+  const q=document.getElementById("searchInput").value.toLowerCase().trim();
+  const statusFilter=document.getElementById("statusFilter").value;
+
+  const filtered=reports.filter(r=>{
+    const m=mistakesById[r.mistake_id]||{};
+    const text=`${r.report_type||""} ${r.details||""} ${r.status||""} ${m.title||""} ${m.sport||""} ${m.year||""} ${m.category||""}`.toLowerCase();
+    return(!q||text.includes(q))&&(!statusFilter||r.status===statusFilter);
+  });
+
+  status.innerText=`${filtered.length} report${filtered.length===1?"":"s"} shown.`;
+  list.innerHTML=filtered.length?filtered.map(renderReportCard).join(""):`<div class="report-card">No reports found.</div>`;
+}
+
+function renderReportCard(r){
+  const m=mistakesById[r.mistake_id]||{};
+  return `<div class="report-card" id="report-${r.id}">
+    <div class="type">${escapeHtml(r.report_type||"Issue")}</div>
+    <div class="report-title">${escapeHtml(m.title||"Unknown mistake")}</div>
+    <div class="meta">${escapeHtml(m.sport||"")}${m.year?" • "+escapeHtml(m.year):""}${m.category?" • "+escapeHtml(m.category):""} • Status: ${escapeHtml(r.status||"open")} • ${new Date(r.created_at).toLocaleString()}</div>
+    <div class="details">${escapeHtml(r.details||"")}</div>
+    <textarea id="notes-${r.id}" placeholder="Admin notes optional...">${escapeHtml(r.admin_notes||"")}</textarea>
+    <button class="open-btn" onclick="window.open('mistake.html?id=${r.mistake_id}','_blank')">Open Mistake</button>
+    <button class="review-btn" onclick="updateReport('${r.id}','reviewing')">Mark Reviewing</button>
+    <button class="resolved-btn" onclick="updateReport('${r.id}','resolved')">Mark Resolved</button>
+    <button class="dismiss-btn" onclick="updateReport('${r.id}','dismissed')">Dismiss</button>
+  </div>`;
+}
+
+async function updateReport(id,newStatus){
+  const notes=document.getElementById("notes-"+id)?.value||"";
+  const {error}=await client.from("mistake_reports").update({status:newStatus,admin_notes:notes}).eq("id",id);
+  if(error){console.error(error);alert("Update failed. Check mistake_reports UPDATE policy.");return}
+  reports=reports.map(r=>r.id===id?{...r,status:newStatus,admin_notes:notes}:r);
+  renderReports();
+}
+
+function escapeHtml(value){
+  return String(value).replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;");
+}
+
+document.getElementById("searchInput").addEventListener("input",renderReports);
+document.getElementById("statusFilter").addEventListener("change",renderReports);
+loadReports();
+</script>
+</body>
+</html>
