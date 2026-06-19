@@ -14,11 +14,6 @@
     h1{font-size:34px;margin:10px 0}.meta{color:#9fb2c7;margin-bottom:12px;font-size:15px}.views{color:#ffcc00;font-weight:bold;margin-bottom:20px;font-size:15px}
     .section{margin-top:24px;padding-top:20px;border-top:1px solid #203852}.section h2{font-size:20px;margin-bottom:10px}p{color:#d8e4f2;line-height:1.6;font-size:16px}
     .vote-buttons{margin-top:15px}.vote-buttons button{padding:12px 18px;border:none;border-radius:8px;color:#fff;font-weight:bold;cursor:pointer;margin-right:10px;margin-bottom:10px}.yes-btn{background:#1e90ff}.no-btn{background:#444}#voteResults{margin-top:18px;color:#d8e4f2;font-size:16px}
-    .top-arguments{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:20px 0}
-    .top-argument-card{background:#0a1626;border:2px solid #ffcc00;border-radius:12px;padding:16px}
-    .top-argument-title{color:#ffcc00;font-weight:bold;margin-bottom:10px}
-    .top-argument-text{color:#d8e4f2;line-height:1.5}
-    .top-argument-votes{margin-top:10px;color:#ffcc00;font-weight:bold}
     .court-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px}.court-side{background:#07111f;border:1px solid #203852;border-radius:12px;padding:16px}.court-side h3{margin:0 0 12px;font-size:18px}
     .argument{background:#0d1b2e;border:1px solid #203852;border-radius:10px;padding:12px;margin-bottom:10px}.argument-text{color:#d8e4f2;line-height:1.45;font-size:15px}.argument-meta{margin-top:8px;color:#9fb2c7;font-size:13px}
     .upvote-btn{margin-top:10px;background:#203852;color:#fff;border:none;border-radius:8px;padding:8px 10px;font-weight:bold;cursor:pointer}.upvote-btn:hover{background:#1e90ff}
@@ -26,8 +21,17 @@
     .court-form select,.court-form textarea,.court-form input{width:100%;box-sizing:border-box;margin-top:8px;padding:12px;border-radius:8px;border:1px solid #203852;background:#0d1b2e;color:#fff;font-size:15px}.court-form textarea{min-height:95px;resize:vertical}.court-form button{margin-top:14px;background:#1e90ff;color:#fff;border:none;border-radius:8px;padding:12px 16px;font-weight:bold;cursor:pointer}.court-note{color:#9fb2c7;font-size:14px;line-height:1.45}.court-message{margin-top:12px;color:#ffcc00;font-size:14px;white-space:pre-wrap}
     .share-buttons{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px}.share-buttons button,.share-buttons a{display:inline-block;border:none;border-radius:8px;padding:11px 14px;color:#fff;text-decoration:none;font-weight:bold;cursor:pointer;font-size:14px}.share-x{background:#111}.share-facebook{background:#1877f2}.share-reddit{background:#ff4500}.share-copy{background:#1e90ff}.share-message{margin-top:12px;color:#ffcc00;font-size:14px}
     .sources a{display:inline-block;color:#74b9ff;text-decoration:none;margin-right:16px;margin-top:8px}.related-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px;margin-top:14px}.related-card{background:#07111f;border:1px solid #203852;border-radius:12px;padding:14px;cursor:pointer}.related-card:hover{border-color:#1e90ff}.related-card h3{font-size:16px;margin:6px 0}.related-meta{font-size:13px;color:#9fb2c7}.related-score{display:inline-block;background:#ffcc00;color:#111;padding:4px 7px;border-radius:8px;font-weight:bold;font-size:12px;margin-top:8px}.loading,.error{text-align:center;color:#b9c8da;padding:40px}
-    @media(max-width:760px){.court-grid{grid-template-columns:1fr}.top-arguments{grid-template-columns:1fr}h1{font-size:30px}.nav-links a{margin-left:10px;font-size:14px}}
-  </style>
+    @media(max-width:760px){.court-grid{grid-template-columns:1fr}h1{font-size:30px}.nav-links a{margin-left:10px;font-size:14px}}
+  
+.report-btn{background:#6b5b1e;color:white;border:none;border-radius:8px;padding:11px 14px;font-weight:bold;cursor:pointer;margin-top:12px}
+.report-box{display:none;margin-top:14px;background:#07111f;border:1px solid #203852;border-radius:12px;padding:16px}
+.report-box label{display:block;margin-top:12px;color:#d8e4f2;font-weight:bold}
+.report-box select,.report-box textarea{width:100%;box-sizing:border-box;margin-top:8px;padding:11px;border-radius:8px;border:1px solid #203852;background:#0d1b2e;color:white;font-size:15px}
+.report-box textarea{min-height:90px;resize:vertical}
+.report-submit{background:#1e90ff;color:white;border:none;border-radius:8px;padding:11px 14px;font-weight:bold;cursor:pointer;margin-top:12px}
+.report-message{margin-top:10px;color:#ffcc00;white-space:pre-wrap}
+
+</style>
 </head>
 <body>
 <nav class="top-nav"><div class="nav-brand" onclick="window.location.href='index.html'">SportsMistakes</div><div class="nav-links"><a href="index.html">Home</a><a href="rankings.html">Rankings</a><a href="collections.html">Collections</a><a href="submit.html">Submit</a></div></nav>
@@ -50,9 +54,26 @@ ${data.teams_people?`<div class="section"><h2>Teams / People</h2><p>${escapeHtml
 <div class="section"><h2>What Happened</h2><p>${escapeHtml(data.summary||"No summary added yet.")}</p></div>
 ${data.why_it_matters?`<div class="section"><h2>Why It Matters</h2><p>${escapeHtml(data.why_it_matters)}</p></div>`:""}
 <div class="section"><h2>Fan Verdict</h2><p>Was this actually a mistake?</p><div class="vote-buttons"><button class="yes-btn" onclick="submitVote('yes')">YES — Mistake</button><button class="no-btn" onclick="submitVote('no')">NO — Not a Mistake</button></div><div id="voteResults">Loading votes...</div></div>
-<div class="section"><h2>⚖️ Sports Court</h2><p class="court-note">Add a constructive argument. Choose Prosecution if you believe this WAS a mistake. Choose Defense if you believe it was NOT a mistake or is overblown.</p><div id="topArguments"></div><div class="court-grid"><div class="court-side"><h3>Prosecution: Why it WAS a mistake</h3><div id="prosecutionArguments">Loading arguments...</div></div><div class="court-side"><h3>Defense: Why it was NOT a mistake</h3><div id="defenseArguments">Loading arguments...</div></div></div><div class="court-form"><h3>Add Your Argument</h3><label>Side</label><select id="courtSide"><option value="prosecution">Prosecution — It was a mistake</option><option value="defense">Defense — Not a mistake / overblown</option></select><label>Your argument</label><textarea id="courtArgument" placeholder="Focus on the play, decision, referee call, strategy, or historical context."></textarea><label>Name or nickname optional</label><input id="courtName" placeholder="Anonymous fan" /><button onclick="submitCourtArgument()">Submit Argument</button><div id="courtMessage" class="court-message"></div></div></div>
+<div class="section"><h2>⚖️ Sports Court</h2><p class="court-note">Add a constructive argument. Choose Prosecution if you believe this WAS a mistake. Choose Defense if you believe it was NOT a mistake or is overblown.</p><div class="court-grid"><div class="court-side"><h3>Prosecution: Why it WAS a mistake</h3><div id="prosecutionArguments">Loading arguments...</div></div><div class="court-side"><h3>Defense: Why it was NOT a mistake</h3><div id="defenseArguments">Loading arguments...</div></div></div><div class="court-form"><h3>Add Your Argument</h3><label>Side</label><select id="courtSide"><option value="prosecution">Prosecution — It was a mistake</option><option value="defense">Defense — Not a mistake / overblown</option></select><label>Your argument</label><textarea id="courtArgument" placeholder="Focus on the play, decision, referee call, strategy, or historical context."></textarea><label>Name or nickname optional</label><input id="courtName" placeholder="Anonymous fan" /><button onclick="submitCourtArgument()">Submit Argument</button><div id="courtMessage" class="court-message"></div></div></div>
 <div class="section"><h2>Share This Debate</h2><p>${escapeHtml(shareText)}</p><div class="share-buttons"><a class="share-x" href="${xUrl}" target="_blank">Share on X</a><a class="share-facebook" href="${facebookUrl}" target="_blank">Share on Facebook</a><a class="share-reddit" href="${redditUrl}" target="_blank">Share on Reddit</a><button class="share-copy" onclick="copyShareLink()">Copy Link</button></div><div id="shareMessage" class="share-message"></div></div>
-<div class="section sources"><h2>Sources</h2>${data.source_1?`<a href="${escapeHtml(data.source_1)}" target="_blank">Source 1</a>`:""}${data.source_2?`<a href="${escapeHtml(data.source_2)}" target="_blank">Source 2</a>`:""}</div>
+<div class="section sources"><h2>Sources</h2>${data.source_1?`<a href="${escapeHtml(data.source_1)}" target="_blank">Source 1</a>`:""}${data.source_2?`<a href="${escapeHtml(data.source_2)}" target="_blank">Source 2</a>`:""}
+<div><button class="report-btn" onclick="toggleReportBox()">⚠️ Report an Issue</button></div>
+<div id="reportBox" class="report-box">
+<label>What is the issue?</label>
+<select id="reportType">
+<option value="Incorrect information">Incorrect information</option>
+<option value="Duplicate entry">Duplicate entry</option>
+<option value="Broken source link">Broken source link</option>
+<option value="Wrong sport/category">Wrong sport/category</option>
+<option value="Offensive or unsafe content">Offensive or unsafe content</option>
+<option value="Typo or formatting issue">Typo or formatting issue</option>
+<option value="Other">Other</option>
+</select>
+<label>Details</label>
+<textarea id="reportDetails" placeholder="Briefly explain what should be fixed."></textarea>
+<button class="report-submit" onclick="submitIssueReport()">Submit Report</button>
+<div id="reportMessage" class="report-message"></div>
+</div></div>
 <div class="section"><h2>Related Mistakes</h2><div id="relatedMistakes">Loading related mistakes...</div></div>`;
 await loadVotes();await loadCourtArguments();await loadRelatedMistakes();}
 
@@ -64,19 +85,35 @@ async function loadVotes(){const box=document.getElementById("voteResults");if(!
 async function submitVote(vote){const voteKey="sportsmistakes_vote_"+id;if(localStorage.getItem(voteKey)){alert("You already voted on this mistake.");return}let voterId=localStorage.getItem("sportsmistakes_voter_id");if(!voterId){voterId=crypto.randomUUID();localStorage.setItem("sportsmistakes_voter_id",voterId)}const{error}=await client.from("mistake_votes").insert({mistake_id:id,vote:vote,voter_id:voterId});if(error){alert("Vote failed. Please try again.");console.error(error);return}localStorage.setItem(voteKey,vote);await loadVotes()}
 
 function containsUnsafeText(text){const banned=[/\bfuck\b/i,/\bfucking\b/i,/\bshit\b/i,/\basshole\b/i,/\bbitch\b/i,/\bcunt\b/i,/\bmotherfucker\b/i,/\bporn\b/i,/\bxxx\b/i,/\bnude\b/i,/\bnudes\b/i,/\bnsfw\b/i,/\bkill yourself\b/i,/\bkys\b/i,/\bnazi\b/i,/\bhitler\b/i,/\bwhite power\b/i,/\bcasino\b/i,/\bcrypto\b/i,/\bbitcoin\b/i,/\btelegram\b/i,/\bwhatsapp\b/i,/\bviagra\b/i,/\bescort\b/i,/\byou are an idiot\b/i,/\byou're an idiot\b/i,/\bmoron\b/i];return banned.some(p=>p.test(text))}
-async function loadCourtArguments(){const p=document.getElementById("prosecutionArguments"),d=document.getElementById("defenseArguments");if(!p||!d||!id)return;const{data,error}=await client.from("sports_court_arguments").select("*").eq("mistake_id",id).eq("status","approved").order("upvotes",{ascending:false}).order("created_at",{ascending:false});if(error){console.error(error);p.innerHTML="Could not load arguments. Did you run the Sports Court SQL?";d.innerHTML="Could not load arguments.";return}const list=data||[];renderTopArguments(list);p.innerHTML=renderArguments(list.filter(a=>a.side==="prosecution"),"prosecution");d.innerHTML=renderArguments(list.filter(a=>a.side==="defense"),"defense")}
-function renderTopArguments(argumentsList){
-const container=document.getElementById("topArguments");if(!container)return;
-const prosecution=argumentsList.filter(a=>a.side==="prosecution").sort((a,b)=>(b.upvotes||0)-(a.upvotes||0))[0];
-const defense=argumentsList.filter(a=>a.side==="defense").sort((a,b)=>(b.upvotes||0)-(a.upvotes||0))[0];
-if(!prosecution&&!defense){container.innerHTML="";return}
-container.innerHTML=`<div class="top-arguments"><div class="top-argument-card"><div class="top-argument-title">🏆 Top Prosecution Argument</div><div class="top-argument-text">${prosecution?escapeHtml(prosecution.argument_text):"No prosecution arguments yet."}</div>${prosecution?`<div class="top-argument-votes">👍 ${prosecution.upvotes||0}</div>`:""}</div><div class="top-argument-card"><div class="top-argument-title">🏆 Top Defense Argument</div><div class="top-argument-text">${defense?escapeHtml(defense.argument_text):"No defense arguments yet."}</div>${defense?`<div class="top-argument-votes">👍 ${defense.upvotes||0}</div>`:""}</div></div>`;
-}
+async function loadCourtArguments(){const p=document.getElementById("prosecutionArguments"),d=document.getElementById("defenseArguments");if(!p||!d||!id)return;const{data,error}=await client.from("sports_court_arguments").select("*").eq("mistake_id",id).eq("status","approved").order("upvotes",{ascending:false}).order("created_at",{ascending:false});if(error){console.error(error);p.innerHTML="Could not load arguments. Did you run the Sports Court SQL?";d.innerHTML="Could not load arguments.";return}const list=data||[];p.innerHTML=renderArguments(list.filter(a=>a.side==="prosecution"),"prosecution");d.innerHTML=renderArguments(list.filter(a=>a.side==="defense"),"defense")}
 function renderArguments(list,side){if(!list||list.length===0)return`<div class="court-note">No ${side} arguments yet. Be the first to make the case.</div>`;return list.map(arg=>`<div class="argument"><div class="argument-text">${escapeHtml(arg.argument_text||"")}</div><div class="argument-meta">${escapeHtml(arg.author_name||"Anonymous fan")}${arg.created_at?" • "+new Date(arg.created_at).toLocaleDateString():""}</div><button class="upvote-btn" onclick="upvoteArgument('${arg.id}')">👍 ${arg.upvotes||0}</button></div>`).join("")}
 async function submitCourtArgument(){const msg=document.getElementById("courtMessage"),side=document.getElementById("courtSide").value,text=document.getElementById("courtArgument").value.trim(),name=document.getElementById("courtName").value.trim()||"Anonymous fan";if(!text||text.length<20){msg.innerText="Please write a constructive argument of at least 20 characters.";return}if(text.length>800){msg.innerText="Please keep the argument under 800 characters.";return}if(containsUnsafeText(text+" "+name)){msg.innerText="This argument appears to violate the safety rules. Please focus on the sports decision, play, call, or context.";return}msg.innerText="Submitting argument...";const{error}=await client.from("sports_court_arguments").insert({mistake_id:id,side:side,argument_text:text,author_name:name,status:"approved",upvotes:0});if(error){console.error(error);msg.innerText="Argument failed to submit. Check the SQL table and policies.";return}document.getElementById("courtArgument").value="";document.getElementById("courtName").value="";msg.innerText="Argument added to Sports Court.";await loadCourtArguments()}
 async function upvoteArgument(argumentId){const key="sports_court_upvote_"+argumentId;if(localStorage.getItem(key)){alert("You already upvoted this argument.");return}const{data,error}=await client.from("sports_court_arguments").select("upvotes").eq("id",argumentId).single();if(error||!data){console.error(error);alert("Could not upvote.");return}const{error:updateError}=await client.from("sports_court_arguments").update({upvotes:(data.upvotes||0)+1}).eq("id",argumentId);if(updateError){console.error(updateError);alert("Could not upvote.");return}localStorage.setItem(key,"true");await loadCourtArguments()}
 
 async function loadRelatedMistakes(){const box=document.getElementById("relatedMistakes");if(!box||!currentMistake)return;const{data,error}=await client.from("mistakes").select("*").neq("id",id).or(`sport.eq.${currentMistake.sport},category.eq.${currentMistake.category},subcategory.eq.${currentMistake.subcategory}`).order("controversy_score",{ascending:false}).limit(6);if(error){console.error(error);box.innerHTML="Could not load related mistakes.";return}if(!data||data.length===0){box.innerHTML="No related mistakes yet.";return}box.innerHTML=`<div class="related-grid">${data.map(m=>`<div class="related-card" onclick="window.location.href='mistake.html?id=${m.id}'"><div class="related-meta">${escapeHtml(m.sport||"")}${m.year?" • "+escapeHtml(m.year):""}</div><h3>${escapeHtml(m.title||"Untitled Mistake")}</h3><div class="related-meta">${escapeHtml(m.category||"")}</div><span class="related-score">${escapeHtml(m.controversy_score||0)}/100</span></div>`).join("")}</div>`}
+
+function toggleReportBox(){
+const box=document.getElementById("reportBox");if(!box)return;
+box.style.display=box.style.display==="block"?"none":"block";
+}
+
+async function submitIssueReport(){
+const reportMessage=document.getElementById("reportMessage");
+const reportType=document.getElementById("reportType").value;
+const reportDetails=document.getElementById("reportDetails").value.trim();
+if(!reportDetails){reportMessage.innerText="Please add a short explanation.";return}
+reportMessage.innerText="Submitting report...";
+const {error}=await client.from("mistake_reports").insert({
+mistake_id:id,
+report_type:reportType,
+details:reportDetails,
+status:"open"
+});
+if(error){console.error(error);reportMessage.innerText="Report failed. Please try again.";return}
+reportMessage.innerText="Report received. Thank you for helping improve SportsMistakes.";
+document.getElementById("reportDetails").value="";
+}
+
 function escapeHtml(value){return String(value).replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;")}
 loadMistake();
 </script>
