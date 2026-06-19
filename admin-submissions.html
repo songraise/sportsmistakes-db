@@ -5,6 +5,7 @@
   <title>Admin Submissions | SportsMistakes</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="admin-auth.js"></script>
 
   <style>
     body { margin:0; font-family:Arial,sans-serif; background:#07111f; color:#fff; }
@@ -43,7 +44,7 @@
 <div class="container">
   <h1>Pending Mistake Submissions</h1>
   <button class="refresh" onclick="loadSubmissions()">Refresh</button>
-  <div id="message" class="message">Loading submissions...</div>
+  <div id="message" class="message">Checking admin access...</div>
   <div id="submissions"></div>
 </div>
 
@@ -229,7 +230,9 @@
     return String(value).replaceAll("\\", "\\\\").replaceAll("'", "\\'");
   }
 
-  loadSubmissions();
+  requireSportsMistakesAdmin(client).then(ok => {
+    if (ok) loadSubmissions();
+  });
 </script>
 
 </body>
