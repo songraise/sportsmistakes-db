@@ -5,6 +5,7 @@
   <title>Admin Reports | SportsMistakes</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="admin-auth.js"></script>
   <style>
     body{margin:0;font-family:Arial,sans-serif;background:#07111f;color:#fff}
     .top-nav{display:flex;justify-content:space-between;align-items:center;background:#0d1b2e;border-bottom:1px solid #203852;padding:14px 20px}
@@ -42,7 +43,7 @@
       <option value="">All statuses</option>
     </select>
   </div>
-  <div id="status" class="status">Loading reports...</div>
+  <div id="status" class="status">Checking admin access...</div>
   <div id="reportsList"></div>
 </div>
 
@@ -132,7 +133,10 @@ function escapeHtml(value){
 
 document.getElementById("searchInput").addEventListener("input",renderReports);
 document.getElementById("statusFilter").addEventListener("change",renderReports);
-loadReports();
+
+requireSportsMistakesAdmin(client).then(ok => {
+  if (ok) loadReports();
+});
 </script>
 </body>
 </html>
