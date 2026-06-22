@@ -16,6 +16,9 @@
     header { padding: 55px 20px 35px; text-align: center; background: linear-gradient(135deg, #07111f, #12365f); }
     h1 { font-size: 46px; margin: 0; }
     .tagline { font-size: 22px; color: #d8e8ff; margin-top: 10px; }
+    .hero-search { max-width: 760px; margin: 22px auto 0; display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
+    .hero-search input { flex: 1; min-width: 260px; padding: 15px; border-radius: 10px; border: 1px solid #203852; font-size: 16px; background: #ffffff; color: #111; }
+    .hero-search select { min-width: 170px; padding: 15px; border-radius: 10px; border: 1px solid #203852; font-size: 15px; background: #ffffff; color: #111; }
     .sub { max-width: 760px; margin: 18px auto 0; color: #b7c7d9; line-height: 1.5; }
     .hero-buttons { margin-top: 25px; }
     .hero-buttons a { display: inline-block; text-decoration: none; padding: 14px 20px; border-radius: 8px; font-weight: bold; margin: 5px; }
@@ -77,6 +80,8 @@
     @media (max-width: 800px) {
       .hook-zone { grid-template-columns: 1fr; }
       h1 { font-size: 38px; }
+      .hero-search { margin-top: 18px; }
+      .hero-search input, .hero-search select { width: 100%; }
     }
   </style>
 </head>
@@ -96,6 +101,48 @@
 <header>
   <h1>SportsMistakes</h1>
   <div class="tagline">The Internet's Database of Sports Mistakes</div>
+
+  <div class="hero-search">
+    <input id="searchInput" type="text" placeholder="Search 500+ mistakes, teams, players, coaches..." />
+    <select id="sportFilter">
+      <option value="">All Sports</option>
+      <option value="NFL">NFL</option>
+      <option value="NHL">NHL</option>
+      <option value="NBA">NBA</option>
+      <option value="MLB">MLB</option>
+      <option value="Soccer">Soccer</option>
+      <option value="Olympics">Olympics</option>
+      <option value="Tennis">Tennis</option>
+      <option value="Golf">Golf</option>
+      <option value="NCAA">NCAA</option>
+      <option value="F1">F1</option>
+      <option value="Boxing">Boxing</option>
+      <option value="Horse Racing">Horse Racing</option>
+      <option value="Curling">Curling</option>
+      <option value="Lacrosse">Lacrosse</option>
+      <option value="Sailing">Sailing</option>
+      <option value="Paralympics">Paralympics</option>
+      <option value="Track">Track</option>
+      <option value="Cycling">Cycling</option>
+      <option value="Running">Running</option>
+      <option value="CFL">CFL</option>
+      <option value="Rugby">Rugby</option>
+      <option value="Cricket">Cricket</option>
+      <option value="UFC">UFC</option>
+      <option value="Wrestling">Wrestling</option>
+      <option value="Other">Other</option>
+    </select>
+    <select id="categoryFilter">
+      <option value="">All Categories</option>
+      <option value="Coaching Mistake">Coaching Mistake</option>
+      <option value="Referee Mistake">Referee Mistake</option>
+      <option value="Player Mistake">Player Mistake</option>
+      <option value="Front Office Mistake">Front Office Mistake</option>
+      <option value="Ownership Mistake">Ownership Mistake</option>
+      <option value="League Mistake">League Mistake</option>
+      <option value="Fan Interference">Fan Interference</option>
+    </select>
+  </div>
 
   <div class="hero-buttons">
     <a href="submit.html" class="submit-btn">Submit a Sports Mistake</a>
@@ -162,48 +209,6 @@
     <h2>🔥 Most Viewed</h2>
     <div id="mostViewedList">Loading most viewed...</div>
   </div>
-</div>
-
-<div class="controls">
-  <input id="searchInput" type="text" placeholder="Search mistakes, teams, people..." />
-  <select id="sportFilter">
-    <option value="">All Sports</option>
-    <option value="NFL">NFL</option>
-    <option value="NHL">NHL</option>
-    <option value="NBA">NBA</option>
-    <option value="MLB">MLB</option>
-    <option value="Soccer">Soccer</option>
-    <option value="Olympics">Olympics</option>
-    <option value="Tennis">Tennis</option>
-    <option value="Golf">Golf</option>
-    <option value="NCAA">NCAA</option>
-    <option value="F1">F1</option>
-    <option value="Boxing">Boxing</option>
-    <option value="Horse Racing">Horse Racing</option>
-    <option value="Curling">Curling</option>
-    <option value="Lacrosse">Lacrosse</option>
-    <option value="Sailing">Sailing</option>
-    <option value="Paralympics">Paralympics</option>
-    <option value="Track">Track</option>
-    <option value="Cycling">Cycling</option>
-    <option value="Running">Running</option>
-    <option value="CFL">CFL</option>
-    <option value="Rugby">Rugby</option>
-    <option value="Cricket">Cricket</option>
-    <option value="UFC">UFC</option>
-    <option value="Wrestling">Wrestling</option>
-    <option value="Other">Other</option>
-  </select>
-  <select id="categoryFilter">
-    <option value="">All Categories</option>
-    <option value="Coaching Mistake">Coaching Mistake</option>
-    <option value="Referee Mistake">Referee Mistake</option>
-    <option value="Player Mistake">Player Mistake</option>
-    <option value="Front Office Mistake">Front Office Mistake</option>
-    <option value="Ownership Mistake">Ownership Mistake</option>
-    <option value="League Mistake">League Mistake</option>
-    <option value="Fan Interference">Fan Interference</option>
-  </select>
 </div>
 
 <div class="container">
