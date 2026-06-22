@@ -436,6 +436,27 @@
       font-weight: bold;
     }
 
+    .fan-verdict {
+      background: #eef6ff;
+      border: 1px solid #cfe4ff;
+      border-radius: 10px;
+      padding: 9px 10px;
+      color: #0d3b66;
+      font-size: 14px;
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+
+    .fan-verdict.empty {
+      background: #f7f8fb;
+      border: 1px solid #d8e0ea;
+      color: #5f6f82;
+    }
+
+    .fan-votes {
+      font-weight: normal;
+    }
+
     .summary {
       color: #344256;
       line-height: 1.45;
@@ -631,6 +652,7 @@
   const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNjd2psbGp1cmlyY3h1dWZocWloIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyNjUyMjcsImV4cCI6MjA5Njg0MTIyN30.WF0HRRb9mAkuOySjabTd8CZXVZRqF0MhMl0N2mafnns";
   const client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
   let mistakes = [];
+  let voteStatsByMistake = {};
 
   function applySearchFromUrl() {
     const params = new URLSearchParams(window.location.search);
@@ -673,9 +695,62 @@
     return allRows;
   }
 
+  async function loadVoteStats() {
+    const { data, error } = await client
+      .from("mistake_votes")
+      .select("mistake_id,vote");
+
+    if (error) {
+      console.error(error);
+      voteStatsByMistake = {};
+      return;
+    }
+
+    voteStatsByMistake = {};
+
+    (data || []).forEach(v => {
+      if (!voteStatsByMistake[v.mistake_id]) {
+        voteStatsByMistake[v.mistake_id] = {
+          yes: 0,
+          no: 0,
+          total: 0
+        };
+      }
+
+      if (v.vote === "yes") voteStatsByMistake[v.mistake_id].yes++;
+      if (v.vote === "no") voteStatsByMistake[v.mistake_id].no++;
+      voteStatsByMistake[v.mistake_id].total++;
+    });
+  }
+
+  function renderFanVerdict(mistakeId) {
+    const stats = voteStatsByMistake[mistakeId];
+
+    if (!stats || !stats.total) {
+      return `
+        <div class="fan-verdict empty">
+          Fan Verdict: No votes yet
+        </div>
+      `;
+    }
+
+    const yesPercent = Math.round((stats.yes / stats.total) * 100);
+
+    return `
+      <div class="fan-verdict">
+        Fan Verdict: ${yesPercent}% say YES this was a mistake
+        <span class="fan-votes">
+          (${stats.total} vote${stats.total === 1 ? "" : "s"})
+        </span>
+      </div>
+    `;
+  }
+
   async function loadMistakes() {
     try {
       mistakes = await fetchAllMistakes();
+
+      await loadVoteStats();
     } catch (error) {
       document.getElementById("stats").innerText = "Error loading mistakes.";
       console.error(error);
@@ -899,7 +974,8 @@
         <span class="score">${escapeHtml(m.controversy_score || 0)}/100</span>
         <h2>${escapeHtml(m.title || "Untitled Mistake")}</h2>
         <div class="meta">${escapeHtml(m.year || "")}${m.category ? " • " + escapeHtml(m.category) : ""}${m.subcategory ? " • " + escapeHtml(m.subcategory) : ""}</div>
-        <div class="card-stats"><span>👁 ${m.views || 0}</span><span>🔥 ${m.controversy_score || 0}/100</span></div>
+        <div class="card-stats"><span>👁 ${m.views || 0}</span><span>🔥 Controversy ${m.controversy_score || 0}/100</span></div>
+        ${renderFanVerdict(m.id)}
         <div class="summary">${escapeHtml(m.summary || "No summary added yet.")}</div>
         ${m.why_it_matters ? `<div class="why"><strong>Why it matters:</strong> ${escapeHtml(m.why_it_matters)}</div>` : ""}
         <div class="sources" onclick="event.stopPropagation();">
