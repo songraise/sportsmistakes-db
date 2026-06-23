@@ -59,89 +59,18 @@
     .nav-links a:hover { color: var(--gold); }
 
     header {
-      padding: 46px 20px 34px;
+      padding: 52px 20px 34px;
+      text-align: center;
       background:
-        radial-gradient(circle at 82% 18%, rgba(30,144,255,.22), transparent 24%),
-        linear-gradient(110deg, #f4f7fb 0%, #eef3f8 39%, #0b2037 40%, #07111f 100%);
+        radial-gradient(circle at top center, rgba(30,144,255,.20), transparent 36%),
+        linear-gradient(135deg, #06101d, #0b2440 58%, #06101d);
       border-bottom: 1px solid #14263d;
     }
 
     .hero-inner {
-      max-width: 1180px;
+      max-width: 980px;
       margin: 0 auto;
-      display: grid;
-      grid-template-columns: 350px 1fr;
-      gap: 34px;
-      align-items: center;
     }
-
-    .hero-left {
-      color: #07111f;
-      text-align: left;
-    }
-
-    .big-adline {
-      font-size: 56px;
-      line-height: .92;
-      font-weight: 1000;
-      letter-spacing: -1px;
-      text-transform: uppercase;
-      margin: 0 0 18px;
-      color: #07111f;
-    }
-
-    .big-adline .red-word {
-      color: var(--red);
-      display: block;
-    }
-
-    .gold-rule {
-      width: 115px;
-      height: 6px;
-      background: var(--gold);
-      margin: 14px 0 18px;
-      border-radius: 99px;
-    }
-
-    .left-subhead {
-      font-size: 23px;
-      line-height: 1.08;
-      font-weight: 900;
-      margin: 0 0 18px;
-      color: #07111f;
-    }
-
-    .left-benefits {
-      display: grid;
-      gap: 13px;
-      margin-top: 10px;
-    }
-
-    .benefit {
-      display: flex;
-      gap: 12px;
-      align-items: flex-start;
-      font-size: 16px;
-      line-height: 1.25;
-      color: #07111f;
-    }
-
-    .benefit-icon {
-      flex: 0 0 34px;
-      width: 34px;
-      height: 34px;
-      border-radius: 999px;
-      display: grid;
-      place-items: center;
-      color: white;
-      font-size: 18px;
-      font-weight: bold;
-      background: var(--blue);
-      box-shadow: 0 2px 8px rgba(0,0,0,.16);
-    }
-
-    .benefit:nth-child(2) .benefit-icon,
-    .benefit:nth-child(4) .benefit-icon { background: #e8aa00; }
 
     .hero-main {
       text-align: left;
@@ -584,19 +513,12 @@
     }
 
     @media (max-width: 1050px) {
-      header {
-        background:
-          linear-gradient(135deg, rgba(244,247,251,.96), rgba(234,240,247,.96)),
-          linear-gradient(135deg, #06101d, #0b2440);
-      }
-      .hero-inner { grid-template-columns: 1fr; gap: 24px; }
       .hero-main { padding: 24px; }
       .homepage-dashboard { grid-template-columns: repeat(2, 1fr); }
     }
 
     @media (max-width: 800px) {
       h1 { font-size: 34px; }
-      .big-adline { font-size: 44px; }
       .tagline { font-size: 24px; }
       .nav-links a { margin-left: 10px; font-size: 14px; }
       .hero-search input, .hero-search select { width: 100%; }
@@ -619,27 +541,11 @@
 
 <header>
   <div class="hero-inner">
-    <div class="hero-left">
-      <div class="big-adline">
-        EVERY GAME.<br>
-        <span class="red-word">EVERY MISTAKE.</span>
-        REMEMBERED.
-      </div>
-      <div class="gold-rule"></div>
-      <div class="left-subhead">The Internet’s Database<br>of Sports Mistakes</div>
-      <div class="left-benefits">
-        <div class="benefit"><div class="benefit-icon">🔍</div><div><strong>Search</strong> thousands of mistakes across all sports and eras.</div></div>
-        <div class="benefit"><div class="benefit-icon">🏆</div><div><strong>Rank</strong> the most controversial moments in sports history.</div></div>
-        <div class="benefit"><div class="benefit-icon">👥</div><div><strong>Vote, debate</strong> and see what fans think really happened.</div></div>
-        <div class="benefit"><div class="benefit-icon">🔖</div><div><strong>Remember</strong> the moments fans never stop arguing about.</div></div>
-      </div>
-    </div>
-
     <div class="hero-main">
 
   <h1>Sports<span class="gold-word">Mistakes</span></h1>
   <div class="tagline">The Internet’s Database<br>of <span class="gold-word">Sports Mistakes</span></div>
-  <div class="mini-tagline">Search. Vote. Debate. Settle the argument.</div>
+  <div class="mini-tagline">Every Game. Every Mistake. Remembered.</div>
 
   <div class="hero-search">
     <input id="searchInput" type="text" placeholder="Search 500+ mistakes, teams, players, coaches..." />
