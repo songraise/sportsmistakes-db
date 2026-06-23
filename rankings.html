@@ -5,74 +5,198 @@
   <title>Rankings | SportsMistakes</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
   <style>
+    :root {
+      --page-bg: #07111f;
+      --surface: #ffffff;
+      --surface-soft: #f7f9fc;
+      --border: #d8e0ea;
+      --text: #111827;
+      --muted: #5f6f82;
+      --blue: #1e90ff;
+      --blue-dark: #0d3b66;
+      --gold: #ffcc00;
+      --gold-dark: #b58100;
+      --nav-bg: #0d1b2e;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: var(--page-bg);
+      color: #ffffff;
+    }
+
     .top-nav {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background: #0d1b2e;
-  border-bottom: 1px solid #203852;
-  padding: 14px 20px;
-}
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--nav-bg);
+      border-bottom: 1px solid #203852;
+      padding: 14px 20px;
+    }
 
-.nav-brand {
-  font-weight: bold;
-  font-size: 20px;
-  color: #ffffff;
-  cursor: pointer;
-}
+    .nav-brand {
+      font-weight: bold;
+      font-size: 20px;
+      color: #ffffff;
+      cursor: pointer;
+    }
 
-.nav-links a {
-  color: #74b9ff;
-  text-decoration: none;
-  font-weight: bold;
-  margin-left: 18px;
-}
+    .nav-brand span {
+      color: var(--gold);
+    }
 
-.nav-links a:hover {
-  color: #ffcc00;
-}
-    body { margin:0; font-family:Arial,sans-serif; background:#07111f; color:#fff; }
-    header { padding:28px 20px; background:#0d1b2e; border-bottom:1px solid #203852; }
-    header a { color:#74b9ff; text-decoration:none; font-weight:bold; margin-right:16px; }
-    .container { max-width:1050px; margin:35px auto; padding:0 20px; }
-    h1 { margin-bottom:8px; }
-    .sub { color:#b7c7d9; margin-bottom:24px; }
-    .tabs { display:flex; flex-wrap:wrap; gap:10px; margin-bottom:22px; }
+    .nav-links a {
+      color: #74b9ff;
+      text-decoration: none;
+      font-weight: bold;
+      margin-left: 18px;
+    }
+
+    .nav-links a:hover {
+      color: var(--gold);
+    }
+
+    .container {
+      max-width: 1050px;
+      margin: 35px auto 60px;
+      padding: 0 20px;
+    }
+
+    .hero-card {
+      background: rgba(5, 15, 28, .86);
+      border: 1px solid rgba(255,255,255,.14);
+      border-radius: 18px;
+      padding: 26px;
+      box-shadow: 0 12px 30px rgba(0,0,0,.25);
+      margin-bottom: 22px;
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      color: #ffffff;
+      font-size: 36px;
+    }
+
+    .sub {
+      color: #d8e8ff;
+      margin-bottom: 0;
+      line-height: 1.5;
+    }
+
+    .tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin: 22px 0;
+    }
+
     button {
-      padding:11px 14px; border:none; border-radius:8px; cursor:pointer;
-      background:#203852; color:white; font-weight:bold;
+      padding: 11px 14px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      background: #203852;
+      color: white;
+      font-weight: bold;
     }
-    button.active { background:#1e90ff; }
-    .list { display:grid; gap:14px; }
-    .row {
-      background:#0d1b2e; border:1px solid #203852; border-radius:14px;
-      padding:16px; cursor:pointer;
-    }
-    .rank { color:#ffcc00; font-weight:bold; font-size:18px; margin-right:8px; }
-    .score {
-      float:right; background:#ffcc00; color:#111; padding:5px 8px;
-      border-radius:8px; font-weight:bold; font-size:12px;
-    }
-    h2 { margin:8px 0; font-size:20px; }
-    .meta { color:#9fb2c7; font-size:14px; margin-bottom:8px; }
-    .summary { color:#d8e4f2; line-height:1.45; }
-    .message { color:#b7c7d9; margin:18px 0; }
-  </style>
 
+    button:hover {
+      background: #2e4a6d;
+    }
+
+    button.active {
+      background: var(--blue);
+    }
+
+    .message {
+      color: #d8e8ff;
+      margin: 18px 0;
+      font-weight: bold;
+    }
+
+    .list {
+      display: grid;
+      gap: 14px;
+    }
+
+    .row {
+      background: var(--surface);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 16px;
+      cursor: pointer;
+      box-shadow: 0 8px 22px rgba(0,0,0,.16);
+    }
+
+    .row:hover {
+      border-color: var(--blue);
+      box-shadow: 0 10px 26px rgba(0,0,0,.22);
+    }
+
+    .rank {
+      color: var(--gold-dark);
+      font-weight: bold;
+      font-size: 18px;
+      margin-right: 8px;
+    }
+
+    .score {
+      float: right;
+      background: var(--gold);
+      color: #111;
+      padding: 5px 8px;
+      border-radius: 8px;
+      font-weight: bold;
+      font-size: 12px;
+    }
+
+    h2 {
+      margin: 8px 0;
+      font-size: 20px;
+      color: var(--text);
+    }
+
+    .meta {
+      color: var(--muted);
+      font-size: 14px;
+      margin-bottom: 8px;
+    }
+
+    .summary {
+      color: #344256;
+      line-height: 1.45;
+    }
+
+    @media(max-width:760px) {
+      h1 { font-size: 30px; }
+      .nav-links a { margin-left: 10px; font-size: 14px; }
+      .score { float: none; display: inline-block; margin-top: 8px; }
+    }
+  </style>
 </head>
 
 <body>
 
-<header>
-  <a href="index.html">Home</a>
-  <a href="submit.html">Submit Mistake</a>
-  <a href="rankings.html">Rankings</a>
-</header>
+<nav class="top-nav">
+  <div class="nav-brand" onclick="window.location.href='index.html'">Sports<span>Mistakes</span></div>
+  <div class="nav-links">
+    <a href="index.html">Home</a>
+    <a href="rankings.html">Rankings</a>
+    <a href="collections.html">Collections</a>
+    <a href="hall-of-fame.html">Hall of Fame</a>
+    <a href="submit.html">Submit</a>
+  </div>
+</nav>
 
 <div class="container">
-  <h1>SportsMistakes Rankings</h1>
-  <div class="sub">Browse the most controversial mistakes by sport and category.</div>
+  <div class="hero-card">
+    <h1>SportsMistakes Rankings</h1>
+    <div class="sub">Browse the most controversial mistakes by sport and category.</div>
+  </div>
 
   <div class="tabs">
     <button class="active" onclick="setRanking('all', this)">Top Overall</button>
@@ -183,12 +307,4 @@
 </script>
 
 </body>
-<nav class="top-nav">
-  <div class="nav-brand" onclick="window.location.href='index.html'">SportsMistakes</div>
-  <div class="nav-links">
-    <a href="index.html">Home</a>
-    <a href="rankings.html">Rankings</a>
-    <a href="submit.html">Submit</a>
-  </div>
-</nav>
 </html>
