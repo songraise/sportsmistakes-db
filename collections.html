@@ -255,6 +255,27 @@
       .nav-links a { margin-left:10px; font-size:14px; }
       .score { float:none; display:inline-block; margin-top:8px; }
     }
+  
+    .sport-icon {
+      width:42px;
+      height:42px;
+      border-radius:12px;
+      background:#f7f9fc;
+      border:1px solid #d8e0ea;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      font-size:24px;
+      margin-bottom:10px;
+      box-shadow:0 2px 8px rgba(0,0,0,.08);
+    }
+    .card-topline,.row-topline,.podium-topline {
+      display:flex;
+      align-items:center;
+      gap:12px;
+      margin-bottom:8px;
+    }
+
   </style>
 </head>
 
@@ -451,7 +472,7 @@
 
     grid.innerHTML = filtered.map(m => `
       <div class="card" onclick="window.location.href='mistake.html?id=${m.id}'">
-        <span class="badge">${escapeHtml(m.sport || "Sport")}</span>
+        <div class="card-topline"><span class="sport-icon">${getSportIcon(m.sport)}</span><span class="badge">${escapeHtml(m.sport || "Sport")}</span></div>
         <span class="score">${escapeHtml(m.controversy_score || 0)}/100</span>
         <h2>${escapeHtml(m.title || "Untitled Mistake")}</h2>
         <div class="meta">
@@ -466,6 +487,32 @@
         <div class="summary">${escapeHtml(m.summary || "No summary added yet.")}</div>
       </div>
     `).join("");
+  }
+
+
+  function getSportIcon(sport) {
+    const s = String(sport || "").toLowerCase();
+    if (s.includes("nfl") || s.includes("football")) return "🏈";
+    if (s.includes("nhl") || s.includes("hockey")) return "🏒";
+    if (s.includes("mlb") || s.includes("baseball")) return "⚾";
+    if (s.includes("nba") || s.includes("basketball")) return "🏀";
+    if (s.includes("soccer")) return "⚽";
+    if (s.includes("formula") || s.includes("f1")) return "🏎️";
+    if (s.includes("boxing")) return "🥊";
+    if (s.includes("ufc") || s.includes("mma")) return "🥋";
+    if (s.includes("tennis")) return "🎾";
+    if (s.includes("golf")) return "⛳";
+    if (s.includes("olympic")) return "🥇";
+    if (s.includes("ncaa")) return "🏟️";
+    if (s.includes("sailing")) return "⛵";
+    if (s.includes("cricket")) return "🏏";
+    if (s.includes("track") || s.includes("field")) return "🏃";
+    if (s.includes("rugby")) return "🏉";
+    if (s.includes("lacrosse")) return "🥍";
+    if (s.includes("curling")) return "🥌";
+    if (s.includes("cycling")) return "🚴";
+    if (s.includes("running")) return "🏃";
+    return "🏆";
   }
 
   function escapeHtml(value) {
