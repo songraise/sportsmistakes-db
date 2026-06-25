@@ -2,25 +2,43 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>AI Review | SportsMistakes Admin</title>
+  <title>AI Review 2.0 | SportsMistakes Admin</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
   <style>
     body{margin:0;font-family:Arial,sans-serif;background:#07111f;color:#fff}
     .top-nav{display:flex;justify-content:space-between;align-items:center;background:#0d1b2e;border-bottom:1px solid #203852;padding:14px 20px}
-    .nav-brand{font-weight:bold;font-size:20px;color:#fff;cursor:pointer}.nav-brand span{color:#ffcc00}
+    .nav-brand{font-weight:bold;font-size:20px;color:#fff;cursor:pointer}
+    .nav-brand span{color:#ffcc00}
     .nav-links a,.nav-links button{color:#74b9ff;background:none;border:none;text-decoration:none;font-weight:bold;margin-left:14px;cursor:pointer;font-size:14px}
-    .container{max-width:1200px;margin:35px auto;padding:0 20px}.hero,.card,.stat{background:#fff;color:#111827;border:1px solid #d8e0ea;border-radius:16px;box-shadow:0 8px 22px rgba(0,0,0,.15)}
-    .hero{padding:24px;margin-bottom:22px}.sub{color:#5f6f82;line-height:1.5}.stats{display:flex;gap:12px;flex-wrap:wrap;margin:18px 0}.stat{padding:14px 18px;min-width:140px}.stat strong{display:block;font-size:26px;color:#b58100}
-    .filters,.actions{display:flex;gap:10px;flex-wrap:wrap;margin:20px 0}select,button{font-family:Arial,sans-serif}select{padding:11px;border-radius:8px;border:1px solid #d8e0ea}
-    button{padding:11px 14px;border:none;border-radius:8px;background:#1e90ff;color:white;font-weight:bold;cursor:pointer}button:disabled{opacity:.55;cursor:not-allowed}
+    .container{max-width:1250px;margin:30px auto;padding:0 20px}
+    .hero,.card,.stat{background:#fff;color:#111827;border:1px solid #d8e0ea;border-radius:16px;box-shadow:0 8px 22px rgba(0,0,0,.15)}
+    .hero{padding:24px;margin-bottom:20px}
+    h1{margin:0 0 8px}.sub{color:#5f6f82}
+    .stats{display:flex;gap:12px;flex-wrap:wrap;margin:18px 0}
+    .stat{padding:14px 18px;min-width:140px}.stat strong{display:block;font-size:26px;color:#b58100}
+    .filters,.actions{display:flex;gap:10px;flex-wrap:wrap;margin:18px 0}
+    select,button{font-family:Arial,sans-serif}
+    select{padding:11px;border-radius:8px;border:1px solid #d8e0ea}
+    button{padding:11px 14px;border:none;border-radius:8px;background:#1e90ff;color:white;font-weight:bold;cursor:pointer}
+    button:disabled{opacity:.55;cursor:not-allowed}
     .purple{background:#5b21b6}.green{background:#166534}.gold{background:#ffcc00;color:#111}.danger{background:#b91c1c}.secondary{background:#203852}
-    .list{display:grid;gap:18px}.card{padding:20px}.row{display:grid;grid-template-columns:1fr 1fr;gap:18px}.compare{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px}
-    .box{background:#f7f9fc;border:1px solid #d8e0ea;border-radius:12px;padding:14px}.generated{background:#eef6ff;border:1px solid #cfe4ff;border-radius:10px;padding:12px;margin-top:10px}
-    .label{font-size:12px;text-transform:uppercase;color:#5f6f82;font-weight:bold;margin-bottom:5px}.value{line-height:1.45;color:#344256;margin-bottom:12px}
-    .pill{display:inline-block;padding:6px 9px;border-radius:999px;font-size:12px;font-weight:bold;margin:3px 5px 8px 0}.approve{background:#dcfce7;color:#166534}.review{background:#fef9c3;color:#854d0e}.duplicate{background:#ede9fe;color:#5b21b6}.reject{background:#fee2e2;color:#991b1b}.none{background:#e5e7eb;color:#374151}
-    .message{margin:18px 0;color:#d8e8ff;font-weight:bold}.progress-wrap{display:none;background:#fff;color:#111827;border-radius:12px;padding:14px;margin:15px 0}.progress-bar{height:14px;background:#e5e7eb;border-radius:999px;overflow:hidden;margin-top:10px}.progress-fill{height:100%;width:0%;background:#1e90ff}
-    @media(max-width:850px){.row,.compare{grid-template-columns:1fr}.nav-links a{margin-left:8px;font-size:13px}}
+    .list{display:grid;gap:22px}.card{padding:20px}
+    .grid{display:grid;grid-template-columns:1.15fr .85fr;gap:16px}
+    .mini-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px;margin-top:14px}
+    .box{background:#f7f9fc;border:1px solid #d8e0ea;border-radius:12px;padding:14px;color:#111827}
+    .bluebox{background:#eef6ff;border:1px solid #cfe4ff}
+    .label{font-size:12px;text-transform:uppercase;color:#5f6f82;font-weight:bold;margin-bottom:5px}
+    .value{line-height:1.45;color:#344256;margin-bottom:12px;word-break:break-word}
+    .pill{display:inline-block;padding:6px 9px;border-radius:999px;font-size:12px;font-weight:bold;margin:3px 5px 8px 0}
+    .approve{background:#dcfce7;color:#166534}.review{background:#fef9c3;color:#854d0e}.duplicate{background:#ede9fe;color:#5b21b6}.reject{background:#fee2e2;color:#991b1b}.none{background:#e5e7eb;color:#374151}
+    .block{background:#fee2e2;color:#991b1b}.warning{background:#fef9c3;color:#854d0e}.pass{background:#dcfce7;color:#166534}
+    .message{margin:18px 0;color:#d8e8ff;font-weight:bold}
+    .progress-wrap{display:none;background:#fff;color:#111827;border-radius:12px;padding:14px;margin:15px 0}
+    .progress-bar{height:14px;background:#e5e7eb;border-radius:999px;overflow:hidden;margin-top:10px}
+    .progress-fill{height:100%;width:0%;background:#1e90ff}
+    @media(max-width:900px){.grid{grid-template-columns:1fr}.nav-links a{margin-left:8px;font-size:13px}}
   </style>
 </head>
 
@@ -37,8 +55,8 @@
 
 <div class="container">
   <div class="hero">
-    <h1>AI Review Dashboard</h1>
-    <div class="sub">Review submissions, compare duplicates, approve clean entries, or reject problems quickly.</div>
+    <h1>AI Review 2.0</h1>
+    <div class="sub">Editorial moderation with source safety, fact-check warnings, tags, duplicate comparison, trust score, and auto-publish eligibility.</div>
   </div>
 
   <div class="stats" id="stats"></div>
@@ -54,7 +72,7 @@
       <option value="all">All Recommendations</option>
       <option value="APPROVE">Approve</option>
       <option value="REVIEW">Needs Review</option>
-      <option value="DUPLICATE">Possible Duplicate</option>
+      <option value="DUPLICATE">Duplicate</option>
       <option value="REJECT">Reject</option>
     </select>
 
@@ -121,18 +139,10 @@ async function loadSubmissions() {
 async function loadDuplicateDetails() {
   duplicateMap = {};
   const ids = [...new Set(submissions.map(s => s.ai_duplicate_match_id).filter(Boolean))];
-  if (ids.length === 0) return;
+  if (!ids.length) return;
 
-  const { data, error } = await client
-    .from("mistakes")
-    .select("*")
-    .in("id", ids);
-
-  if (error) {
-    console.error(error);
-    return;
-  }
-
+  const { data, error } = await client.from("mistakes").select("*").in("id", ids);
+  if (error) return console.error(error);
   (data || []).forEach(m => duplicateMap[m.id] = m);
 }
 
@@ -146,7 +156,7 @@ function renderStats() {
   document.getElementById("stats").innerHTML = `
     <div class="stat"><strong>${total}</strong>Pending</div>
     <div class="stat"><strong>${notReviewed}</strong>Not Reviewed</div>
-    <div class="stat"><strong>${approve}</strong>AI Approve</div>
+    <div class="stat"><strong>${approve}</strong>Approve</div>
     <div class="stat"><strong>${duplicate}</strong>Duplicates</div>
     <div class="stat"><strong>${reject}</strong>Reject</div>
   `;
@@ -159,13 +169,12 @@ function renderSubmissions() {
   const recommendationFilter = document.getElementById("recommendationFilter").value;
 
   let filtered = [...submissions];
-
   if (statusFilter !== "all") filtered = filtered.filter(s => (s.ai_status || "not_reviewed") === statusFilter);
   if (recommendationFilter !== "all") filtered = filtered.filter(s => s.ai_recommendation === recommendationFilter);
 
   message.innerText = `${filtered.length} submission${filtered.length === 1 ? "" : "s"} found`;
 
-  if (filtered.length === 0) {
+  if (!filtered.length) {
     list.innerHTML = "";
     return;
   }
@@ -179,20 +188,32 @@ function renderSubmissions() {
         <div>
           ${recommendationPill(s.ai_recommendation)}
           <span class="pill none">AI Status: ${escapeHtml(s.ai_status || "not_reviewed")}</span>
-          ${s.ai_confidence !== null && s.ai_confidence !== undefined ? `<span class="pill none">Confidence: ${s.ai_confidence}%</span>` : ""}
+          <span class="pill none">Confidence: ${s.ai_confidence ?? "—"}%</span>
+          ${statusPill("Source", s.ai_source_safety_status)}
+          ${statusPill("Fact", s.ai_fact_check_status)}
+          ${s.ai_auto_publish_eligible ? `<span class="pill approve">AUTO-PUBLISH ELIGIBLE</span>` : `<span class="pill none">NO AUTO-PUBLISH</span>`}
         </div>
 
-        <div class="compare">
+        <div class="grid">
           <div class="box">
             <div class="label">Submitted</div>
             <h2>${escapeHtml(s.title || "Untitled")}</h2>
             <div class="value">${escapeHtml(s.sport || "")} ${s.year ? "• " + escapeHtml(s.year) : ""} ${s.category ? "• " + escapeHtml(s.category) : ""}</div>
+
             <div class="label">Teams / People</div>
             <div class="value">${escapeHtml(s.teams_people || "Not provided")}</div>
+
             <div class="label">Summary</div>
             <div class="value">${escapeHtml(s.summary || "No summary")}</div>
+
             <div class="label">Why It Matters</div>
             <div class="value">${escapeHtml(s.why_it_matters || "Not provided")}</div>
+
+            <div class="label">Source 1</div>
+            <div class="value">${escapeHtml(s.source_1 || "No source")}</div>
+
+            <div class="label">Source 2</div>
+            <div class="value">${escapeHtml(s.source_2 || "No second source")}</div>
           </div>
 
           <div class="box">
@@ -212,17 +233,49 @@ function renderSubmissions() {
           </div>
         </div>
 
-        <div class="row">
+        <div class="mini-grid">
           <div class="box">
-            <div class="label">AI Duplicate Score</div>
-            <div class="value">${s.ai_duplicate_score ?? "Not checked"}${s.ai_duplicate_score !== null && s.ai_duplicate_score !== undefined ? "%" : ""}</div>
-            <div class="label">AI Spam Score</div>
-            <div class="value">${s.ai_spam_score ?? "Not checked"}${s.ai_spam_score !== null && s.ai_spam_score !== undefined ? "%" : ""}</div>
+            <div class="label">AI Recommendation</div>
+            <div class="value"><strong>${escapeHtml(s.ai_recommendation || "Not reviewed")}</strong></div>
+
+            <div class="label">Duplicate Score</div>
+            <div class="value">${s.ai_duplicate_score ?? "—"}%</div>
+
+            <div class="label">Spam Score</div>
+            <div class="value">${s.ai_spam_score ?? "—"}%</div>
+
             <div class="label">Safety Flags</div>
             <div class="value">${escapeHtml(s.ai_safety_flags || "None")}</div>
           </div>
 
-          <div class="generated">
+          <div class="box">
+            <div class="label">Source Safety Status</div>
+            <div class="value"><strong>${escapeHtml(s.ai_source_safety_status || "Not checked")}</strong></div>
+
+            <div class="label">Source Safety Notes</div>
+            <div class="value">${escapeHtml(s.ai_source_safety_notes || "Not checked yet")}</div>
+          </div>
+
+          <div class="box">
+            <div class="label">Fact Check Status</div>
+            <div class="value"><strong>${escapeHtml(s.ai_fact_check_status || "Not checked")}</strong></div>
+
+            <div class="label">Fact Check Notes</div>
+            <div class="value">${escapeHtml(s.ai_fact_check_notes || "Not checked yet")}</div>
+          </div>
+
+          <div class="box">
+            <div class="label">Contributor Trust Score</div>
+            <div class="value">${s.submitter_trust_score ?? "50"}/100</div>
+
+            <div class="label">Auto-Publish Eligible</div>
+            <div class="value">${s.ai_auto_publish_eligible ? "YES" : "NO"}</div>
+
+            <div class="label">Auto-Publish Reason</div>
+            <div class="value">${escapeHtml(s.ai_auto_publish_reason || "Human approval required.")}</div>
+          </div>
+
+          <div class="box bluebox">
             <div class="label">AI Generated Publish Version</div>
             <div class="value"><strong>${escapeHtml(s.ai_generated_title || "Not generated yet")}</strong></div>
             <div class="value">${escapeHtml(s.ai_generated_summary || "")}</div>
@@ -232,6 +285,14 @@ function renderSubmissions() {
               ${s.ai_generated_category ? " • " + escapeHtml(s.ai_generated_category) : ""}
               ${s.ai_generated_controversy_score ? " • Score " + escapeHtml(s.ai_generated_controversy_score) + "/100" : ""}
             </div>
+          </div>
+
+          <div class="box">
+            <div class="label">Generated Tags</div>
+            <div class="value">${escapeHtml(s.ai_generated_tags || "No tags generated")}</div>
+
+            <div class="label">Related Mistake IDs</div>
+            <div class="value">${escapeHtml(s.ai_related_mistake_ids || "None")}</div>
           </div>
         </div>
 
@@ -254,6 +315,15 @@ function recommendationPill(rec) {
   if (rec === "DUPLICATE") return `<span class="pill duplicate">AI: DUPLICATE</span>`;
   if (rec === "REJECT") return `<span class="pill reject">AI: REJECT</span>`;
   return `<span class="pill none">AI: NOT REVIEWED</span>`;
+}
+
+function statusPill(label, status) {
+  if (!status) return `<span class="pill none">${label}: NOT CHECKED</span>`;
+  if (status === "PASS") return `<span class="pill pass">${label}: PASS</span>`;
+  if (status === "WARNING") return `<span class="pill warning">${label}: WARNING</span>`;
+  if (status === "BLOCK") return `<span class="pill block">${label}: BLOCK</span>`;
+  if (status === "REVIEW") return `<span class="pill warning">${label}: REVIEW</span>`;
+  return `<span class="pill none">${label}: ${escapeHtml(status)}</span>`;
 }
 
 async function reviewOne(id) {
@@ -279,11 +349,7 @@ async function reviewOne(id) {
 async function reviewAllPending() {
   const targets = submissions.filter(s => (s.ai_status || "not_reviewed") === "not_reviewed");
 
-  if (targets.length === 0) {
-    alert("No not-reviewed submissions to review.");
-    return;
-  }
-
+  if (!targets.length) return alert("No not-reviewed submissions to review.");
   if (!confirm(`Run AI review on ${targets.length} pending submission${targets.length === 1 ? "" : "s"}?`)) return;
 
   document.getElementById("reviewAllBtn").disabled = true;
@@ -299,7 +365,7 @@ async function reviewAllPending() {
     document.getElementById("progressText").innerText = `AI reviewing ${completed + 1} of ${targets.length}...`;
     document.getElementById("progressFill").style.width = Math.round((completed / targets.length) * 100) + "%";
 
-    const { data, error } = await client.functions.invoke("review-submission", {
+    const { data, error } = await client.functions.invoke("review-submission-v2", {
       body: { submission_id: s.id }
     });
 
@@ -329,6 +395,10 @@ async function approveSubmission(id) {
   const s = submissions.find(x => x.id === id);
   if (!s) return alert("Submission not found.");
 
+  if (s.ai_source_safety_status === "BLOCK") {
+    return alert("This submission has a BLOCKED source. Do not approve until source is fixed.");
+  }
+
   if (!confirm(`Approve and publish "${s.ai_generated_title || s.title}"?`)) return;
 
   const payload = {
@@ -343,6 +413,13 @@ async function approveSubmission(id) {
     controversy_score: s.ai_generated_controversy_score || s.controversy_score || 70,
     source_1: s.ai_source_1 || s.source_1 || null,
     source_2: s.ai_source_2 || s.source_2 || null,
+    tags: s.ai_generated_tags || null,
+    related_mistake_ids: s.ai_related_mistake_ids || null,
+    submitter_email: s.submitter_email || null,
+    submitter_name: s.submitter_name || null,
+    ai_published: true,
+    source_safety_status: s.ai_source_safety_status || null,
+    source_safety_notes: s.ai_source_safety_notes || null,
     views: 0
   };
 
@@ -358,7 +435,7 @@ async function approveSubmission(id) {
     .from("mistake_submissions")
     .update({
       status: "approved",
-      review_notes: "Approved and published from AI Review.",
+      review_notes: "Approved and published from AI Review 2.0.",
       ai_status: "reviewed"
     })
     .eq("id", id);
@@ -375,17 +452,14 @@ async function approveSubmission(id) {
 async function rejectDuplicate(id) {
   const s = submissions.find(x => x.id === id);
   if (!s) return;
-
   const note = `Rejected as duplicate${s.ai_duplicate_title ? " of: " + s.ai_duplicate_title : ""}.`;
-
   if (!confirm(note)) return;
-
   await updateSubmissionStatus(id, "rejected", note);
 }
 
 async function rejectSpam(id) {
   if (!confirm("Reject this submission as spam/off-topic/unsafe?")) return;
-  await updateSubmissionStatus(id, "rejected", "Rejected as spam/off-topic/unsafe from AI Review.");
+  await updateSubmissionStatus(id, "rejected", "Rejected as spam/off-topic/unsafe from AI Review 2.0.");
 }
 
 async function markNeedsReview(id) {
@@ -394,7 +468,7 @@ async function markNeedsReview(id) {
     .update({
       ai_status: "reviewed",
       ai_recommendation: "REVIEW",
-      review_notes: "Marked for human review from AI Review."
+      review_notes: "Marked for human review from AI Review 2.0."
     })
     .eq("id", id);
 
