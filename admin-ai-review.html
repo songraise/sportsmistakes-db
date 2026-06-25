@@ -27,6 +27,8 @@
     button.secondary{background:#203852}
     button.danger{background:#b91c1c}
     button.gold{background:#ffcc00;color:#111}
+    button.purple{background:#5b21b6}
+    button:disabled{opacity:.55;cursor:not-allowed}
     .list{display:grid;gap:18px}
     .card{background:#fff;color:#111827;border:1px solid #d8e0ea;border-radius:16px;padding:20px;box-shadow:0 8px 22px rgba(0,0,0,.15)}
     .row{display:grid;grid-template-columns:1fr 1fr;gap:18px}
@@ -42,6 +44,9 @@
     .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
     .message{margin:18px 0;color:#d8e8ff;font-weight:bold}
     .generated{background:#eef6ff;border:1px solid #cfe4ff;border-radius:10px;padding:12px;margin-top:10px}
+    .progress-wrap{display:none;background:#fff;color:#111827;border:1px solid #d8e0ea;border-radius:12px;padding:14px;margin:15px 0}
+    .progress-bar{height:14px;background:#e5e7eb;border-radius:999px;overflow:hidden;margin-top:10px}
+    .progress-fill{height:100%;width:0%;background:#1e90ff}
     @media(max-width:800px){.row{grid-template-columns:1fr}.nav-links a{margin-left:8px;font-size:13px}}
   </style>
 </head>
@@ -62,7 +67,7 @@
   <div class="hero">
     <h1>AI Review Dashboard</h1>
     <div class="sub">
-      Review pending submissions with AI moderation fields. This page is ready for the AI engine we are building next.
+      Review pending submissions with AI-assisted duplicate detection, spam checks, safety flags, quality scoring, and approval recommendations.
     </div>
   </div>
 
@@ -84,6 +89,12 @@
     </select>
 
     <button onclick="loadSubmissions()">Refresh</button>
+    <button class="purple" id="reviewAllBtn" onclick="reviewAllPending()">🤖 Review All Pending</button>
+  </div>
+
+  <div id="progressWrap" class="progress-wrap">
+    <strong id="progressText">AI review running...</strong>
+    <div class="progress-bar"><div id="progressFill" class="progress-fill"></div></div>
   </div>
 
   <div id="message" class="message">Loading...</div>
@@ -96,6 +107,7 @@
   const client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
   let submissions = [];
+  let runningReviewIds = new Set();
 
   async function requireLogin() {
     const { data } = await client.auth.getSession();
@@ -173,7 +185,10 @@
       return;
     }
 
-    list.innerHTML = filtered.map(s => `
+    list.innerHTML = filtered.map(s => {
+      const isRunning = runningReviewIds.has(s.id);
+
+      return `
       <div class="card">
         <div>
           ${recommendationPill(s.ai_recommendation)}
@@ -229,11 +244,14 @@
         </div>
 
         <div class="actions">
-          <button class="gold" onclick="markMockReviewed('${s.id}')">Mark AI Reviewed</button>
+          <button class="purple" onclick="reviewOne('${s.id}')" ${isRunning ? "disabled" : ""}>
+            ${isRunning ? "Reviewing..." : "🤖 Review with AI"}
+          </button>
           <button onclick="openOriginalAdmin()">Open Submissions Admin</button>
         </div>
       </div>
-    `).join("");
+    `;
+    }).join("");
   }
 
   function recommendationPill(rec) {
@@ -244,24 +262,86 @@
     return `<span class="pill none">AI: NOT REVIEWED</span>`;
   }
 
-  async function markMockReviewed(id) {
-    const { error } = await client
-      .from("mistake_submissions")
-      .update({
-        ai_status: "reviewed",
-        ai_recommendation: "REVIEW",
-        ai_confidence: 50,
-        ai_reviewed_at: new Date().toISOString()
-      })
-      .eq("id", id);
+  async function reviewOne(id) {
+    runningReviewIds.add(id);
+    renderSubmissions();
+
+    const { data, error } = await client.functions.invoke("review-submission", {
+      body: { submission_id: id }
+    });
+
+    runningReviewIds.delete(id);
 
     if (error) {
-      alert("Could not update AI fields.");
       console.error(error);
+      alert("AI review failed. Check the Edge Function logs.");
+      renderSubmissions();
+      return;
+    }
+
+    if (!data || data.success === false) {
+      console.error(data);
+      alert("AI review failed: " + (data && data.error ? data.error : "Unknown error"));
+      renderSubmissions();
       return;
     }
 
     await loadSubmissions();
+  }
+
+  async function reviewAllPending() {
+    const targets = submissions.filter(s => (s.ai_status || "not_reviewed") === "not_reviewed");
+
+    if (targets.length === 0) {
+      alert("No not-reviewed submissions to review.");
+      return;
+    }
+
+    const confirmed = confirm(`Run AI review on ${targets.length} pending submission${targets.length === 1 ? "" : "s"}?`);
+    if (!confirmed) return;
+
+    document.getElementById("reviewAllBtn").disabled = true;
+    document.getElementById("progressWrap").style.display = "block";
+
+    let completed = 0;
+    let failed = 0;
+
+    for (const s of targets) {
+      runningReviewIds.add(s.id);
+      renderSubmissions();
+
+      document.getElementById("progressText").innerText =
+        `AI reviewing ${completed + 1} of ${targets.length}...`;
+
+      const percent = Math.round((completed / targets.length) * 100);
+      document.getElementById("progressFill").style.width = percent + "%";
+
+      const { data, error } = await client.functions.invoke("review-submission", {
+        body: { submission_id: s.id }
+      });
+
+      runningReviewIds.delete(s.id);
+
+      if (error || !data || data.success === false) {
+        failed++;
+        console.error("AI review failed for", s.id, error || data);
+      }
+
+      completed++;
+    }
+
+    document.getElementById("progressFill").style.width = "100%";
+    document.getElementById("progressText").innerText =
+      `AI review complete. ${completed - failed} succeeded, ${failed} failed.`;
+
+    document.getElementById("reviewAllBtn").disabled = false;
+
+    await loadSubmissions();
+
+    setTimeout(() => {
+      document.getElementById("progressWrap").style.display = "none";
+      document.getElementById("progressFill").style.width = "0%";
+    }, 2500);
   }
 
   function openOriginalAdmin() {
