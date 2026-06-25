@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>AI Review | SportsMistakes Admin</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    body{margin:0;font-family:Arial,sans-serif;background:#07111f;color:#fff}
+    .top-nav{display:flex;justify-content:space-between;align-items:center;background:#0d1b2e;border-bottom:1px solid #203852;padding:14px 20px}
+    .nav-brand{font-weight:bold;font-size:20px;color:#fff;cursor:pointer}
+    .nav-brand span{color:#ffcc00}
+    .nav-links a,.nav-links button{color:#74b9ff;background:none;border:none;text-decoration:none;font-weight:bold;margin-left:14px;cursor:pointer;font-size:14px}
+    .nav-links a:hover,.nav-links button:hover{color:#ffcc00}
+    .container{max-width:1150px;margin:35px auto;padding:0 20px}
+    .hero{background:#fff;color:#111827;border:1px solid #d8e0ea;border-radius:16px;padding:24px;margin-bottom:22px;box-shadow:0 8px 22px rgba(0,0,0,.15)}
+    h1{margin:0 0 8px}
+    .sub{color:#5f6f82;line-height:1.5}
+    .stats{display:flex;gap:12px;flex-wrap:wrap;margin:18px 0}
+    .stat{background:#fff;color:#111827;border:1px solid #d8e0ea;border-radius:12px;padding:14px 18px;min-width:140px}
+    .stat strong{display:block;font-size:26px;color:#b58100}
+    .filters{display:flex;gap:10px;flex-wrap:wrap;margin:20px 0}
+    select,button,input,textarea{font-family:Arial,sans-serif}
+    select{padding:11px;border-radius:8px;border:1px solid #d8e0ea}
+    button{padding:11px 14px;border:none;border-radius:8px;background:#1e90ff;color:white;font-weight:bold;cursor:pointer}
+    button.secondary{background:#203852}
+    button.danger{background:#b91c1c}
+    button.gold{background:#ffcc00;color:#111}
+    .list{display:grid;gap:18px}
+    .card{background:#fff;color:#111827;border:1px solid #d8e0ea;border-radius:16px;padding:20px;box-shadow:0 8px 22px rgba(0,0,0,.15)}
+    .row{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+    .label{font-size:12px;text-transform:uppercase;color:#5f6f82;font-weight:bold;margin-bottom:5px}
+    .value{line-height:1.45;color:#344256;margin-bottom:12px}
+    .pill{display:inline-block;padding:6px 9px;border-radius:999px;font-size:12px;font-weight:bold;margin:3px 5px 8px 0}
+    .approve{background:#dcfce7;color:#166534}
+    .review{background:#fef9c3;color:#854d0e}
+    .duplicate{background:#ede9fe;color:#5b21b6}
+    .reject{background:#fee2e2;color:#991b1b}
+    .none{background:#e5e7eb;color:#374151}
+    .ai-box{background:#f7f9fc;border:1px solid #d8e0ea;border-radius:12px;padding:15px;margin-top:14px}
+    .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+    .message{margin:18px 0;color:#d8e8ff;font-weight:bold}
+    .generated{background:#eef6ff;border:1px solid #cfe4ff;border-radius:10px;padding:12px;margin-top:10px}
+    @media(max-width:800px){.row{grid-template-columns:1fr}.nav-links a{margin-left:8px;font-size:13px}}
+  </style>
+</head>
+
+<body>
+
+<nav class="top-nav">
+  <div class="nav-brand" onclick="window.location.href='admin-dashboard.html'">Sports<span>Mistakes</span> Admin</div>
+  <div class="nav-links">
+    <a href="admin-dashboard.html">Dashboard</a>
+    <a href="admin-submissions.html">Submissions</a>
+    <a href="admin-ai-review.html">AI Review</a>
+    <button onclick="logout()">Logout</button>
+  </div>
+</nav>
+
+<div class="container">
+  <div class="hero">
+    <h1>AI Review Dashboard</h1>
+    <div class="sub">
+      Review pending submissions with AI moderation fields. This page is ready for the AI engine we are building next.
+    </div>
+  </div>
+
+  <div class="stats" id="stats"></div>
+
+  <div class="filters">
+    <select id="statusFilter" onchange="renderSubmissions()">
+      <option value="all">All AI Statuses</option>
+      <option value="not_reviewed">Not Reviewed</option>
+      <option value="reviewed">Reviewed</option>
+    </select>
+
+    <select id="recommendationFilter" onchange="renderSubmissions()">
+      <option value="all">All Recommendations</option>
+      <option value="APPROVE">Approve</option>
+      <option value="REVIEW">Needs Review</option>
+      <option value="DUPLICATE">Possible Duplicate</option>
+      <option value="REJECT">Reject</option>
+    </select>
+
+    <button onclick="loadSubmissions()">Refresh</button>
+  </div>
+
+  <div id="message" class="message">Loading...</div>
+  <div id="list" class="list"></div>
+</div>
+
+<script>
+  const SUPABASE_URL = "https://scwjlljurircxuufhqih.supabase.co";
+  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNjd2psbGp1cmlyY3h1dWZocWloIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyNjUyMjcsImV4cCI6MjA5Njg0MTIyN30.WF0HRRb9mAkuOySjabTd8CZXVZRqF0MhMl0N2mafnns";
+  const client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  let submissions = [];
+
+  async function requireLogin() {
+    const { data } = await client.auth.getSession();
+    if (!data.session) {
+      window.location.href = "admin-login.html";
+      return false;
+    }
+    return true;
+  }
+
+  async function logout() {
+    await client.auth.signOut();
+    window.location.href = "admin-login.html";
+  }
+
+  async function loadSubmissions() {
+    const ok = await requireLogin();
+    if (!ok) return;
+
+    document.getElementById("message").innerText = "Loading submissions...";
+
+    const { data, error } = await client
+      .from("mistake_submissions")
+      .select("*")
+      .eq("status", "pending")
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      console.error(error);
+      document.getElementById("message").innerText = "Error loading submissions.";
+      return;
+    }
+
+    submissions = data || [];
+    renderStats();
+    renderSubmissions();
+  }
+
+  function renderStats() {
+    const total = submissions.length;
+    const notReviewed = submissions.filter(s => (s.ai_status || "not_reviewed") === "not_reviewed").length;
+    const approve = submissions.filter(s => s.ai_recommendation === "APPROVE").length;
+    const duplicate = submissions.filter(s => s.ai_recommendation === "DUPLICATE").length;
+    const reject = submissions.filter(s => s.ai_recommendation === "REJECT").length;
+
+    document.getElementById("stats").innerHTML = `
+      <div class="stat"><strong>${total}</strong>Pending</div>
+      <div class="stat"><strong>${notReviewed}</strong>Not Reviewed</div>
+      <div class="stat"><strong>${approve}</strong>AI Approve</div>
+      <div class="stat"><strong>${duplicate}</strong>Duplicates</div>
+      <div class="stat"><strong>${reject}</strong>Reject</div>
+    `;
+  }
+
+  function renderSubmissions() {
+    const list = document.getElementById("list");
+    const message = document.getElementById("message");
+    const statusFilter = document.getElementById("statusFilter").value;
+    const recommendationFilter = document.getElementById("recommendationFilter").value;
+
+    let filtered = [...submissions];
+
+    if (statusFilter !== "all") {
+      filtered = filtered.filter(s => (s.ai_status || "not_reviewed") === statusFilter);
+    }
+
+    if (recommendationFilter !== "all") {
+      filtered = filtered.filter(s => s.ai_recommendation === recommendationFilter);
+    }
+
+    message.innerText = `${filtered.length} submission${filtered.length === 1 ? "" : "s"} found`;
+
+    if (filtered.length === 0) {
+      list.innerHTML = "";
+      return;
+    }
+
+    list.innerHTML = filtered.map(s => `
+      <div class="card">
+        <div>
+          ${recommendationPill(s.ai_recommendation)}
+          <span class="pill none">AI Status: ${escapeHtml(s.ai_status || "not_reviewed")}</span>
+          ${s.ai_confidence !== null && s.ai_confidence !== undefined ? `<span class="pill none">Confidence: ${s.ai_confidence}%</span>` : ""}
+        </div>
+
+        <div class="row">
+          <div>
+            <div class="label">Submitted Title</div>
+            <div class="value"><strong>${escapeHtml(s.title || "Untitled")}</strong></div>
+
+            <div class="label">Submitted Sport / Category</div>
+            <div class="value">${escapeHtml(s.sport || "")} ${s.category ? "• " + escapeHtml(s.category) : ""}</div>
+
+            <div class="label">Teams / People</div>
+            <div class="value">${escapeHtml(s.teams_people || "Not provided")}</div>
+
+            <div class="label">Submitted Summary</div>
+            <div class="value">${escapeHtml(s.summary || "No summary")}</div>
+
+            <div class="label">Why It Matters</div>
+            <div class="value">${escapeHtml(s.why_it_matters || "Not provided")}</div>
+          </div>
+
+          <div>
+            <div class="ai-box">
+              <div class="label">AI Duplicate Score</div>
+              <div class="value">${s.ai_duplicate_score ?? "Not checked"}${s.ai_duplicate_score !== null && s.ai_duplicate_score !== undefined ? "%" : ""}</div>
+
+              <div class="label">Possible Duplicate</div>
+              <div class="value">${escapeHtml(s.ai_duplicate_title || "None detected")}</div>
+
+              <div class="label">AI Spam Score</div>
+              <div class="value">${s.ai_spam_score ?? "Not checked"}${s.ai_spam_score !== null && s.ai_spam_score !== undefined ? "%" : ""}</div>
+
+              <div class="label">Safety Flags</div>
+              <div class="value">${escapeHtml(s.ai_safety_flags || "None")}</div>
+
+              <div class="generated">
+                <div class="label">AI Generated Version</div>
+                <div class="value"><strong>${escapeHtml(s.ai_generated_title || "Not generated yet")}</strong></div>
+                <div class="value">${escapeHtml(s.ai_generated_summary || "")}</div>
+                <div class="value">${escapeHtml(s.ai_generated_why_it_matters || "")}</div>
+                <div class="value">
+                  ${s.ai_generated_sport ? escapeHtml(s.ai_generated_sport) : ""}
+                  ${s.ai_generated_category ? " • " + escapeHtml(s.ai_generated_category) : ""}
+                  ${s.ai_generated_controversy_score ? " • Score " + escapeHtml(s.ai_generated_controversy_score) + "/100" : ""}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="actions">
+          <button class="gold" onclick="markMockReviewed('${s.id}')">Mark AI Reviewed</button>
+          <button onclick="openOriginalAdmin()">Open Submissions Admin</button>
+        </div>
+      </div>
+    `).join("");
+  }
+
+  function recommendationPill(rec) {
+    if (rec === "APPROVE") return `<span class="pill approve">AI: APPROVE</span>`;
+    if (rec === "REVIEW") return `<span class="pill review">AI: REVIEW</span>`;
+    if (rec === "DUPLICATE") return `<span class="pill duplicate">AI: DUPLICATE</span>`;
+    if (rec === "REJECT") return `<span class="pill reject">AI: REJECT</span>`;
+    return `<span class="pill none">AI: NOT REVIEWED</span>`;
+  }
+
+  async function markMockReviewed(id) {
+    const { error } = await client
+      .from("mistake_submissions")
+      .update({
+        ai_status: "reviewed",
+        ai_recommendation: "REVIEW",
+        ai_confidence: 50,
+        ai_reviewed_at: new Date().toISOString()
+      })
+      .eq("id", id);
+
+    if (error) {
+      alert("Could not update AI fields.");
+      console.error(error);
+      return;
+    }
+
+    await loadSubmissions();
+  }
+
+  function openOriginalAdmin() {
+    window.location.href = "admin-submissions.html";
+  }
+
+  function escapeHtml(value) {
+    return String(value || "")
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#039;");
+  }
+
+  loadSubmissions();
+</script>
+
+</body>
+</html>
