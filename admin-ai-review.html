@@ -260,7 +260,7 @@ async function reviewOne(id) {
   runningReviewIds.add(id);
   renderSubmissions();
 
-  const { data, error } = await client.functions.invoke("review-submission", {
+  const { data, error } = await client.functions.invoke("review-submission-v2", {
     body: { submission_id: id }
   });
 
