@@ -9,6 +9,7 @@
     body{margin:0;font-family:Arial,sans-serif;background:#07111f;color:#fff}
     .top-nav{display:flex;justify-content:space-between;align-items:center;background:#0d1b2e;border-bottom:1px solid #203852;padding:14px 20px}
     .nav-brand{font-weight:bold;font-size:20px;color:#fff;cursor:pointer}
+    .nav-brand span{color:#ffcc00}
     .nav-links a{color:#74b9ff;text-decoration:none;font-weight:bold;margin-left:18px}
     .nav-links a:hover{color:#ffcc00}
     .container{max-width:1150px;margin:36px auto 70px;padding:0 20px}
@@ -24,17 +25,18 @@
     .count{font-size:34px;font-weight:bold;color:#ffcc00;margin:14px 0 4px}
     .label{font-size:13px;color:#9fb2c7}
     .button{display:inline-block;margin-top:14px;background:#1e90ff;color:white;text-decoration:none;border-radius:8px;padding:10px 13px;font-weight:bold}
-    .danger{background:#8b1e1e}.green{background:#166534}.gold{background:#6b5b1e}
+    .danger{background:#8b1e1e}.green{background:#166534}.gold{background:#6b5b1e}.purple{background:#5b21b6}
     .logout{background:#444;color:white;border:none;border-radius:8px;padding:9px 12px;font-weight:bold;cursor:pointer;margin-left:14px}
     @media(max-width:760px){.nav-links a{margin-left:10px;font-size:14px}h1{font-size:32px}}
   </style>
 </head>
 <body>
 <nav class="top-nav">
-  <div class="nav-brand" onclick="window.location.href='admin-dashboard.html'">SportsMistakes Admin</div>
+  <div class="nav-brand" onclick="window.location.href='admin-dashboard.html'">Sports<span>Mistakes</span> Admin</div>
   <div class="nav-links">
     <a href="index.html">Public Site</a>
     <a href="admin-submissions.html">Submissions</a>
+    <a href="admin-ai-review.html">AI Review</a>
     <a href="admin-reports.html">Reports</a>
     <a href="admin-mistakes.html">Mistakes</a>
     <button class="logout" onclick="logout()">Log Out</button>
@@ -43,7 +45,7 @@
 
 <div class="container">
   <h1>Admin Dashboard</h1>
-  <p class="sub">Your command center for reviewing submissions, fixing reports, finding duplicates, importing new records, and managing the SportsMistakes database.</p>
+  <p class="sub">Your command center for reviewing submissions, AI moderation, fixing reports, finding duplicates, importing new records, and managing the SportsMistakes database.</p>
   <div id="status" class="status">Checking admin access...</div>
 
   <div class="grid">
@@ -59,6 +61,13 @@
       <div class="desc">Review user-submitted mistakes waiting for approval.</div>
       <div class="count" id="submissionCount">—</div><div class="label">Pending submissions</div>
       <span class="button">Review Submissions</span>
+    </div>
+
+    <div class="card" onclick="window.location.href='admin-ai-review.html'">
+      <div class="icon">🤖</div><div class="title">AI Review</div>
+      <div class="desc">Use AI fields to detect duplicates, spam, safety issues, and approval recommendations.</div>
+      <div class="count" id="aiReviewCount">—</div><div class="label">Not AI reviewed</div>
+      <span class="button purple">Open AI Review</span>
     </div>
 
     <div class="card" onclick="window.location.href='admin-reports.html'">
@@ -116,19 +125,26 @@ async function requireSportsMistakesAdminInline(){
 async function loadDashboardCounts(){
   const status=document.getElementById("status");
   status.innerText="Loading dashboard...";
-  const [mistakesResult,submissionsResult,reportsResult]=await Promise.all([
+
+  const [mistakesResult,submissionsResult,aiReviewResult,reportsResult]=await Promise.all([
     client.from("mistakes").select("id",{count:"exact",head:true}),
     client.from("mistake_submissions").select("id",{count:"exact",head:true}).eq("status","pending"),
+    client.from("mistake_submissions").select("id",{count:"exact",head:true}).eq("status","pending").eq("ai_status","not_reviewed"),
     client.from("mistake_reports").select("id",{count:"exact",head:true}).eq("status","open")
   ]);
+
   if(mistakesResult.error) console.error(mistakesResult.error);
   if(submissionsResult.error) console.error(submissionsResult.error);
+  if(aiReviewResult.error) console.error(aiReviewResult.error);
   if(reportsResult.error) console.error(reportsResult.error);
+
   const mistakeCount=mistakesResult.count ?? 0;
   document.getElementById("mistakeCount").innerText=mistakeCount;
   document.getElementById("manageCount").innerText=mistakeCount;
   document.getElementById("submissionCount").innerText=submissionsResult.count ?? 0;
+  document.getElementById("aiReviewCount").innerText=aiReviewResult.count ?? 0;
   document.getElementById("reportCount").innerText=reportsResult.count ?? 0;
+
   status.innerText="Admin access confirmed.";
 }
 
