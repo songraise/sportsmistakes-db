@@ -5,54 +5,26 @@
   <title>AI Review | SportsMistakes Admin</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
   <style>
     body{margin:0;font-family:Arial,sans-serif;background:#07111f;color:#fff}
     .top-nav{display:flex;justify-content:space-between;align-items:center;background:#0d1b2e;border-bottom:1px solid #203852;padding:14px 20px}
-    .nav-brand{font-weight:bold;font-size:20px;color:#fff;cursor:pointer}
-    .nav-brand span{color:#ffcc00}
+    .nav-brand{font-weight:bold;font-size:20px;color:#fff;cursor:pointer}.nav-brand span{color:#ffcc00}
     .nav-links a,.nav-links button{color:#74b9ff;background:none;border:none;text-decoration:none;font-weight:bold;margin-left:14px;cursor:pointer;font-size:14px}
-    .nav-links a:hover,.nav-links button:hover{color:#ffcc00}
-    .container{max-width:1150px;margin:35px auto;padding:0 20px}
-    .hero{background:#fff;color:#111827;border:1px solid #d8e0ea;border-radius:16px;padding:24px;margin-bottom:22px;box-shadow:0 8px 22px rgba(0,0,0,.15)}
-    h1{margin:0 0 8px}
-    .sub{color:#5f6f82;line-height:1.5}
-    .stats{display:flex;gap:12px;flex-wrap:wrap;margin:18px 0}
-    .stat{background:#fff;color:#111827;border:1px solid #d8e0ea;border-radius:12px;padding:14px 18px;min-width:140px}
-    .stat strong{display:block;font-size:26px;color:#b58100}
-    .filters{display:flex;gap:10px;flex-wrap:wrap;margin:20px 0}
-    select,button,input,textarea{font-family:Arial,sans-serif}
-    select{padding:11px;border-radius:8px;border:1px solid #d8e0ea}
-    button{padding:11px 14px;border:none;border-radius:8px;background:#1e90ff;color:white;font-weight:bold;cursor:pointer}
-    button.secondary{background:#203852}
-    button.danger{background:#b91c1c}
-    button.gold{background:#ffcc00;color:#111}
-    button.purple{background:#5b21b6}
-    button:disabled{opacity:.55;cursor:not-allowed}
-    .list{display:grid;gap:18px}
-    .card{background:#fff;color:#111827;border:1px solid #d8e0ea;border-radius:16px;padding:20px;box-shadow:0 8px 22px rgba(0,0,0,.15)}
-    .row{display:grid;grid-template-columns:1fr 1fr;gap:18px}
-    .label{font-size:12px;text-transform:uppercase;color:#5f6f82;font-weight:bold;margin-bottom:5px}
-    .value{line-height:1.45;color:#344256;margin-bottom:12px}
-    .pill{display:inline-block;padding:6px 9px;border-radius:999px;font-size:12px;font-weight:bold;margin:3px 5px 8px 0}
-    .approve{background:#dcfce7;color:#166534}
-    .review{background:#fef9c3;color:#854d0e}
-    .duplicate{background:#ede9fe;color:#5b21b6}
-    .reject{background:#fee2e2;color:#991b1b}
-    .none{background:#e5e7eb;color:#374151}
-    .ai-box{background:#f7f9fc;border:1px solid #d8e0ea;border-radius:12px;padding:15px;margin-top:14px}
-    .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
-    .message{margin:18px 0;color:#d8e8ff;font-weight:bold}
-    .generated{background:#eef6ff;border:1px solid #cfe4ff;border-radius:10px;padding:12px;margin-top:10px}
-    .progress-wrap{display:none;background:#fff;color:#111827;border:1px solid #d8e0ea;border-radius:12px;padding:14px;margin:15px 0}
-    .progress-bar{height:14px;background:#e5e7eb;border-radius:999px;overflow:hidden;margin-top:10px}
-    .progress-fill{height:100%;width:0%;background:#1e90ff}
-    @media(max-width:800px){.row{grid-template-columns:1fr}.nav-links a{margin-left:8px;font-size:13px}}
+    .container{max-width:1200px;margin:35px auto;padding:0 20px}.hero,.card,.stat{background:#fff;color:#111827;border:1px solid #d8e0ea;border-radius:16px;box-shadow:0 8px 22px rgba(0,0,0,.15)}
+    .hero{padding:24px;margin-bottom:22px}.sub{color:#5f6f82;line-height:1.5}.stats{display:flex;gap:12px;flex-wrap:wrap;margin:18px 0}.stat{padding:14px 18px;min-width:140px}.stat strong{display:block;font-size:26px;color:#b58100}
+    .filters,.actions{display:flex;gap:10px;flex-wrap:wrap;margin:20px 0}select,button{font-family:Arial,sans-serif}select{padding:11px;border-radius:8px;border:1px solid #d8e0ea}
+    button{padding:11px 14px;border:none;border-radius:8px;background:#1e90ff;color:white;font-weight:bold;cursor:pointer}button:disabled{opacity:.55;cursor:not-allowed}
+    .purple{background:#5b21b6}.green{background:#166534}.gold{background:#ffcc00;color:#111}.danger{background:#b91c1c}.secondary{background:#203852}
+    .list{display:grid;gap:18px}.card{padding:20px}.row{display:grid;grid-template-columns:1fr 1fr;gap:18px}.compare{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px}
+    .box{background:#f7f9fc;border:1px solid #d8e0ea;border-radius:12px;padding:14px}.generated{background:#eef6ff;border:1px solid #cfe4ff;border-radius:10px;padding:12px;margin-top:10px}
+    .label{font-size:12px;text-transform:uppercase;color:#5f6f82;font-weight:bold;margin-bottom:5px}.value{line-height:1.45;color:#344256;margin-bottom:12px}
+    .pill{display:inline-block;padding:6px 9px;border-radius:999px;font-size:12px;font-weight:bold;margin:3px 5px 8px 0}.approve{background:#dcfce7;color:#166534}.review{background:#fef9c3;color:#854d0e}.duplicate{background:#ede9fe;color:#5b21b6}.reject{background:#fee2e2;color:#991b1b}.none{background:#e5e7eb;color:#374151}
+    .message{margin:18px 0;color:#d8e8ff;font-weight:bold}.progress-wrap{display:none;background:#fff;color:#111827;border-radius:12px;padding:14px;margin:15px 0}.progress-bar{height:14px;background:#e5e7eb;border-radius:999px;overflow:hidden;margin-top:10px}.progress-fill{height:100%;width:0%;background:#1e90ff}
+    @media(max-width:850px){.row,.compare{grid-template-columns:1fr}.nav-links a{margin-left:8px;font-size:13px}}
   </style>
 </head>
 
 <body>
-
 <nav class="top-nav">
   <div class="nav-brand" onclick="window.location.href='admin-dashboard.html'">Sports<span>Mistakes</span> Admin</div>
   <div class="nav-links">
@@ -66,9 +38,7 @@
 <div class="container">
   <div class="hero">
     <h1>AI Review Dashboard</h1>
-    <div class="sub">
-      Review pending submissions with AI-assisted duplicate detection, spam checks, safety flags, quality scoring, and approval recommendations.
-    </div>
+    <div class="sub">Review submissions, compare duplicates, approve clean entries, or reject problems quickly.</div>
   </div>
 
   <div class="stats" id="stats"></div>
@@ -102,93 +72,109 @@
 </div>
 
 <script>
-  const SUPABASE_URL = "https://scwjlljurircxuufhqih.supabase.co";
-  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNjd2psbGp1cmlyY3h1dWZocWloIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyNjUyMjcsImV4cCI6MjA5Njg0MTIyN30.WF0HRRb9mAkuOySjabTd8CZXVZRqF0MhMl0N2mafnns";
-  const client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const SUPABASE_URL = "https://scwjlljurircxuufhqih.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNjd2psbGp1cmlyY3h1dWZocWloIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyNjUyMjcsImV4cCI6MjA5Njg0MTIyN30.WF0HRRb9mAkuOySjabTd8CZXVZRqF0MhMl0N2mafnns";
+const client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-  let submissions = [];
-  let runningReviewIds = new Set();
+let submissions = [];
+let duplicateMap = {};
+let runningReviewIds = new Set();
 
-  async function requireLogin() {
-    const { data } = await client.auth.getSession();
-    if (!data.session) {
-      window.location.href = "admin-login.html";
-      return false;
-    }
-    return true;
-  }
-
-  async function logout() {
-    await client.auth.signOut();
+async function requireLogin() {
+  const { data } = await client.auth.getSession();
+  if (!data.session) {
     window.location.href = "admin-login.html";
+    return false;
+  }
+  return true;
+}
+
+async function logout() {
+  await client.auth.signOut();
+  window.location.href = "admin-login.html";
+}
+
+async function loadSubmissions() {
+  const ok = await requireLogin();
+  if (!ok) return;
+
+  document.getElementById("message").innerText = "Loading submissions...";
+
+  const { data, error } = await client
+    .from("mistake_submissions")
+    .select("*")
+    .eq("status", "pending")
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    console.error(error);
+    document.getElementById("message").innerText = "Error loading submissions.";
+    return;
   }
 
-  async function loadSubmissions() {
-    const ok = await requireLogin();
-    if (!ok) return;
+  submissions = data || [];
+  await loadDuplicateDetails();
+  renderStats();
+  renderSubmissions();
+}
 
-    document.getElementById("message").innerText = "Loading submissions...";
+async function loadDuplicateDetails() {
+  duplicateMap = {};
+  const ids = [...new Set(submissions.map(s => s.ai_duplicate_match_id).filter(Boolean))];
+  if (ids.length === 0) return;
 
-    const { data, error } = await client
-      .from("mistake_submissions")
-      .select("*")
-      .eq("status", "pending")
-      .order("created_at", { ascending: false });
+  const { data, error } = await client
+    .from("mistakes")
+    .select("*")
+    .in("id", ids);
 
-    if (error) {
-      console.error(error);
-      document.getElementById("message").innerText = "Error loading submissions.";
-      return;
-    }
-
-    submissions = data || [];
-    renderStats();
-    renderSubmissions();
+  if (error) {
+    console.error(error);
+    return;
   }
 
-  function renderStats() {
-    const total = submissions.length;
-    const notReviewed = submissions.filter(s => (s.ai_status || "not_reviewed") === "not_reviewed").length;
-    const approve = submissions.filter(s => s.ai_recommendation === "APPROVE").length;
-    const duplicate = submissions.filter(s => s.ai_recommendation === "DUPLICATE").length;
-    const reject = submissions.filter(s => s.ai_recommendation === "REJECT").length;
+  (data || []).forEach(m => duplicateMap[m.id] = m);
+}
 
-    document.getElementById("stats").innerHTML = `
-      <div class="stat"><strong>${total}</strong>Pending</div>
-      <div class="stat"><strong>${notReviewed}</strong>Not Reviewed</div>
-      <div class="stat"><strong>${approve}</strong>AI Approve</div>
-      <div class="stat"><strong>${duplicate}</strong>Duplicates</div>
-      <div class="stat"><strong>${reject}</strong>Reject</div>
-    `;
+function renderStats() {
+  const total = submissions.length;
+  const notReviewed = submissions.filter(s => (s.ai_status || "not_reviewed") === "not_reviewed").length;
+  const approve = submissions.filter(s => s.ai_recommendation === "APPROVE").length;
+  const duplicate = submissions.filter(s => s.ai_recommendation === "DUPLICATE").length;
+  const reject = submissions.filter(s => s.ai_recommendation === "REJECT").length;
+
+  document.getElementById("stats").innerHTML = `
+    <div class="stat"><strong>${total}</strong>Pending</div>
+    <div class="stat"><strong>${notReviewed}</strong>Not Reviewed</div>
+    <div class="stat"><strong>${approve}</strong>AI Approve</div>
+    <div class="stat"><strong>${duplicate}</strong>Duplicates</div>
+    <div class="stat"><strong>${reject}</strong>Reject</div>
+  `;
+}
+
+function renderSubmissions() {
+  const list = document.getElementById("list");
+  const message = document.getElementById("message");
+  const statusFilter = document.getElementById("statusFilter").value;
+  const recommendationFilter = document.getElementById("recommendationFilter").value;
+
+  let filtered = [...submissions];
+
+  if (statusFilter !== "all") filtered = filtered.filter(s => (s.ai_status || "not_reviewed") === statusFilter);
+  if (recommendationFilter !== "all") filtered = filtered.filter(s => s.ai_recommendation === recommendationFilter);
+
+  message.innerText = `${filtered.length} submission${filtered.length === 1 ? "" : "s"} found`;
+
+  if (filtered.length === 0) {
+    list.innerHTML = "";
+    return;
   }
 
-  function renderSubmissions() {
-    const list = document.getElementById("list");
-    const message = document.getElementById("message");
-    const statusFilter = document.getElementById("statusFilter").value;
-    const recommendationFilter = document.getElementById("recommendationFilter").value;
+  list.innerHTML = filtered.map(s => {
+    const existing = s.ai_duplicate_match_id ? duplicateMap[s.ai_duplicate_match_id] : null;
+    const isRunning = runningReviewIds.has(s.id);
 
-    let filtered = [...submissions];
-
-    if (statusFilter !== "all") {
-      filtered = filtered.filter(s => (s.ai_status || "not_reviewed") === statusFilter);
-    }
-
-    if (recommendationFilter !== "all") {
-      filtered = filtered.filter(s => s.ai_recommendation === recommendationFilter);
-    }
-
-    message.innerText = `${filtered.length} submission${filtered.length === 1 ? "" : "s"} found`;
-
-    if (filtered.length === 0) {
-      list.innerHTML = "";
-      return;
-    }
-
-    list.innerHTML = filtered.map(s => {
-      const isRunning = runningReviewIds.has(s.id);
-
-      return `
+    return `
       <div class="card">
         <div>
           ${recommendationPill(s.ai_recommendation)}
@@ -196,169 +182,260 @@
           ${s.ai_confidence !== null && s.ai_confidence !== undefined ? `<span class="pill none">Confidence: ${s.ai_confidence}%</span>` : ""}
         </div>
 
-        <div class="row">
-          <div>
-            <div class="label">Submitted Title</div>
-            <div class="value"><strong>${escapeHtml(s.title || "Untitled")}</strong></div>
-
-            <div class="label">Submitted Sport / Category</div>
-            <div class="value">${escapeHtml(s.sport || "")} ${s.category ? "• " + escapeHtml(s.category) : ""}</div>
-
+        <div class="compare">
+          <div class="box">
+            <div class="label">Submitted</div>
+            <h2>${escapeHtml(s.title || "Untitled")}</h2>
+            <div class="value">${escapeHtml(s.sport || "")} ${s.year ? "• " + escapeHtml(s.year) : ""} ${s.category ? "• " + escapeHtml(s.category) : ""}</div>
             <div class="label">Teams / People</div>
             <div class="value">${escapeHtml(s.teams_people || "Not provided")}</div>
-
-            <div class="label">Submitted Summary</div>
+            <div class="label">Summary</div>
             <div class="value">${escapeHtml(s.summary || "No summary")}</div>
-
             <div class="label">Why It Matters</div>
             <div class="value">${escapeHtml(s.why_it_matters || "Not provided")}</div>
           </div>
 
-          <div>
-            <div class="ai-box">
-              <div class="label">AI Duplicate Score</div>
-              <div class="value">${s.ai_duplicate_score ?? "Not checked"}${s.ai_duplicate_score !== null && s.ai_duplicate_score !== undefined ? "%" : ""}</div>
+          <div class="box">
+            <div class="label">Possible Existing Duplicate</div>
+            ${existing ? `
+              <h2>${escapeHtml(existing.title || "Untitled")}</h2>
+              <div class="value">${escapeHtml(existing.sport || "")} ${existing.year ? "• " + escapeHtml(existing.year) : ""} ${existing.category ? "• " + escapeHtml(existing.category) : ""}</div>
+              <div class="label">Teams / People</div>
+              <div class="value">${escapeHtml(existing.teams_people || "Not provided")}</div>
+              <div class="label">Summary</div>
+              <div class="value">${escapeHtml(existing.summary || "No summary")}</div>
+              <button class="secondary" onclick="window.open('mistake.html?id=${existing.id}', '_blank')">Open Existing Mistake</button>
+            ` : `
+              <h2>${escapeHtml(s.ai_duplicate_title || "None detected")}</h2>
+              <div class="value">No full duplicate record loaded.</div>
+            `}
+          </div>
+        </div>
 
-              <div class="label">Possible Duplicate</div>
-              <div class="value">${escapeHtml(s.ai_duplicate_title || "None detected")}</div>
+        <div class="row">
+          <div class="box">
+            <div class="label">AI Duplicate Score</div>
+            <div class="value">${s.ai_duplicate_score ?? "Not checked"}${s.ai_duplicate_score !== null && s.ai_duplicate_score !== undefined ? "%" : ""}</div>
+            <div class="label">AI Spam Score</div>
+            <div class="value">${s.ai_spam_score ?? "Not checked"}${s.ai_spam_score !== null && s.ai_spam_score !== undefined ? "%" : ""}</div>
+            <div class="label">Safety Flags</div>
+            <div class="value">${escapeHtml(s.ai_safety_flags || "None")}</div>
+          </div>
 
-              <div class="label">AI Spam Score</div>
-              <div class="value">${s.ai_spam_score ?? "Not checked"}${s.ai_spam_score !== null && s.ai_spam_score !== undefined ? "%" : ""}</div>
-
-              <div class="label">Safety Flags</div>
-              <div class="value">${escapeHtml(s.ai_safety_flags || "None")}</div>
-
-              <div class="generated">
-                <div class="label">AI Generated Version</div>
-                <div class="value"><strong>${escapeHtml(s.ai_generated_title || "Not generated yet")}</strong></div>
-                <div class="value">${escapeHtml(s.ai_generated_summary || "")}</div>
-                <div class="value">${escapeHtml(s.ai_generated_why_it_matters || "")}</div>
-                <div class="value">
-                  ${s.ai_generated_sport ? escapeHtml(s.ai_generated_sport) : ""}
-                  ${s.ai_generated_category ? " • " + escapeHtml(s.ai_generated_category) : ""}
-                  ${s.ai_generated_controversy_score ? " • Score " + escapeHtml(s.ai_generated_controversy_score) + "/100" : ""}
-                </div>
-              </div>
+          <div class="generated">
+            <div class="label">AI Generated Publish Version</div>
+            <div class="value"><strong>${escapeHtml(s.ai_generated_title || "Not generated yet")}</strong></div>
+            <div class="value">${escapeHtml(s.ai_generated_summary || "")}</div>
+            <div class="value">${escapeHtml(s.ai_generated_why_it_matters || "")}</div>
+            <div class="value">
+              ${s.ai_generated_sport ? escapeHtml(s.ai_generated_sport) : ""}
+              ${s.ai_generated_category ? " • " + escapeHtml(s.ai_generated_category) : ""}
+              ${s.ai_generated_controversy_score ? " • Score " + escapeHtml(s.ai_generated_controversy_score) + "/100" : ""}
             </div>
           </div>
         </div>
 
         <div class="actions">
-          <button class="purple" onclick="reviewOne('${s.id}')" ${isRunning ? "disabled" : ""}>
-            ${isRunning ? "Reviewing..." : "🤖 Review with AI"}
-          </button>
+          <button class="purple" onclick="reviewOne('${s.id}')" ${isRunning ? "disabled" : ""}>${isRunning ? "Reviewing..." : "🤖 Review with AI"}</button>
+          <button class="green" onclick="approveSubmission('${s.id}')">✅ Approve & Publish</button>
+          <button class="gold" onclick="markNeedsReview('${s.id}')">🟡 Needs Review</button>
+          <button class="danger" onclick="rejectDuplicate('${s.id}')">🟣 Reject Duplicate</button>
+          <button class="danger" onclick="rejectSpam('${s.id}')">🚫 Reject Spam</button>
           <button onclick="openOriginalAdmin()">Open Submissions Admin</button>
         </div>
       </div>
     `;
-    }).join("");
+  }).join("");
+}
+
+function recommendationPill(rec) {
+  if (rec === "APPROVE") return `<span class="pill approve">AI: APPROVE</span>`;
+  if (rec === "REVIEW") return `<span class="pill review">AI: REVIEW</span>`;
+  if (rec === "DUPLICATE") return `<span class="pill duplicate">AI: DUPLICATE</span>`;
+  if (rec === "REJECT") return `<span class="pill reject">AI: REJECT</span>`;
+  return `<span class="pill none">AI: NOT REVIEWED</span>`;
+}
+
+async function reviewOne(id) {
+  runningReviewIds.add(id);
+  renderSubmissions();
+
+  const { data, error } = await client.functions.invoke("review-submission", {
+    body: { submission_id: id }
+  });
+
+  runningReviewIds.delete(id);
+
+  if (error || !data || data.success === false) {
+    console.error(error || data);
+    alert("AI review failed. Check Edge Function logs.");
+    renderSubmissions();
+    return;
   }
 
-  function recommendationPill(rec) {
-    if (rec === "APPROVE") return `<span class="pill approve">AI: APPROVE</span>`;
-    if (rec === "REVIEW") return `<span class="pill review">AI: REVIEW</span>`;
-    if (rec === "DUPLICATE") return `<span class="pill duplicate">AI: DUPLICATE</span>`;
-    if (rec === "REJECT") return `<span class="pill reject">AI: REJECT</span>`;
-    return `<span class="pill none">AI: NOT REVIEWED</span>`;
+  await loadSubmissions();
+}
+
+async function reviewAllPending() {
+  const targets = submissions.filter(s => (s.ai_status || "not_reviewed") === "not_reviewed");
+
+  if (targets.length === 0) {
+    alert("No not-reviewed submissions to review.");
+    return;
   }
 
-  async function reviewOne(id) {
-    runningReviewIds.add(id);
+  if (!confirm(`Run AI review on ${targets.length} pending submission${targets.length === 1 ? "" : "s"}?`)) return;
+
+  document.getElementById("reviewAllBtn").disabled = true;
+  document.getElementById("progressWrap").style.display = "block";
+
+  let completed = 0;
+  let failed = 0;
+
+  for (const s of targets) {
+    runningReviewIds.add(s.id);
     renderSubmissions();
 
+    document.getElementById("progressText").innerText = `AI reviewing ${completed + 1} of ${targets.length}...`;
+    document.getElementById("progressFill").style.width = Math.round((completed / targets.length) * 100) + "%";
+
     const { data, error } = await client.functions.invoke("review-submission", {
-      body: { submission_id: id }
+      body: { submission_id: s.id }
     });
 
-    runningReviewIds.delete(id);
+    runningReviewIds.delete(s.id);
 
-    if (error) {
-      console.error(error);
-      alert("AI review failed. Check the Edge Function logs.");
-      renderSubmissions();
-      return;
+    if (error || !data || data.success === false) {
+      failed++;
+      console.error("AI review failed", s.id, error || data);
     }
 
-    if (!data || data.success === false) {
-      console.error(data);
-      alert("AI review failed: " + (data && data.error ? data.error : "Unknown error"));
-      renderSubmissions();
-      return;
-    }
-
-    await loadSubmissions();
+    completed++;
   }
 
-  async function reviewAllPending() {
-    const targets = submissions.filter(s => (s.ai_status || "not_reviewed") === "not_reviewed");
+  document.getElementById("progressFill").style.width = "100%";
+  document.getElementById("progressText").innerText = `AI review complete. ${completed - failed} succeeded, ${failed} failed.`;
+  document.getElementById("reviewAllBtn").disabled = false;
 
-    if (targets.length === 0) {
-      alert("No not-reviewed submissions to review.");
-      return;
-    }
+  await loadSubmissions();
 
-    const confirmed = confirm(`Run AI review on ${targets.length} pending submission${targets.length === 1 ? "" : "s"}?`);
-    if (!confirmed) return;
+  setTimeout(() => {
+    document.getElementById("progressWrap").style.display = "none";
+    document.getElementById("progressFill").style.width = "0%";
+  }, 2500);
+}
 
-    document.getElementById("reviewAllBtn").disabled = true;
-    document.getElementById("progressWrap").style.display = "block";
+async function approveSubmission(id) {
+  const s = submissions.find(x => x.id === id);
+  if (!s) return alert("Submission not found.");
 
-    let completed = 0;
-    let failed = 0;
+  if (!confirm(`Approve and publish "${s.ai_generated_title || s.title}"?`)) return;
 
-    for (const s of targets) {
-      runningReviewIds.add(s.id);
-      renderSubmissions();
+  const payload = {
+    title: s.ai_generated_title || s.title || "Untitled Mistake",
+    sport: s.ai_generated_sport || s.sport || null,
+    year: s.year || null,
+    category: s.ai_generated_category || s.category || null,
+    subcategory: s.ai_generated_subcategory || s.subcategory || null,
+    teams_people: s.ai_generated_teams_people || s.teams_people || null,
+    summary: s.ai_generated_summary || s.summary || null,
+    why_it_matters: s.ai_generated_why_it_matters || s.why_it_matters || null,
+    controversy_score: s.ai_generated_controversy_score || s.controversy_score || 70,
+    source_1: s.ai_source_1 || s.source_1 || null,
+    source_2: s.ai_source_2 || s.source_2 || null,
+    views: 0
+  };
 
-      document.getElementById("progressText").innerText =
-        `AI reviewing ${completed + 1} of ${targets.length}...`;
+  const { error: insertError } = await client.from("mistakes").insert([payload]);
 
-      const percent = Math.round((completed / targets.length) * 100);
-      document.getElementById("progressFill").style.width = percent + "%";
-
-      const { data, error } = await client.functions.invoke("review-submission", {
-        body: { submission_id: s.id }
-      });
-
-      runningReviewIds.delete(s.id);
-
-      if (error || !data || data.success === false) {
-        failed++;
-        console.error("AI review failed for", s.id, error || data);
-      }
-
-      completed++;
-    }
-
-    document.getElementById("progressFill").style.width = "100%";
-    document.getElementById("progressText").innerText =
-      `AI review complete. ${completed - failed} succeeded, ${failed} failed.`;
-
-    document.getElementById("reviewAllBtn").disabled = false;
-
-    await loadSubmissions();
-
-    setTimeout(() => {
-      document.getElementById("progressWrap").style.display = "none";
-      document.getElementById("progressFill").style.width = "0%";
-    }, 2500);
+  if (insertError) {
+    console.error(insertError);
+    alert("Publish failed. Check console.");
+    return;
   }
 
-  function openOriginalAdmin() {
-    window.location.href = "admin-submissions.html";
+  const { error: updateError } = await client
+    .from("mistake_submissions")
+    .update({
+      status: "approved",
+      review_notes: "Approved and published from AI Review.",
+      ai_status: "reviewed"
+    })
+    .eq("id", id);
+
+  if (updateError) {
+    console.error(updateError);
+    alert("Published, but could not update submission status.");
+    return;
   }
 
-  function escapeHtml(value) {
-    return String(value || "")
-      .replaceAll("&", "&amp;")
-      .replaceAll("<", "&lt;")
-      .replaceAll(">", "&gt;")
-      .replaceAll('"', "&quot;")
-      .replaceAll("'", "&#039;");
+  await loadSubmissions();
+}
+
+async function rejectDuplicate(id) {
+  const s = submissions.find(x => x.id === id);
+  if (!s) return;
+
+  const note = `Rejected as duplicate${s.ai_duplicate_title ? " of: " + s.ai_duplicate_title : ""}.`;
+
+  if (!confirm(note)) return;
+
+  await updateSubmissionStatus(id, "rejected", note);
+}
+
+async function rejectSpam(id) {
+  if (!confirm("Reject this submission as spam/off-topic/unsafe?")) return;
+  await updateSubmissionStatus(id, "rejected", "Rejected as spam/off-topic/unsafe from AI Review.");
+}
+
+async function markNeedsReview(id) {
+  const { error } = await client
+    .from("mistake_submissions")
+    .update({
+      ai_status: "reviewed",
+      ai_recommendation: "REVIEW",
+      review_notes: "Marked for human review from AI Review."
+    })
+    .eq("id", id);
+
+  if (error) {
+    console.error(error);
+    alert("Could not mark needs review.");
+    return;
   }
 
-  loadSubmissions();
+  await loadSubmissions();
+}
+
+async function updateSubmissionStatus(id, status, review_notes) {
+  const { error } = await client
+    .from("mistake_submissions")
+    .update({ status, review_notes })
+    .eq("id", id);
+
+  if (error) {
+    console.error(error);
+    alert("Could not update submission.");
+    return;
+  }
+
+  await loadSubmissions();
+}
+
+function openOriginalAdmin() {
+  window.location.href = "admin-submissions.html";
+}
+
+function escapeHtml(value) {
+  return String(value || "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
+loadSubmissions();
 </script>
-
 </body>
 </html>
