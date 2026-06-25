@@ -123,6 +123,24 @@
       resize:vertical;
     }
 
+    .help {
+      margin-top:6px;
+      color:#5f6f82;
+      font-size:13px;
+      line-height:1.4;
+    }
+
+    .privacy-note {
+      background:#eef6ff;
+      border:1px solid #cfe4ff;
+      border-radius:12px;
+      padding:14px;
+      margin:18px 0;
+      color:#344256;
+      line-height:1.5;
+      font-size:14px;
+    }
+
     .checkbox-row {
       display:flex;
       gap:10px;
@@ -220,6 +238,19 @@
         Bad, unsafe, or duplicate submissions may be rejected without review.
       </p>
     </div>
+
+
+    <div class="privacy-note">
+      <strong>Optional notifications:</strong> Add your name and email if you want to be notified when your submission is approved, merged with an existing mistake, or needs more information. No account or password is required. Your email will never appear publicly.
+    </div>
+
+    <label>Your Name <span style="font-weight:normal;color:#5f6f82;">(optional)</span></label>
+    <input id="submitter_name" placeholder="Example: Jason" />
+    <div class="help">Used only for admin review and future contributor credit.</div>
+
+    <label>Email Address <span style="font-weight:normal;color:#5f6f82;">(optional)</span></label>
+    <input id="submitter_email" type="email" placeholder="you@example.com" />
+    <div class="help">Used only to notify you about this submission. No login or password required.</div>
 
     <label>Title</label>
     <input id="title" placeholder="Example: Seahawks Goal-Line Pass" />
@@ -448,6 +479,9 @@
   async function submitMistake() {
     const message = document.getElementById("message");
 
+    const submitter_name = document.getElementById("submitter_name").value.trim();
+    const submitter_email = document.getElementById("submitter_email").value.trim().toLowerCase();
+
     const title = document.getElementById("title").value.trim();
     const sport = document.getElementById("sport").value;
     const category = document.getElementById("category").value;
@@ -457,6 +491,11 @@
 
     if (!title || !description || !source_url) {
       message.innerText = "Please add a title, description, and source URL.";
+      return;
+    }
+
+    if (submitter_email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(submitter_email)) {
+      message.innerText = "Please enter a valid email address, or leave the email field blank.";
       return;
     }
 
@@ -515,8 +554,24 @@
         title,
         sport,
         category,
+
+        // Original submit-page fields
         description,
         source_url,
+
+        // AI review / publishing fields
+        summary: description,
+        why_it_matters: "",
+        source_1: source_url,
+        source_2: null,
+        teams_people: "",
+        controversy_score: 70,
+
+        // Optional notification / contributor fields
+        submitter_name: submitter_name || null,
+        submitter_email: submitter_email || null,
+        submitter_trust_score: 50,
+
         status: "pending"
       });
 
@@ -528,6 +583,8 @@
 
     message.innerText = "Submission received. Thank you! It will be reviewed before publishing.";
 
+    document.getElementById("submitter_name").value = "";
+    document.getElementById("submitter_email").value = "";
     document.getElementById("title").value = "";
     document.getElementById("sport").value = "";
     document.getElementById("category").value = "";
