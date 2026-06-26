@@ -446,23 +446,54 @@ async function approveSubmission(id) {
     return;
   }
 
+  await sendSubmissionEmail(
+    s.submitter_email,
+    payload.title,
+    "approved",
+    "Your submission was approved and published on SportsMistakes."
+  );
+
   await loadSubmissions();
 }
 
 async function rejectDuplicate(id) {
   const s = submissions.find(x => x.id === id);
   if (!s) return;
+
   const note = `Rejected as duplicate${s.ai_duplicate_title ? " of: " + s.ai_duplicate_title : ""}.`;
+
   if (!confirm(note)) return;
+
   await updateSubmissionStatus(id, "rejected", note);
+
+  await sendSubmissionEmail(
+    s.submitter_email,
+    s.title || s.ai_generated_title || "your submission",
+    "rejected",
+    "This mistake already exists in the SportsMistakes database. Thank you for contributing — duplicates still help us improve coverage."
+  );
 }
 
 async function rejectSpam(id) {
+  const s = submissions.find(x => x.id === id);
+  if (!s) return;
+
   if (!confirm("Reject this submission as spam/off-topic/unsafe?")) return;
+
   await updateSubmissionStatus(id, "rejected", "Rejected as spam/off-topic/unsafe from AI Review 2.0.");
+
+  await sendSubmissionEmail(
+    s.submitter_email,
+    s.title || s.ai_generated_title || "your submission",
+    "rejected",
+    "This submission did not meet the SportsMistakes submission guidelines. This may happen when a submission is off-topic, unsafe, promotional, unsupported, or not sports-related."
+  );
 }
 
 async function markNeedsReview(id) {
+  const s = submissions.find(x => x.id === id);
+  if (!s) return;
+
   const { error } = await client
     .from("mistake_submissions")
     .update({
@@ -477,6 +508,13 @@ async function markNeedsReview(id) {
     alert("Could not mark needs review.");
     return;
   }
+
+  await sendSubmissionEmail(
+    s.submitter_email,
+    s.title || s.ai_generated_title || "your submission",
+    "rejected",
+    "Your submission needs additional human review before it can be accepted. No action is needed right now."
+  );
 
   await loadSubmissions();
 }
@@ -494,6 +532,27 @@ async function updateSubmissionStatus(id, status, review_notes) {
   }
 
   await loadSubmissions();
+}
+
+async function sendSubmissionEmail(email, title, status, reason = "") {
+  if (!email) return;
+
+  try {
+    const { data, error } = await client.functions.invoke("send-submission-email", {
+      body: {
+        email,
+        title,
+        status,
+        reason
+      }
+    });
+
+    if (error || (data && data.success === false)) {
+      console.error("Email notification failed", error || data);
+    }
+  } catch (err) {
+    console.error("Email notification failed", err);
+  }
 }
 
 function openOriginalAdmin() {
