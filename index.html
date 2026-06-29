@@ -1038,7 +1038,8 @@
         mistakes = await fetchAllMistakes();
         await loadVoteStats();
       } catch (error) {
-        document.getElementById("stats").innerText = "Error loading mistakes.";
+        const msg = error?.message || JSON.stringify(error) || "Unknown error";
+        document.getElementById("stats").innerText = "Error loading mistakes: " + msg;
         console.error(error);
         return;
       }
@@ -1371,7 +1372,11 @@
     document.getElementById("yearFilter").addEventListener("change", renderMistakes);
     document.getElementById("categoryFilter").addEventListener("change", renderMistakes);
 
-    loadMistakes();
+    loadMistakes().catch(err => {
+      console.error(err);
+      const stats = document.getElementById("stats");
+      if (stats) stats.innerText = "Error loading page: " + (err?.message || err);
+    });
   </script>
 </body>
 </html>
