@@ -1,800 +1,167 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <title>Submit a Mistake | SportsMistakes</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-  <style>
-    :root {
-      --page-bg:#07111f;
-      --surface:#ffffff;
-      --surface-soft:#f7f9fc;
-      --border:#d8e0ea;
-      --text:#111827;
-      --muted:#5f6f82;
-      --blue:#1e90ff;
-      --blue-dark:#0d3b66;
-      --gold:#ffcc00;
-      --gold-dark:#b58100;
-      --nav-bg:#0d1b2e;
-    }
-
-    body {
-      margin:0;
-      font-family:Arial,sans-serif;
-      background:var(--page-bg);
-      color:#fff;
-    }
-
-    .top-nav {
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      background:var(--nav-bg);
-      border-bottom:1px solid #203852;
-      padding:14px 20px;
-    }
-
-    .nav-brand {
-      font-weight:bold;
-      font-size:20px;
-      color:#fff;
-      cursor:pointer;
-    }
-
-    .nav-brand span {
-      color:var(--gold);
-    }
-
-    .nav-links a {
-      color:#74b9ff;
-      text-decoration:none;
-      font-weight:bold;
-      margin-left:18px;
-    }
-
-    .nav-links a:hover {
-      color:var(--gold);
-    }
-
-    .container {
-      max-width:800px;
-      margin:40px auto 70px;
-      padding:0 20px;
-    }
-
-    .card {
-      background:var(--surface);
-      color:var(--text);
-      border:1px solid var(--border);
-      border-radius:16px;
-      padding:26px;
-      box-shadow:0 8px 22px rgba(0,0,0,.14);
-    }
-
-    h1 {
-      margin-top:0;
-      font-size:34px;
-      color:var(--text);
-    }
-
-    h2 {
-      font-size:20px;
-      margin-top:24px;
-      color:var(--text);
-    }
-
-    p, li {
-      color:#344256;
-      line-height:1.6;
-    }
-
-    .rules {
-      background:var(--surface-soft);
-      border:1px solid var(--border);
-      border-radius:12px;
-      padding:18px;
-      margin:20px 0;
-    }
-
-    label {
-      display:block;
-      margin-top:18px;
-      font-weight:bold;
-      color:#344256;
-    }
-
-    input, select, textarea {
-      width:100%;
-      box-sizing:border-box;
-      margin-top:8px;
-      padding:12px;
-      border-radius:8px;
-      border:1px solid var(--border);
-      background:#ffffff;
-      color:var(--text);
-      font-size:15px;
-    }
-
-    textarea {
-      min-height:130px;
-      resize:vertical;
-    }
-
-    .help {
-      margin-top:6px;
-      color:#5f6f82;
-      font-size:13px;
-      line-height:1.4;
-    }
-
-    .privacy-note {
-      background:#eef6ff;
-      border:1px solid #cfe4ff;
-      border-radius:12px;
-      padding:14px;
-      margin:18px 0;
-      color:#344256;
-      line-height:1.5;
-      font-size:14px;
-    }
-
-
-
-    .form-grid {
-      display:grid;
-      grid-template-columns:1fr 1fr;
-      gap:14px;
-    }
-
-    .form-grid label {
-      margin-top:18px;
-    }
-
-    .completeness-box {
-      background:#f7f9fc;
-      border:1px solid var(--border);
-      border-radius:12px;
-      padding:16px;
-      margin-top:22px;
-      color:#344256;
-    }
-
-    .completeness-row {
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      gap:12px;
-      margin-bottom:10px;
-      font-weight:bold;
-    }
-
-    .completeness-bar {
-      height:12px;
-      background:#e5e7eb;
-      border-radius:999px;
-      overflow:hidden;
-    }
-
-    .completeness-fill {
-      height:100%;
-      width:0%;
-      background:var(--blue);
-      transition:width .2s ease;
-    }
-
-    .completeness-tip {
-      margin-top:10px;
-      color:#5f6f82;
-      font-size:13px;
-      line-height:1.45;
-    }
-
-    .checkbox-row {
-      display:flex;
-      gap:10px;
-      align-items:flex-start;
-      margin-top:18px;
-      color:#344256;
-    }
-
-    .checkbox-row input {
-      width:auto;
-      margin-top:4px;
-    }
-
-    button {
-      margin-top:22px;
-      padding:14px 20px;
-      border:none;
-      border-radius:8px;
-      background:var(--blue);
-      color:white;
-      font-weight:bold;
-      cursor:pointer;
-      font-size:16px;
-    }
-
-    button:hover {
-      background:#1478d4;
-    }
-
-    .message {
-      margin-top:18px;
-      color:#344256;
-      white-space:pre-wrap;
-      font-weight:bold;
-    }
-
-    .warning {
-      color:var(--gold-dark);
-      font-weight:bold;
-    }
-
-    .error {
-      color:#b91c1c;
-      font-weight:bold;
-    }
-
-    @media(max-width:760px) {
-      h1 { font-size:30px; }
-      .nav-links a { margin-left:10px; font-size:14px; }
-      .form-grid { grid-template-columns:1fr; }
-    }
-  </style>
-</head>
-
-<body>
-
-<nav class="top-nav">
-  <div class="nav-brand" onclick="window.location.href='index.html'">Sports<span>Mistakes</span></div>
-  <div class="nav-links">
-    <a href="index.html">Home</a>
-    <a href="rankings.html">Rankings</a>
-    <a href="collections.html">Collections</a>
-    <a href="hall-of-fame.html">Hall of Fame</a>
-    <a href="submit.html">Submit</a>
-  </div>
-</nav>
-
-<div class="container">
-  <div class="card">
-    <h1>Submit a Sports Mistake</h1>
-    <p>
-      Help build the Internet's Database of Sports Mistakes. Submissions go into
-      a review queue before they appear publicly.
-    </p>
-
-    <div class="rules">
-      <h2>Notability Standards</h2>
-      <p>A submission should meet at least one of these:</p>
-      <ul>
-        <li>It influenced the outcome of a game, season, playoff series, trade, draft, or championship.</li>
-        <li>It received media coverage or became widely discussed by fans.</li>
-        <li>It involved a major coaching, referee, player, ownership, league, or front-office decision.</li>
-        <li>It has historical significance.</li>
-        <li>It has a credible source that supports what happened.</li>
-      </ul>
-
-      <h2>Safety Rules</h2>
-      <ul>
-        <li>No hate speech, threats, harassment, or slurs.</li>
-        <li>No pornography or unsafe links.</li>
-        <li>No fake accusations or unsupported claims.</li>
-        <li>No spam, gambling spam, or unrelated promotions.</li>
-      </ul>
-
-      <p class="warning">
-        Bad, unsafe, or duplicate submissions may be rejected without review.
-      </p>
-    </div>
-
-
-    <div class="privacy-note">
-      <strong>Optional notifications:</strong> Add your name and email if you want to be notified when your submission is approved, merged with an existing mistake, or needs more information. No account or password is required. Your email will never appear publicly.
-    </div>
-
-    <label>Your Name <span style="font-weight:normal;color:#5f6f82;">(optional)</span></label>
-    <input id="submitter_name" placeholder="Example: Jason" />
-    <div class="help">Used only for admin review and future contributor credit.</div>
-
-    <label>Email Address <span style="font-weight:normal;color:#5f6f82;">(optional)</span></label>
-    <input id="submitter_email" type="email" placeholder="you@example.com" />
-    <div class="help">Used only to notify you about this submission. No login or password required.</div>
-
-    <label>Title</label>
-    <input id="title" placeholder="Example: Seahawks Goal-Line Pass" />
-
-    <div class="form-grid">
-      <div>
-        <label>Sport</label>
-        <select id="sport">
-          <option value="">Select sport</option>
-          <option>NFL</option>
-          <option>NHL</option>
-          <option>NBA</option>
-          <option>MLB</option>
-          <option>Soccer</option>
-          <option>Olympics</option>
-          <option>Tennis</option>
-          <option>Golf</option>
-          <option>NCAA</option>
-          <option>F1</option>
-          <option>Boxing</option>
-          <option>Horse Racing</option>
-          <option>Curling</option>
-          <option>Lacrosse</option>
-          <option>Sailing</option>
-          <option>Paralympics</option>
-          <option>Track</option>
-          <option>Cycling</option>
-          <option>Running</option>
-          <option>CFL</option>
-          <option>Rugby</option>
-          <option>Cricket</option>
-          <option>UFC</option>
-          <option>Wrestling</option>
-          <option>Other</option>
-        </select>
-      </div>
-
-      <div>
-        <label>Approximate Year <span style="font-weight:normal;color:#5f6f82;">(optional)</span></label>
-        <select id="year">
-          <option value="">Not sure</option>
-        </select>
-      </div>
-    </div>
-
-    <div class="form-grid">
-      <div>
-        <label>League <span style="font-weight:normal;color:#5f6f82;">(optional)</span></label>
-        <select id="league">
-          <option value="">Select league / competition</option>
-          <option>NFL</option>
-          <option>NHL</option>
-          <option>NBA</option>
-          <option>MLB</option>
-          <option>MLS</option>
-          <option>FIFA World Cup</option>
-          <option>Olympics</option>
-          <option>NCAA Football</option>
-          <option>NCAA Basketball</option>
-          <option>F1</option>
-          <option>PGA Tour</option>
-          <option>ATP</option>
-          <option>WTA</option>
-          <option>CFL</option>
-          <option>UFC</option>
-          <option>Other</option>
-        </select>
-      </div>
-
-      <div>
-        <label>Category</label>
-        <select id="category">
-          <option value="">Select category</option>
-          <option>Coaching Mistake</option>
-          <option>Referee Mistake</option>
-          <option>Player Mistake</option>
-          <option>Front Office Mistake</option>
-          <option>Ownership Mistake</option>
-          <option>League Mistake</option>
-          <option>Fan Interference</option>
-          <option>Trade Mistake</option>
-          <option>Draft Mistake</option>
-          <option>Strategy Mistake</option>
-          <option>Other</option>
-        </select>
-      </div>
-    </div>
-
-    <label>Teams Involved <span style="font-weight:normal;color:#5f6f82;">(optional)</span></label>
-    <input id="teams_people" placeholder="Example: Montreal Canadiens, Nashville Predators" />
-    <div class="help">Add teams, clubs, schools, countries, or organizations involved.</div>
-
-    <label>Key Names <span style="font-weight:normal;color:#5f6f82;">(optional)</span></label>
-    <input id="key_people" placeholder="Example: P.K. Subban, Shea Weber, Marc Bergevin" />
-    <div class="help">Players, coaches, referees, owners, GMs, or other people central to the mistake.</div>
-
-    <label>Description</label>
-    <textarea id="description" placeholder="Briefly explain what happened and why it belongs in the database."></textarea>
-
-    <label>Why do fans still debate this? <span style="font-weight:normal;color:#5f6f82;">(optional)</span></label>
-    <textarea id="why_it_matters" placeholder="Example: Fans still debate whether the team gave away the better player, whether the move damaged the franchise, or whether it changed the playoff window."></textarea>
-
-    <label>Source URL</label>
-    <input id="source_url" placeholder="https://example.com/article-or-video" />
-
-    <div class="completeness-box">
-      <div class="completeness-row">
-        <span>Submission completeness</span>
-        <span id="completenessText">0%</span>
-      </div>
-      <div class="completeness-bar"><div id="completenessFill" class="completeness-fill"></div></div>
-      <div id="completenessTip" class="completeness-tip">Add a title, sport, category, description, and source to improve review quality.</div>
-    </div>
-
-    <div class="checkbox-row">
-      <input type="checkbox" id="rulesCheck" />
-      <span>
-        I confirm this submission is sports-related, safe, and supported by a real source.
-      </span>
-    </div>
-
-    <button onclick="submitMistake()">Submit Mistake</button>
-
-    <div id="message" class="message"></div>
-  </div>
-</div>
-
-<script>
-  const SUPABASE_URL = "https://scwjlljurircxuufhqih.supabase.co";
-  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNjd2psbGp1cmlyY3h1dWZocWloIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyNjUyMjcsImV4cCI6MjA5Njg0MTIyN30.WF0HRRb9mAkuOySjabTd8CZXVZRqF0MhMl0N2mafnns";
-
-  const client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-  function containsUnsafeText(text) {
-    const bannedPatterns = [
-      /\bfuck\b/i, /\bfucking\b/i, /\bshit\b/i, /\basshole\b/i,
-      /\bbitch\b/i, /\bcunt\b/i, /\bdick\b/i, /\bpussy\b/i,
-      /\bmotherfucker\b/i, /\bporn\b/i, /\bxxx\b/i, /\bnude\b/i,
-      /\bnudes\b/i, /\bnsfw\b/i, /\bonlyfans\b/i, /\bkill yourself\b/i,
-      /\bkys\b/i, /\bsuicide\b/i, /\bnazi\b/i, /\bhitler\b/i,
-      /\bheil\b/i, /\bwhite power\b/i, /\bracist\b/i, /\bhomophobic\b/i,
-      /\bantisemitic\b/i, /\bgenocide\b/i, /\bfree palestine\b/i,
-      /\bpalestine\b/i, /\bisrael\b/i, /\bhamas\b/i, /\bzionist\b/i,
-      /\bcasino\b/i, /\bcrypto\b/i, /\bbitcoin\b/i, /\btelegram\b/i,
-      /\bwhatsapp\b/i, /\bviagra\b/i, /\bescort\b/i
-    ];
-
-    return bannedPatterns.some(pattern => pattern.test(text));
-  }
-
-  function normalizeTitle(title) {
-    return String(title || "")
-      .toLowerCase()
-      .replace(/[^a-z0-9 ]/g, " ")
-      .replace(/\s+/g, " ")
-      .trim();
-  }
-
-  function getImportantWords(text) {
-    const stopWords = new Set([
-      "the", "a", "an", "and", "or", "of", "to", "in", "on", "for",
-      "vs", "v", "game", "mistake", "error", "incident", "controversy",
-      "collapse", "disaster", "blunder", "ball", "through", "with", "from",
-      "into", "his", "her", "their", "team", "teams", "play", "player",
-      "bad", "taken", "away", "cost", "costs", "tying", "tie", "late",
-      "goal", "call", "called", "offside", "offsides", "penalty", "review",
-      "ref", "referee", "official", "officials"
-    ]);
-
-    return normalizeTitle(text)
-      .split(" ")
-      .filter(word => word.length > 2 && !stopWords.has(word));
-  }
-
-  function similarityScore(textA, textB) {
-    const wordsA = getImportantWords(textA);
-    const wordsB = getImportantWords(textB);
-
-    if (wordsA.length === 0 || wordsB.length === 0) return 0;
-
-    const setA = new Set(wordsA);
-    const setB = new Set(wordsB);
-
-    let matches = 0;
-    setA.forEach(word => {
-      if (setB.has(word)) matches++;
-    });
-
-    return matches / Math.max(setA.size, setB.size);
-  }
-
-  function combinedMistakeText(old) {
-    return `
-      ${old.title || ""}
-      ${old.sport || ""}
-      ${old.year || ""}
-      ${old.league || ""}
-      ${old.category || ""}
-      ${old.teams_people || ""}
-      ${old.key_people || ""}
-      ${old.summary || ""}
-      ${old.why_it_matters || ""}
-    `;
-  }
-
-  async function findPossibleDuplicate(title, description, sport, category, year, league, teams_people, key_people) {
-    const { data, error } = await client
-      .from("mistakes")
-      .select("title,sport,year,league,category,teams_people,key_people,summary,why_it_matters")
-      .limit(3000);
-
-    if (error) {
-      console.error(error);
-      return null;
-    }
-
-    const submissionText = `${title} ${sport || ""} ${year || ""} ${league || ""} ${category || ""} ${teams_people || ""} ${key_people || ""} ${description}`;
-    const submissionWords = getImportantWords(submissionText);
-
-    let bestMatch = null;
-    let bestScore = 0;
-    let bestDetails = null;
-
-    for (const old of data || []) {
-      const oldText = combinedMistakeText(old);
-      const oldNormalized = normalizeTitle(oldText);
-
-      const titleScore = similarityScore(title, old.title || "");
-      const fullTextScore = similarityScore(submissionText, oldText);
-
-      const sharedImportantWords = submissionWords.filter(word =>
-        word.length >= 5 && oldNormalized.includes(word)
-      );
-
-      const phraseMatch =
-        normalizeTitle(title).length > 12 &&
-        oldNormalized.includes(normalizeTitle(title));
-
-      const sameSport = sport && old.sport && sport === old.sport;
-      const sameCategory = category && old.category && category === old.category;
-
-      const score =
-        (titleScore * 0.60) +
-        (fullTextScore * 0.30) +
-        (sameSport ? 0.06 : 0) +
-        (sameCategory ? 0.04 : 0);
-
-      if (score > bestScore) {
-        bestScore = score;
-        bestMatch = old;
-        bestDetails = {
-          score,
-          titleScore,
-          fullTextScore,
-          sharedImportantWords,
-          phraseMatch,
-          sameSport,
-          sameCategory
-        };
-      }
-    }
-
-    if (!bestMatch || !bestDetails) return null;
-
-    const highConfidence =
-      bestDetails.phraseMatch ||
-      bestDetails.titleScore >= 0.70 ||
-      bestDetails.fullTextScore >= 0.50 ||
-      (bestDetails.sameSport && bestDetails.titleScore >= 0.58 && bestDetails.fullTextScore >= 0.30);
-
-    const possible =
-      bestScore >= 0.42 ||
-      bestDetails.titleScore >= 0.45 ||
-      bestDetails.fullTextScore >= 0.35 ||
-      (bestDetails.sameSport && bestDetails.sharedImportantWords.length >= 2 && bestDetails.fullTextScore >= 0.25);
-
-    if (highConfidence || possible) {
-      return {
-        ...bestMatch,
-        duplicate_strength: highConfidence ? "high" : "possible",
-        match_score: Math.round(bestScore * 100),
-        title_score: Math.round(bestDetails.titleScore * 100),
-        full_score: Math.round(bestDetails.fullTextScore * 100)
-      };
-    }
-
-    return null;
-  }
-
-  function populateYearDropdown() {
-    const yearSelect = document.getElementById("year");
-    const currentYear = new Date().getFullYear();
-    for (let y = currentYear; y >= 1900; y--) {
-      const option = document.createElement("option");
-      option.value = String(y);
-      option.textContent = String(y);
-      yearSelect.appendChild(option);
-    }
-  }
-
-  function calculateCompleteness() {
-    const fields = {
-      title: document.getElementById("title").value.trim(),
-      sport: document.getElementById("sport").value,
-      year: document.getElementById("year").value,
-      league: document.getElementById("league").value,
-      category: document.getElementById("category").value,
-      teams_people: document.getElementById("teams_people").value.trim(),
-      key_people: document.getElementById("key_people").value.trim(),
-      description: document.getElementById("description").value.trim(),
-      why_it_matters: document.getElementById("why_it_matters").value.trim(),
-      source_url: document.getElementById("source_url").value.trim()
-    };
-
-    let score = 0;
-    if (fields.title) score += 12;
-    if (fields.sport) score += 12;
-    if (fields.category) score += 12;
-    if (fields.description.length >= 30) score += 18;
-    if (fields.source_url.startsWith("https://")) score += 16;
-    if (fields.year) score += 8;
-    if (fields.league) score += 6;
-    if (fields.teams_people) score += 8;
-    if (fields.key_people) score += 5;
-    if (fields.why_it_matters.length >= 20) score += 3;
-
-    score = Math.min(score, 100);
-
-    const fill = document.getElementById("completenessFill");
-    const text = document.getElementById("completenessText");
-    const tip = document.getElementById("completenessTip");
-
-    if (fill) fill.style.width = score + "%";
-    if (text) text.innerText = score + "%";
-
-    if (tip) {
-      if (score >= 85) tip.innerText = "Excellent. This submission has enough structure for a strong AI review.";
-      else if (score >= 65) tip.innerText = "Good. Add teams, key names, or why fans debate it to improve AI confidence.";
-      else tip.innerText = "Add a year, league, teams, key names, and source details to improve review quality.";
-    }
-
-    return score;
-  }
-
-  function setupCompletenessListeners() {
-    ["title","sport","year","league","category","teams_people","key_people","description","why_it_matters","source_url"].forEach(id => {
-      const el = document.getElementById(id);
-      if (el) {
-        el.addEventListener("input", calculateCompleteness);
-        el.addEventListener("change", calculateCompleteness);
-      }
-    });
-    calculateCompleteness();
-  }
-
-
-  async function submitMistake() {
-    const message = document.getElementById("message");
-
-    const submitter_name = document.getElementById("submitter_name").value.trim();
-    const submitter_email = document.getElementById("submitter_email").value.trim().toLowerCase();
-
-    const title = document.getElementById("title").value.trim();
-    const sport = document.getElementById("sport").value;
-    const yearRaw = document.getElementById("year").value;
-    const year = yearRaw ? Number(yearRaw) : null;
-    const league = document.getElementById("league").value;
-    const category = document.getElementById("category").value;
-    const teams_people = document.getElementById("teams_people").value.trim();
-    const key_people = document.getElementById("key_people").value.trim();
-    const description = document.getElementById("description").value.trim();
-    const why_it_matters = document.getElementById("why_it_matters").value.trim();
-    const source_url = document.getElementById("source_url").value.trim();
-    const completeness_score = calculateCompleteness();
-    const rulesCheck = document.getElementById("rulesCheck").checked;
-
-    if (!title || !description || !source_url) {
-      message.innerText = "Please add a title, description, and source URL.";
-      return;
-    }
-
-    if (submitter_email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(submitter_email)) {
-      message.innerText = "Please enter a valid email address, or leave the email field blank.";
-      return;
-    }
-
-    if (!source_url.startsWith("https://")) {
-      message.innerText = "Please use a full secure source URL starting with https://";
-      return;
-    }
-
-    if (!sport || !category) {
-      message.innerText = "Please select a sport and category.";
-      return;
-    }
-
-    if (!rulesCheck) {
-      message.innerText = "Please confirm that the submission follows the rules.";
-      return;
-    }
-
-    if (containsUnsafeText(title + " " + teams_people + " " + key_people + " " + description + " " + why_it_matters + " " + source_url)) {
-      message.innerText = "This submission appears to violate the safety rules.";
-      return;
-    }
-
-    message.innerText = "Checking for possible duplicates...";
-
-    const possibleDuplicate = await findPossibleDuplicate(title, description, sport, category, year, league, teams_people, key_people);
-
-    if (possibleDuplicate) {
-      const strengthText =
-        possibleDuplicate.duplicate_strength === "high"
-          ? "This looks like a strong possible duplicate."
-          : "This may be related or a possible duplicate.";
-
-      const proceed = confirm(
-        `${strengthText}\n\n` +
-        `Closest existing record:\n` +
-        `"${possibleDuplicate.title}" (${possibleDuplicate.sport || ""} ${possibleDuplicate.year || ""})\n\n` +
-        `Match score: ${possibleDuplicate.match_score || 0}%\n\n` +
-        `If this is truly a different event, click OK and it will still go to the admin review queue.\n\n` +
-        `If it is the same event, click Cancel.`
-      );
-
-      if (!proceed) {
-        message.innerText =
-          `Possible duplicate found: "${possibleDuplicate.title}" (${possibleDuplicate.sport || ""} ${possibleDuplicate.year || ""}).\n\n` +
-          `Submission cancelled. Please search the database before submitting.`;
-        return;
-      }
-    }
-
-    message.innerText = "Submitting to review queue...";
-
-    const { error } = await client
-      .from("mistake_submissions")
-      .insert({
-        title,
-        sport,
+import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
+};
+
+Deno.serve(async (req) => {
+  if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
+
+  try {
+    const body = await req.json();
+    const title = String(body.title || "");
+    const description = String(body.description || "");
+    const sport = String(body.sport || "");
+    const text = `${title} ${description}`.toLowerCase();
+
+    const known = matchKnownMistake(text);
+
+    const yearMatch = text.match(/\b(19[0-9]{2}|20[0-9]{2})\b/);
+    const year = known.year || (yearMatch ? Number(yearMatch[1]) : null);
+
+    const league = known.league || inferLeague(text, sport);
+    const category = known.category || inferCategory(text);
+    const teams_people = known.teams_people || inferTeams(text);
+    const key_people = known.key_people || inferPeople(text);
+
+    const why_it_matters =
+      known.why_it_matters ||
+      "Fans still debate this moment because it may have affected the outcome, shaped a legacy, or became part of sports history.";
+
+    return json({
+      success: true,
+      suggestions: {
         year,
-        league: league || null,
+        league,
         category,
+        teams_people,
+        key_people,
+        why_it_matters
+      }
+    });
 
-        // Original submit-page fields
-        description,
-        source_url,
+  } catch (err) {
+    return json({ success: false, error: String(err?.message || err) }, 500);
+  }
+});
 
-        // AI review / publishing fields
-        summary: description,
-        why_it_matters: why_it_matters || description,
-        source_1: source_url,
-        source_2: null,
-        teams_people: teams_people || null,
-        key_people: key_people || null,
-        completeness_score,
-      
+function json(data: unknown, status = 200) {
+  return new Response(JSON.stringify(data), {
+    status,
+    headers: { ...corsHeaders, "Content-Type": "application/json" },
+  });
+}
 
-        // Optional notification / contributor fields
-        submitter_name: submitter_name || null,
-        submitter_email: submitter_email || null,
-        submitter_trust_score: 50,
-
-        status: "pending"
-      });
-
-    if (error) {
-      console.error(error);
-      message.innerText = "Submission failed: " + (error.message || JSON.stringify(error));
-      return;
-    }
-
-    message.innerText = "Submission received. Thank you! It will be reviewed before publishing.";
-
-    document.getElementById("submitter_name").value = "";
-    document.getElementById("submitter_email").value = "";
-    document.getElementById("title").value = "";
-    document.getElementById("sport").value = "";
-    document.getElementById("year").value = "";
-    document.getElementById("league").value = "";
-    document.getElementById("category").value = "";
-    document.getElementById("teams_people").value = "";
-    document.getElementById("key_people").value = "";
-    document.getElementById("description").value = "";
-    document.getElementById("why_it_matters").value = "";
-    document.getElementById("source_url").value = "";
-    document.getElementById("rulesCheck").checked = false;
+function matchKnownMistake(text: string) {
+  if (text.includes("buckner")) {
+    return {
+      year: 1986,
+      league: "MLB",
+      category: "Player Mistake",
+      teams_people: "Boston Red Sox, New York Mets",
+      key_people: "Bill Buckner, Mookie Wilson",
+      why_it_matters: "Fans still debate this because the error became one of the most famous World Series moments and a symbol of Boston's long championship drought."
+    };
   }
 
-  populateYearDropdown();
-  setupCompletenessListeners();
-</script>
+  if (text.includes("subban")) {
+    return {
+      year: 2016,
+      league: "NHL",
+      category: "Front Office Mistake",
+      teams_people: "Montreal Canadiens, Nashville Predators",
+      key_people: "P.K. Subban, Shea Weber, Marc Bergevin",
+      why_it_matters: "Fans still debate this trade because Montreal moved a popular star defenseman in a franchise-altering deal."
+    };
+  }
 
-</body>
-</html>
+  if (text.includes("seahawks") && (text.includes("goal") || text.includes("pass"))) {
+    return {
+      year: 2015,
+      league: "NFL",
+      category: "Coaching Mistake",
+      teams_people: "Seattle Seahawks, New England Patriots",
+      key_people: "Pete Carroll, Russell Wilson, Marshawn Lynch, Malcolm Butler",
+      why_it_matters: "Fans still debate this because Seattle passed near the goal line instead of handing off, leading to a game-deciding interception."
+    };
+  }
+
+  if (text.includes("tuck rule")) {
+    return {
+      year: 2002,
+      league: "NFL",
+      category: "Referee Mistake",
+      teams_people: "Oakland Raiders, New England Patriots",
+      key_people: "Tom Brady, Charles Woodson",
+      why_it_matters: "Fans still debate this because the ruling helped change the outcome of a playoff game and became one of the NFL's most controversial calls."
+    };
+  }
+
+  return {};
+}
+
+function inferLeague(text: string, sport: string) {
+  if (sport) return sport;
+  if (text.includes("nhl") || text.includes("hockey")) return "NHL";
+  if (text.includes("mlb") || text.includes("baseball") || text.includes("world series")) return "MLB";
+  if (text.includes("nfl") || text.includes("football") || text.includes("super bowl")) return "NFL";
+  if (text.includes("nba") || text.includes("basketball")) return "NBA";
+  if (text.includes("soccer") || text.includes("world cup") || text.includes("fifa")) return "Soccer";
+  return "";
+}
+
+function inferCategory(text: string) {
+  if (text.includes("trade") || text.includes("draft")) return "Front Office Mistake";
+  if (text.includes("coach") || text.includes("timeout") || text.includes("play call")) return "Coaching Mistake";
+  if (text.includes("ref") || text.includes("official") || text.includes("no-call") || text.includes("bad call")) return "Referee Mistake";
+  if (text.includes("owner")) return "Ownership Mistake";
+  if (text.includes("fan interference")) return "Fan Interference";
+  return "";
+}
+
+function inferTeams(text: string) {
+  const teams:string[] = [];
+
+  const map:any = {
+    "montreal": "Montreal Canadiens",
+    "canadiens": "Montreal Canadiens",
+    "nashville": "Nashville Predators",
+    "predators": "Nashville Predators",
+    "red sox": "Boston Red Sox",
+    "mets": "New York Mets",
+    "seahawks": "Seattle Seahawks",
+    "patriots": "New England Patriots",
+    "raiders": "Oakland Raiders"
+  };
+
+  for (const key in map) {
+    if (text.includes(key) && !teams.includes(map[key])) teams.push(map[key]);
+  }
+
+  return teams.join(", ");
+}
+
+function inferPeople(text: string) {
+  const people:string[] = [];
+
+  const map:any = {
+    "subban": "P.K. Subban",
+    "shea weber": "Shea Weber",
+    "bergevin": "Marc Bergevin",
+    "buckner": "Bill Buckner",
+    "mookie": "Mookie Wilson",
+    "russell wilson": "Russell Wilson",
+    "marshawn": "Marshawn Lynch",
+    "malcolm butler": "Malcolm Butler",
+    "tom brady": "Tom Brady",
+    "charles woodson": "Charles Woodson"
+  };
+
+  for (const key in map) {
+    if (text.includes(key) && !people.includes(map[key])) people.push(map[key]);
+  }
+
+  return people.join(", ");
+}
