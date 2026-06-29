@@ -238,6 +238,44 @@
       font-weight:bold;
     }
 
+    .ai-helper {
+      background:#f0f7ff;
+      border:1px solid #cfe4ff;
+      border-radius:12px;
+      padding:16px;
+      margin:20px 0;
+      color:#344256;
+    }
+
+    .ai-helper-title {
+      font-weight:bold;
+      color:#0d3b66;
+      margin-bottom:6px;
+    }
+
+    .ai-helper-text {
+      font-size:14px;
+      line-height:1.5;
+      color:#5f6f82;
+      margin-bottom:12px;
+    }
+
+    .ai-button {
+      margin-top:0;
+      background:#5b21b6;
+    }
+
+    .ai-button:hover {
+      background:#4c1d95;
+    }
+
+    .ai-status {
+      margin-top:10px;
+      font-size:13px;
+      color:#344256;
+      white-space:pre-wrap;
+    }
+
     @media(max-width:760px) {
       h1 { font-size:30px; }
       .nav-links a { margin-left:10px; font-size:14px; }
@@ -404,6 +442,15 @@
 
     <label>Why do fans still debate this? <span style="font-weight:normal;color:#5f6f82;">(optional)</span></label>
     <textarea id="why_it_matters" placeholder="Example: Fans still debate whether the team gave away the better player, whether the move damaged the franchise, or whether it changed the playoff window."></textarea>
+
+    <div class="ai-helper">
+      <div class="ai-helper-title">✨ AI Autofill</div>
+      <div class="ai-helper-text">
+        Add a title and short description, then let SportsMistakes suggest the year, league, teams, key people, category, and debate summary. You can edit anything before submitting.
+      </div>
+      <button class="ai-button" onclick="suggestSubmissionFields()">✨ Autofill Missing Details</button>
+      <div id="aiSuggestStatus" class="ai-status"></div>
+    </div>
 
     <label>Source URL</label>
     <input id="source_url" placeholder="https://example.com/article-or-video" />
@@ -656,6 +703,67 @@
       }
     });
     calculateCompleteness();
+  }
+
+
+  function setFieldIfSuggestion(id, value, overwrite = false) {
+    if (value === null || value === undefined || value === "") return false;
+    const el = document.getElementById(id);
+    if (!el) return false;
+    const current = String(el.value || "").trim();
+    if (current && !overwrite) return false;
+    el.value = String(value);
+    el.dispatchEvent(new Event("input", { bubbles:true }));
+    el.dispatchEvent(new Event("change", { bubbles:true }));
+    return true;
+  }
+
+  async function suggestSubmissionFields() {
+    const status = document.getElementById("aiSuggestStatus");
+    const title = document.getElementById("title").value.trim();
+    const sport = document.getElementById("sport").value;
+    const description = document.getElementById("description").value.trim();
+
+    if (!title && !description) {
+      status.innerText = "Add at least a title or short description first.";
+      return;
+    }
+
+    status.innerText = "AI is looking for likely year, league, teams, key names, and debate summary...";
+
+    try {
+      const { data, error } = await client.functions.invoke("suggest-submission-fields", {
+        body: { title, sport, description }
+      });
+
+      if (error || !data || data.success === false) {
+        console.error(error || data);
+        status.innerText = "AI autofill failed. You can still submit manually.";
+        return;
+      }
+
+      const s = data.suggestions || {};
+      let filled = [];
+
+      if (setFieldIfSuggestion("year", s.year)) filled.push("year");
+      if (setFieldIfSuggestion("league", s.league)) filled.push("league");
+      if (setFieldIfSuggestion("category", s.category)) filled.push("category");
+      if (setFieldIfSuggestion("teams_people", s.teams_people)) filled.push("teams involved");
+      if (setFieldIfSuggestion("key_people", s.key_people)) filled.push("key names");
+      if (setFieldIfSuggestion("why_it_matters", s.why_it_matters)) filled.push("why fans debate it");
+
+      calculateCompleteness();
+
+      if (filled.length) {
+        status.innerText = "AI autofilled: " + filled.join(", ") + ". Please review and edit anything that looks wrong before submitting.";
+      } else {
+        status.innerText = "AI did not find any blank fields to fill. You can edit the form manually or keep going.";
+      }
+
+    } catch (err) {
+      console.error(err);
+      status.innerText = "AI autofill failed. You can still submit manually.";
+    }
   }
 
 
