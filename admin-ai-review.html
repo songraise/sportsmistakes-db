@@ -38,6 +38,10 @@
     .progress-wrap{display:none;background:#fff;color:#111827;border-radius:12px;padding:14px;margin:15px 0}
     .progress-bar{height:14px;background:#e5e7eb;border-radius:999px;overflow:hidden;margin-top:10px}
     .progress-fill{height:100%;width:0%;background:#1e90ff}
+    .artwork-preview{width:100%;max-height:260px;object-fit:cover;border-radius:10px;border:1px solid #d8e0ea;background:#0b1220}
+    .artwork-placeholder{height:180px;display:flex;align-items:center;justify-content:center;border:1px dashed #b8c4d3;border-radius:10px;background:#eef6ff;color:#5f6f82;font-weight:bold;text-align:center;padding:12px}
+    .artwork-link{display:inline-block;margin-top:10px;color:#1e90ff;font-weight:bold;text-decoration:none}
+    .studio-note{font-size:13px;color:#5f6f82;line-height:1.45;margin-top:8px}
     @media(max-width:900px){.grid{grid-template-columns:1fr}.nav-links a{margin-left:8px;font-size:13px}}
   </style>
 </head>
@@ -55,8 +59,8 @@
 
 <div class="container">
   <div class="hero">
-    <h1>AI Review 2.0</h1>
-    <div class="sub">Editorial moderation with source safety, fact-check warnings, tags, duplicate comparison, trust score, and auto-publish eligibility.</div>
+    <h1>AI Editorial Studio</h1>
+    <div class="sub">Review submissions, generate artwork, approve publishing, send contributor emails, and turn sports mistakes into finished illustrated entries.</div>
   </div>
 
   <div class="stats" id="stats"></div>
@@ -97,6 +101,7 @@ const client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 let submissions = [];
 let duplicateMap = {};
 let runningReviewIds = new Set();
+let generatingArtworkIds = new Set();
 
 async function requireLogin() {
   const { data } = await client.auth.getSession();
@@ -182,6 +187,7 @@ function renderSubmissions() {
   list.innerHTML = filtered.map(s => {
     const existing = s.ai_duplicate_match_id ? duplicateMap[s.ai_duplicate_match_id] : null;
     const isRunning = runningReviewIds.has(s.id);
+    const isGeneratingArtwork = generatingArtworkIds.has(s.id);
 
     return `
       <div class="card">
@@ -287,6 +293,12 @@ function renderSubmissions() {
             </div>
           </div>
 
+          <div class="box bluebox">
+            <div class="label">AI Artwork</div>
+            <div class="artwork-placeholder">Artwork will be generated when you publish this submission.</div>
+            <div class="studio-note">Use <strong>Approve + Generate Artwork + Publish</strong> to create the painting, save it to Storage, attach it to the published mistake, and email the contributor.</div>
+          </div>
+
           <div class="box">
             <div class="label">Generated Tags</div>
             <div class="value">${escapeHtml(s.ai_generated_tags || "No tags generated")}</div>
@@ -298,7 +310,8 @@ function renderSubmissions() {
 
         <div class="actions">
           <button class="purple" onclick="reviewOne('${s.id}')" ${isRunning ? "disabled" : ""}>${isRunning ? "Reviewing..." : "🤖 Review with AI"}</button>
-          <button class="green" onclick="approveSubmission('${s.id}')">✅ Approve & Publish</button>
+          <button class="secondary" onclick="approveSubmission('${s.id}')">✅ Approve Only</button>
+          <button class="green" onclick="approveSubmissionWithArtwork('${s.id}')" ${isGeneratingArtwork ? "disabled" : ""}>${isGeneratingArtwork ? "🖼 Generating..." : "🖼 Approve + Generate Artwork + Publish"}</button>
           <button class="gold" onclick="markNeedsReview('${s.id}')">🟡 Needs Review</button>
           <button class="danger" onclick="rejectDuplicate('${s.id}')">🟣 Reject Duplicate</button>
           <button class="danger" onclick="rejectSpam('${s.id}')">🚫 Reject Spam</button>
@@ -399,9 +412,50 @@ async function approveSubmission(id) {
     return alert("This submission has a BLOCKED source. Do not approve until source is fixed.");
   }
 
-  if (!confirm(`Approve and publish "${s.ai_generated_title || s.title}"?`)) return;
+  if (!confirm(`Approve and publish "${s.ai_generated_title || s.title}" without generating artwork?`)) return;
 
-  const payload = {
+  const result = await insertPublishedMistake(s);
+  if (!result) return;
+
+  await finishApprovedSubmission(s, result.payload.title, "Approved and published from AI Editorial Studio.");
+  await loadSubmissions();
+}
+
+async function approveSubmissionWithArtwork(id) {
+  const s = submissions.find(x => x.id === id);
+  if (!s) return alert("Submission not found.");
+
+  if (s.ai_source_safety_status === "BLOCK") {
+    return alert("This submission has a BLOCKED source. Do not approve until source is fixed.");
+  }
+
+  const title = s.ai_generated_title || s.title || "Untitled Mistake";
+  if (!confirm(`Approve, generate artwork, and publish "${title}"?\n\nThis will use the OpenAI image API and may cost about 4 cents.`)) return;
+
+  generatingArtworkIds.add(id);
+  renderSubmissions();
+
+  const result = await insertPublishedMistake(s);
+  if (!result) {
+    generatingArtworkIds.delete(id);
+    renderSubmissions();
+    return;
+  }
+
+  const artwork = await generateArtworkForMistake(result.mistake.id);
+
+  generatingArtworkIds.delete(id);
+
+  if (!artwork || !artwork.success) {
+    alert("The mistake was published, but artwork generation failed. You can generate artwork later. Check the function response/logs.");
+  }
+
+  await finishApprovedSubmission(s, result.payload.title, artwork?.success ? "Approved, published, and artwork generated from AI Editorial Studio." : "Approved and published from AI Editorial Studio. Artwork generation failed.");
+  await loadSubmissions();
+}
+
+function buildPublishPayload(s) {
+  return {
     title: s.ai_generated_title || s.title || "Untitled Mistake",
     sport: s.ai_generated_sport || s.sport || null,
     year: s.year || null,
@@ -420,25 +474,38 @@ async function approveSubmission(id) {
     ai_published: true,
     source_safety_status: s.ai_source_safety_status || null,
     source_safety_notes: s.ai_source_safety_notes || null,
+    artwork_status: "not_generated",
     views: 0
   };
+}
 
-  const { error: insertError } = await client.from("mistakes").insert([payload]);
+async function insertPublishedMistake(s) {
+  const payload = buildPublishPayload(s);
 
-  if (insertError) {
+  const { data, error: insertError } = await client
+    .from("mistakes")
+    .insert([payload])
+    .select("id,title,artwork_url,artwork_status")
+    .single();
+
+  if (insertError || !data) {
     console.error(insertError);
     alert("Publish failed. Check console.");
-    return;
+    return null;
   }
 
+  return { mistake: data, payload };
+}
+
+async function finishApprovedSubmission(s, publishedTitle, review_notes) {
   const { error: updateError } = await client
     .from("mistake_submissions")
     .update({
       status: "approved",
-      review_notes: "Approved and published from AI Review 2.0.",
+      review_notes,
       ai_status: "reviewed"
     })
-    .eq("id", id);
+    .eq("id", s.id);
 
   if (updateError) {
     console.error(updateError);
@@ -448,12 +515,49 @@ async function approveSubmission(id) {
 
   await sendSubmissionEmail(
     s.submitter_email,
-    payload.title,
+    publishedTitle,
     "approved",
     "Your submission was approved and published on SportsMistakes."
   );
+}
 
-  await loadSubmissions();
+function getArtworkAdminSecret() {
+  let secret = sessionStorage.getItem("sportsmistakes_artwork_admin_secret") || "";
+  if (!secret) {
+    secret = prompt("Enter your ARTWORK_ADMIN_SECRET to generate artwork:") || "";
+    if (secret) sessionStorage.setItem("sportsmistakes_artwork_admin_secret", secret);
+  }
+  return secret;
+}
+
+async function generateArtworkForMistake(mistakeId) {
+  const secret = getArtworkAdminSecret();
+  if (!secret) {
+    alert("Artwork generation cancelled. Missing admin secret.");
+    return null;
+  }
+
+  try {
+    const { data, error } = await client.functions.invoke("generate-mistake-artwork", {
+      body: { mistake_id: mistakeId },
+      headers: { "x-admin-secret": secret }
+    });
+
+    if (error || !data || data.success === false) {
+      console.error("Artwork generation failed", error || data);
+      alert("Artwork generation failed: " + JSON.stringify(error || data, null, 2));
+      return data || null;
+    }
+
+    alert("Artwork generated successfully!");
+    if (data.artwork_url) window.open(data.artwork_url, "_blank");
+    return data;
+
+  } catch (err) {
+    console.error(err);
+    alert("Artwork generation failed: " + String(err?.message || err));
+    return null;
+  }
 }
 
 async function rejectDuplicate(id) {
