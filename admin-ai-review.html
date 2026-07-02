@@ -542,6 +542,38 @@ async function generateArtworkForSubmission(submissionId) {
   }
 
   try {
+    const response = await fetch(`${SUPABASE_URL}/functions/v1/generate-mistake-artwork`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "apikey": SUPABASE_ANON_KEY,
+        "Authorization": `Bearer ${SUPABASE_ANON_KEY}`,
+        "x-admin-secret": secret
+      },
+      body: JSON.stringify({
+        submission_id: submissionId
+      })
+    });
+
+    const data = await response.json();
+
+    if (!response.ok || !data.success) {
+      console.error("Artwork generation failed", data);
+      alert("Artwork generation failed:\n\n" + JSON.stringify(data, null, 2));
+      return data;
+    }
+
+    if (data.artwork_url) window.open(data.artwork_url, "_blank");
+    return data;
+
+  } catch (err) {
+    console.error(err);
+    alert("Artwork generation failed:\n\n" + String(err?.message || err));
+    return null;
+  }
+}
+
+  try {
     const { data, error } = await client.functions.invoke("generate-mistake-artwork", {
       body: { submission_id: submissionId },
       headers: { "x-admin-secret": secret }
