@@ -1,681 +1,167 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <title>AI Review 2.0 | SportsMistakes Admin</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import { createClient } from "npm:@supabase/supabase-js@2";
 
-  <style>
-    body{margin:0;font-family:Arial,sans-serif;background:#07111f;color:#fff}
-    .top-nav{display:flex;justify-content:space-between;align-items:center;background:#0d1b2e;border-bottom:1px solid #203852;padding:14px 20px}
-    .nav-brand{font-weight:bold;font-size:20px;color:#fff;cursor:pointer}
-    .nav-brand span{color:#ffcc00}
-    .nav-links a,.nav-links button{color:#74b9ff;background:none;border:none;text-decoration:none;font-weight:bold;margin-left:14px;cursor:pointer;font-size:14px}
-    .container{max-width:1250px;margin:30px auto;padding:0 20px}
-    .hero,.card,.stat{background:#fff;color:#111827;border:1px solid #d8e0ea;border-radius:16px;box-shadow:0 8px 22px rgba(0,0,0,.15)}
-    .hero{padding:24px;margin-bottom:20px}
-    h1{margin:0 0 8px}.sub{color:#5f6f82}
-    .stats{display:flex;gap:12px;flex-wrap:wrap;margin:18px 0}
-    .stat{padding:14px 18px;min-width:140px}.stat strong{display:block;font-size:26px;color:#b58100}
-    .filters,.actions{display:flex;gap:10px;flex-wrap:wrap;margin:18px 0}
-    select,button{font-family:Arial,sans-serif}
-    select{padding:11px;border-radius:8px;border:1px solid #d8e0ea}
-    button{padding:11px 14px;border:none;border-radius:8px;background:#1e90ff;color:white;font-weight:bold;cursor:pointer}
-    button:disabled{opacity:.55;cursor:not-allowed}
-    .purple{background:#5b21b6}.green{background:#166534}.gold{background:#ffcc00;color:#111}.danger{background:#b91c1c}.secondary{background:#203852}
-    .list{display:grid;gap:22px}.card{padding:20px}
-    .grid{display:grid;grid-template-columns:1.15fr .85fr;gap:16px}
-    .mini-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px;margin-top:14px}
-    .box{background:#f7f9fc;border:1px solid #d8e0ea;border-radius:12px;padding:14px;color:#111827}
-    .bluebox{background:#eef6ff;border:1px solid #cfe4ff}
-    .label{font-size:12px;text-transform:uppercase;color:#5f6f82;font-weight:bold;margin-bottom:5px}
-    .value{line-height:1.45;color:#344256;margin-bottom:12px;word-break:break-word}
-    .pill{display:inline-block;padding:6px 9px;border-radius:999px;font-size:12px;font-weight:bold;margin:3px 5px 8px 0}
-    .approve{background:#dcfce7;color:#166534}.review{background:#fef9c3;color:#854d0e}.duplicate{background:#ede9fe;color:#5b21b6}.reject{background:#fee2e2;color:#991b1b}.none{background:#e5e7eb;color:#374151}
-    .block{background:#fee2e2;color:#991b1b}.warning{background:#fef9c3;color:#854d0e}.pass{background:#dcfce7;color:#166534}
-    .message{margin:18px 0;color:#d8e8ff;font-weight:bold}
-    .progress-wrap{display:none;background:#fff;color:#111827;border-radius:12px;padding:14px;margin:15px 0}
-    .progress-bar{height:14px;background:#e5e7eb;border-radius:999px;overflow:hidden;margin-top:10px}
-    .progress-fill{height:100%;width:0%;background:#1e90ff}
-    .artwork-preview{width:100%;max-height:260px;object-fit:cover;border-radius:10px;border:1px solid #d8e0ea;background:#0b1220}
-    .artwork-placeholder{height:180px;display:flex;align-items:center;justify-content:center;border:1px dashed #b8c4d3;border-radius:10px;background:#eef6ff;color:#5f6f82;font-weight:bold;text-align:center;padding:12px}
-    .artwork-link{display:inline-block;margin-top:10px;color:#1e90ff;font-weight:bold;text-decoration:none}
-    .studio-note{font-size:13px;color:#5f6f82;line-height:1.45;margin-top:8px}
-    @media(max-width:900px){.grid{grid-template-columns:1fr}.nav-links a{margin-left:8px;font-size:13px}}
-  </style>
-</head>
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-admin-secret",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
+};
 
-<body>
-<nav class="top-nav">
-  <div class="nav-brand" onclick="window.location.href='admin-dashboard.html'">Sports<span>Mistakes</span> Admin</div>
-  <div class="nav-links">
-    <a href="admin-dashboard.html">Dashboard</a>
-    <a href="admin-submissions.html">Submissions</a>
-    <a href="admin-ai-review.html">AI Review</a>
-    <button onclick="logout()">Logout</button>
-  </div>
-</nav>
+Deno.serve(async (req) => {
+  if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
-<div class="container">
-  <div class="hero">
-    <h1>AI Editorial Studio</h1>
-    <div class="sub">Review submissions, generate artwork, approve publishing, send contributor emails, and turn sports mistakes into finished illustrated entries.</div>
-  </div>
+  try {
+    const adminSecret = req.headers.get("x-admin-secret");
+    if (adminSecret !== Deno.env.get("ARTWORK_ADMIN_SECRET")) {
+      return json({ success: false, error: "Unauthorized" }, 401);
+    }
 
-  <div class="stats" id="stats"></div>
+    const { mistake_id, submission_id } = await req.json();
+    if (!mistake_id && !submission_id) {
+      return json({ success: false, error: "Missing mistake_id or submission_id" }, 400);
+    }
 
-  <div class="filters">
-    <select id="statusFilter" onchange="renderSubmissions()">
-      <option value="all">All AI Statuses</option>
-      <option value="not_reviewed">Not Reviewed</option>
-      <option value="reviewed">Reviewed</option>
-    </select>
+    const supabase = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
+    );
 
-    <select id="recommendationFilter" onchange="renderSubmissions()">
-      <option value="all">All Recommendations</option>
-      <option value="APPROVE">Approve</option>
-      <option value="REVIEW">Needs Review</option>
-      <option value="DUPLICATE">Duplicate</option>
-      <option value="REJECT">Reject</option>
-    </select>
+    const openaiKey = Deno.env.get("OPENAI_API_KEY");
+    if (!openaiKey) return json({ success: false, error: "Missing OPENAI_API_KEY" }, 500);
 
-    <button onclick="loadSubmissions()">Refresh</button>
-    <button class="purple" id="reviewAllBtn" onclick="reviewAllPending()">🤖 Review All Pending</button>
-  </div>
+    let item: any;
+    let mode: "mistake" | "submission";
 
-  <div id="progressWrap" class="progress-wrap">
-    <strong id="progressText">AI review running...</strong>
-    <div class="progress-bar"><div id="progressFill" class="progress-fill"></div></div>
-  </div>
+    if (submission_id) {
+      mode = "submission";
+      const { data, error } = await supabase
+        .from("mistake_submissions")
+        .select("*")
+        .eq("id", submission_id)
+        .single();
 
-  <div id="message" class="message">Loading...</div>
-  <div id="list" class="list"></div>
-</div>
+      if (error || !data) return json({ success: false, error: "Submission not found", details: error }, 404);
+      item = data;
+    } else {
+      mode = "mistake";
+      const { data, error } = await supabase
+        .from("mistakes")
+        .select("*")
+        .eq("id", mistake_id)
+        .single();
 
-<script>
-const SUPABASE_URL = "https://scwjlljurircxuufhqih.supabase.co";
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNjd2psbGp1cmlyY3h1dWZocWloIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyNjUyMjcsImV4cCI6MjA5Njg0MTIyN30.WF0HRRb9mAkuOySjabTd8CZXVZRqF0MhMl0N2mafnns";
-const client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+      if (error || !data) return json({ success: false, error: "Mistake not found", details: error }, 404);
+      item = data;
+    }
 
-let submissions = [];
-let duplicateMap = {};
-let runningReviewIds = new Set();
-let generatingArtworkIds = new Set();
+    const prompt = buildArtworkPrompt(item);
 
-async function requireLogin() {
-  const { data } = await client.auth.getSession();
-  if (!data.session) {
-    window.location.href = "admin-login.html";
-    return false;
+    const imageRes = await fetch("https://api.openai.com/v1/images/generations", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${openaiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "gpt-image-1",
+        prompt,
+        size: "1024x1024",
+        quality: "medium",
+        n: 1,
+      }),
+    });
+
+    const imageJson = await imageRes.json();
+
+    if (!imageRes.ok) {
+      return json({ success: false, error: "OpenAI failed", details: imageJson }, 500);
+    }
+
+    const b64 = imageJson?.data?.[0]?.b64_json;
+    if (!b64) return json({ success: false, error: "No image returned", details: imageJson }, 500);
+
+    const bytes = Uint8Array.from(atob(b64), c => c.charCodeAt(0));
+    const idForFile = submission_id || mistake_id;
+    const fileName = `${mode}-${idForFile}-${Date.now()}.png`;
+
+    const { error: uploadError } = await supabase.storage
+      .from("mistake-artwork")
+      .upload(fileName, bytes, { contentType: "image/png", upsert: true });
+
+    if (uploadError) return json({ success: false, error: "Upload failed", details: uploadError }, 500);
+
+    const { data: urlData } = supabase.storage
+      .from("mistake-artwork")
+      .getPublicUrl(fileName);
+
+    const artwork_url = urlData.publicUrl;
+
+    if (mode === "submission") {
+      const { error: updateError } = await supabase
+        .from("mistake_submissions")
+        .update({
+          ai_artwork_url: artwork_url,
+          ai_artwork_prompt: prompt,
+          ai_artwork_status: "generated",
+          ai_artwork_generated_at: new Date().toISOString(),
+        })
+        .eq("id", submission_id);
+
+      if (updateError) return json({ success: false, error: "Submission artwork update failed", details: updateError }, 500);
+    } else {
+      const { error: updateError } = await supabase
+        .from("mistakes")
+        .update({
+          artwork_url,
+          artwork_prompt: prompt,
+          artwork_status: "generated",
+          artwork_generated_at: new Date().toISOString(),
+        })
+        .eq("id", mistake_id);
+
+      if (updateError) return json({ success: false, error: "Mistake artwork update failed", details: updateError }, 500);
+    }
+
+    return json({ success: true, mode, artwork_url, prompt });
+  } catch (err) {
+    return json({ success: false, error: String(err?.message || err) }, 500);
   }
-  return true;
+});
+
+function buildArtworkPrompt(m: any) {
+  return `
+Create an original dramatic oil painting symbolizing this sports mistake.
+
+Sports mistake:
+Title: ${m.ai_generated_title || m.title || ""}
+Sport/League: ${m.ai_generated_sport || m.league || m.sport || ""}
+Year: ${m.year || ""}
+Category: ${m.ai_generated_category || m.category || ""}
+Teams/People: ${m.ai_generated_teams_people || m.teams_people || ""}
+Summary: ${m.ai_generated_summary || m.summary || ""}
+Why it matters: ${m.ai_generated_why_it_matters || m.why_it_matters || ""}
+
+Style:
+Editorial sports-history oil painting.
+Cinematic lighting.
+Painterly brush strokes.
+Emotional, tense, dramatic.
+Strong thumbnail composition.
+Generic uniforms and generic sports setting.
+
+Important restrictions:
+Do not include any readable letters, logos, initials, team marks, cap letters, jersey text, scoreboard text, signage, or symbols.
+Do not include trademarked team logos.
+Do not copy a broadcast frame or known photograph.
+Do not depict exact real-person likenesses.
+Avoid all team-identifying marks.
+Focus on emotion and symbolism, not documentary accuracy.
+`;
 }
 
-async function logout() {
-  await client.auth.signOut();
-  window.location.href = "admin-login.html";
-}
-
-async function loadSubmissions() {
-  const ok = await requireLogin();
-  if (!ok) return;
-
-  document.getElementById("message").innerText = "Loading submissions...";
-
-  const { data, error } = await client
-    .from("mistake_submissions")
-    .select("*")
-    .eq("status", "pending")
-    .order("created_at", { ascending: false });
-
-  if (error) {
-    console.error(error);
-    document.getElementById("message").innerText = "Error loading submissions.";
-    return;
-  }
-
-  submissions = data || [];
-  await loadDuplicateDetails();
-  renderStats();
-  renderSubmissions();
-}
-
-async function loadDuplicateDetails() {
-  duplicateMap = {};
-  const ids = [...new Set(submissions.map(s => s.ai_duplicate_match_id).filter(Boolean))];
-  if (!ids.length) return;
-
-  const { data, error } = await client.from("mistakes").select("*").in("id", ids);
-  if (error) return console.error(error);
-  (data || []).forEach(m => duplicateMap[m.id] = m);
-}
-
-function renderStats() {
-  const total = submissions.length;
-  const notReviewed = submissions.filter(s => (s.ai_status || "not_reviewed") === "not_reviewed").length;
-  const approve = submissions.filter(s => s.ai_recommendation === "APPROVE").length;
-  const duplicate = submissions.filter(s => s.ai_recommendation === "DUPLICATE").length;
-  const reject = submissions.filter(s => s.ai_recommendation === "REJECT").length;
-
-  document.getElementById("stats").innerHTML = `
-    <div class="stat"><strong>${total}</strong>Pending</div>
-    <div class="stat"><strong>${notReviewed}</strong>Not Reviewed</div>
-    <div class="stat"><strong>${approve}</strong>Approve</div>
-    <div class="stat"><strong>${duplicate}</strong>Duplicates</div>
-    <div class="stat"><strong>${reject}</strong>Reject</div>
-  `;
-}
-
-function renderSubmissions() {
-  const list = document.getElementById("list");
-  const message = document.getElementById("message");
-  const statusFilter = document.getElementById("statusFilter").value;
-  const recommendationFilter = document.getElementById("recommendationFilter").value;
-
-  let filtered = [...submissions];
-  if (statusFilter !== "all") filtered = filtered.filter(s => (s.ai_status || "not_reviewed") === statusFilter);
-  if (recommendationFilter !== "all") filtered = filtered.filter(s => s.ai_recommendation === recommendationFilter);
-
-  message.innerText = `${filtered.length} submission${filtered.length === 1 ? "" : "s"} found`;
-
-  if (!filtered.length) {
-    list.innerHTML = "";
-    return;
-  }
-
-  list.innerHTML = filtered.map(s => {
-    const existing = s.ai_duplicate_match_id ? duplicateMap[s.ai_duplicate_match_id] : null;
-    const isRunning = runningReviewIds.has(s.id);
-    const isGeneratingArtwork = generatingArtworkIds.has(s.id);
-
-    return `
-      <div class="card">
-        <div>
-          ${recommendationPill(s.ai_recommendation)}
-          <span class="pill none">AI Status: ${escapeHtml(s.ai_status || "not_reviewed")}</span>
-          <span class="pill none">Confidence: ${s.ai_confidence ?? "—"}%</span>
-          ${statusPill("Source", s.ai_source_safety_status)}
-          ${statusPill("Fact", s.ai_fact_check_status)}
-          ${s.ai_auto_publish_eligible ? `<span class="pill approve">AUTO-PUBLISH ELIGIBLE</span>` : `<span class="pill none">NO AUTO-PUBLISH</span>`}
-        </div>
-
-        <div class="grid">
-          <div class="box">
-            <div class="label">Submitted</div>
-            <h2>${escapeHtml(s.title || "Untitled")}</h2>
-            <div class="value">${escapeHtml(s.sport || "")} ${s.year ? "• " + escapeHtml(s.year) : ""} ${s.category ? "• " + escapeHtml(s.category) : ""}</div>
-
-            <div class="label">Teams / People</div>
-            <div class="value">${escapeHtml(s.teams_people || "Not provided")}</div>
-
-            <div class="label">Summary</div>
-            <div class="value">${escapeHtml(s.summary || "No summary")}</div>
-
-            <div class="label">Why It Matters</div>
-            <div class="value">${escapeHtml(s.why_it_matters || "Not provided")}</div>
-
-            <div class="label">Source 1</div>
-            <div class="value">${escapeHtml(s.source_1 || "No source")}</div>
-
-            <div class="label">Source 2</div>
-            <div class="value">${escapeHtml(s.source_2 || "No second source")}</div>
-          </div>
-
-          <div class="box">
-            <div class="label">Possible Existing Duplicate</div>
-            ${existing ? `
-              <h2>${escapeHtml(existing.title || "Untitled")}</h2>
-              <div class="value">${escapeHtml(existing.sport || "")} ${existing.year ? "• " + escapeHtml(existing.year) : ""} ${existing.category ? "• " + escapeHtml(existing.category) : ""}</div>
-              <div class="label">Teams / People</div>
-              <div class="value">${escapeHtml(existing.teams_people || "Not provided")}</div>
-              <div class="label">Summary</div>
-              <div class="value">${escapeHtml(existing.summary || "No summary")}</div>
-              <button class="secondary" onclick="window.open('mistake.html?id=${existing.id}', '_blank')">Open Existing Mistake</button>
-            ` : `
-              <h2>${escapeHtml(s.ai_duplicate_title || "None detected")}</h2>
-              <div class="value">No full duplicate record loaded.</div>
-            `}
-          </div>
-        </div>
-
-        <div class="mini-grid">
-          <div class="box">
-            <div class="label">AI Recommendation</div>
-            <div class="value"><strong>${escapeHtml(s.ai_recommendation || "Not reviewed")}</strong></div>
-
-            <div class="label">Duplicate Score</div>
-            <div class="value">${s.ai_duplicate_score ?? "—"}%</div>
-
-            <div class="label">Spam Score</div>
-            <div class="value">${s.ai_spam_score ?? "—"}%</div>
-
-            <div class="label">Safety Flags</div>
-            <div class="value">${escapeHtml(s.ai_safety_flags || "None")}</div>
-          </div>
-
-          <div class="box">
-            <div class="label">Source Safety Status</div>
-            <div class="value"><strong>${escapeHtml(s.ai_source_safety_status || "Not checked")}</strong></div>
-
-            <div class="label">Source Safety Notes</div>
-            <div class="value">${escapeHtml(s.ai_source_safety_notes || "Not checked yet")}</div>
-          </div>
-
-          <div class="box">
-            <div class="label">Fact Check Status</div>
-            <div class="value"><strong>${escapeHtml(s.ai_fact_check_status || "Not checked")}</strong></div>
-
-            <div class="label">Fact Check Notes</div>
-            <div class="value">${escapeHtml(s.ai_fact_check_notes || "Not checked yet")}</div>
-          </div>
-
-          <div class="box">
-            <div class="label">Contributor Trust Score</div>
-            <div class="value">${s.submitter_trust_score ?? "50"}/100</div>
-
-            <div class="label">Auto-Publish Eligible</div>
-            <div class="value">${s.ai_auto_publish_eligible ? "YES" : "NO"}</div>
-
-            <div class="label">Auto-Publish Reason</div>
-            <div class="value">${escapeHtml(s.ai_auto_publish_reason || "Human approval required.")}</div>
-          </div>
-
-          <div class="box bluebox">
-            <div class="label">AI Generated Publish Version</div>
-            <div class="value"><strong>${escapeHtml(s.ai_generated_title || "Not generated yet")}</strong></div>
-            <div class="value">${escapeHtml(s.ai_generated_summary || "")}</div>
-            <div class="value">${escapeHtml(s.ai_generated_why_it_matters || "")}</div>
-            <div class="value">
-              ${s.ai_generated_sport ? escapeHtml(s.ai_generated_sport) : ""}
-              ${s.ai_generated_category ? " • " + escapeHtml(s.ai_generated_category) : ""}
-              ${s.ai_generated_controversy_score ? " • Score " + escapeHtml(s.ai_generated_controversy_score) + "/100" : ""}
-            </div>
-          </div>
-
-          <div class="box bluebox">
-            <div class="label">AI Artwork Preview</div>
-            ${s.ai_artwork_url ? `
-              <img class="artwork-preview" src="${escapeHtml(s.ai_artwork_url)}" alt="Generated artwork preview">
-              <a class="artwork-link" href="${escapeHtml(s.ai_artwork_url)}" target="_blank">👁 View full artwork</a>
-              <div class="studio-note"><strong>Review this artwork before publishing.</strong> If it has wrong letters/logos/text, click Regenerate Artwork Preview.</div>
-            ` : `
-              <div class="artwork-placeholder">No artwork generated yet.<br><br>Generate a preview before publishing.</div>
-              <div class="studio-note">The contributor will not be emailed and the mistake will not go live until you click Approve & Publish.</div>
-            `}
-          </div>
-
-          <div class="box">
-            <div class="label">Generated Tags</div>
-            <div class="value">${escapeHtml(s.ai_generated_tags || "No tags generated")}</div>
-
-            <div class="label">Related Mistake IDs</div>
-            <div class="value">${escapeHtml(s.ai_related_mistake_ids || "None")}</div>
-          </div>
-        </div>
-
-        <div class="actions">
-          <button class="purple" onclick="reviewOne('${s.id}')" ${isRunning ? "disabled" : ""}>${isRunning ? "Reviewing..." : "🤖 Review with AI"}</button>
-          <button class="green" onclick="generateArtworkPreview('${s.id}')" ${isGeneratingArtwork ? "disabled" : ""}>${isGeneratingArtwork ? "🖼 Generating..." : (s.ai_artwork_url ? "🔄 Regenerate Artwork Preview" : "🖼 Generate Artwork Preview")}</button>
-          <button class="secondary" onclick="approveSubmission('${s.id}')">✅ Approve & Publish</button>
-          <button class="gold" onclick="markNeedsReview('${s.id}')">🟡 Needs Review</button>
-          <button class="danger" onclick="rejectDuplicate('${s.id}')">🟣 Reject Duplicate</button>
-          <button class="danger" onclick="rejectSpam('${s.id}')">🚫 Reject Spam</button>
-          <button onclick="openOriginalAdmin()">Open Submissions Admin</button>
-        </div>
-      </div>
-    `;
-  }).join("");
-}
-
-function recommendationPill(rec) {
-  if (rec === "APPROVE") return `<span class="pill approve">AI: APPROVE</span>`;
-  if (rec === "REVIEW") return `<span class="pill review">AI: REVIEW</span>`;
-  if (rec === "DUPLICATE") return `<span class="pill duplicate">AI: DUPLICATE</span>`;
-  if (rec === "REJECT") return `<span class="pill reject">AI: REJECT</span>`;
-  return `<span class="pill none">AI: NOT REVIEWED</span>`;
-}
-
-function statusPill(label, status) {
-  if (!status) return `<span class="pill none">${label}: NOT CHECKED</span>`;
-  if (status === "PASS") return `<span class="pill pass">${label}: PASS</span>`;
-  if (status === "WARNING") return `<span class="pill warning">${label}: WARNING</span>`;
-  if (status === "BLOCK") return `<span class="pill block">${label}: BLOCK</span>`;
-  if (status === "REVIEW") return `<span class="pill warning">${label}: REVIEW</span>`;
-  return `<span class="pill none">${label}: ${escapeHtml(status)}</span>`;
-}
-
-async function reviewOne(id) {
-  runningReviewIds.add(id);
-  renderSubmissions();
-
-  const { data, error } = await client.functions.invoke("review-submission-v2", {
-    body: { submission_id: id }
+function json(data: unknown, status = 200) {
+  return new Response(JSON.stringify(data), {
+    status,
+    headers: { ...corsHeaders, "Content-Type": "application/json" },
   });
-
-  runningReviewIds.delete(id);
-
-  if (error || !data || data.success === false) {
-    console.error(error || data);
-    alert("AI review failed. Check Edge Function logs.");
-    renderSubmissions();
-    return;
-  }
-
-  await loadSubmissions();
 }
-
-async function reviewAllPending() {
-  const targets = submissions.filter(s => (s.ai_status || "not_reviewed") === "not_reviewed");
-
-  if (!targets.length) return alert("No not-reviewed submissions to review.");
-  if (!confirm(`Run AI review on ${targets.length} pending submission${targets.length === 1 ? "" : "s"}?`)) return;
-
-  document.getElementById("reviewAllBtn").disabled = true;
-  document.getElementById("progressWrap").style.display = "block";
-
-  let completed = 0;
-  let failed = 0;
-
-  for (const s of targets) {
-    runningReviewIds.add(s.id);
-    renderSubmissions();
-
-    document.getElementById("progressText").innerText = `AI reviewing ${completed + 1} of ${targets.length}...`;
-    document.getElementById("progressFill").style.width = Math.round((completed / targets.length) * 100) + "%";
-
-    const { data, error } = await client.functions.invoke("review-submission-v2", {
-      body: { submission_id: s.id }
-    });
-
-    runningReviewIds.delete(s.id);
-
-    if (error || !data || data.success === false) {
-      failed++;
-      console.error("AI review failed", s.id, error || data);
-    }
-
-    completed++;
-  }
-
-  document.getElementById("progressFill").style.width = "100%";
-  document.getElementById("progressText").innerText = `AI review complete. ${completed - failed} succeeded, ${failed} failed.`;
-  document.getElementById("reviewAllBtn").disabled = false;
-
-  await loadSubmissions();
-
-  setTimeout(() => {
-    document.getElementById("progressWrap").style.display = "none";
-    document.getElementById("progressFill").style.width = "0%";
-  }, 2500);
-}
-
-async function approveSubmission(id) {
-  const s = submissions.find(x => x.id === id);
-  if (!s) return alert("Submission not found.");
-
-  if (s.ai_source_safety_status === "BLOCK") {
-    return alert("This submission has a BLOCKED source. Do not approve until source is fixed.");
-  }
-
-  const artworkNote = s.ai_artwork_url ? "with the approved artwork preview" : "without artwork";
-  if (!confirm(`Approve and publish "${s.ai_generated_title || s.title}" ${artworkNote}?
-
-This will email the contributor and make the mistake live.`)) return;
-
-  const result = await insertPublishedMistake(s);
-  if (!result) return;
-
-  await finishApprovedSubmission(s, result.payload.title, "Approved and published from AI Editorial Studio.");
-  await loadSubmissions();
-}
-
-async function generateArtworkPreview(id) {
-  const s = submissions.find(x => x.id === id);
-  if (!s) return alert("Submission not found.");
-
-  const title = s.ai_generated_title || s.title || "Untitled Mistake";
-  const verb = s.ai_artwork_url ? "regenerate" : "generate";
-  if (!confirm(`Generate artwork preview for "${title}"?\n\nThis uses the OpenAI image API and may cost about 4 cents. It will NOT publish the mistake or email the contributor.`)) return;
-
-  generatingArtworkIds.add(id);
-  renderSubmissions();
-
-  const artwork = await generateArtworkForSubmission(id);
-
-  generatingArtworkIds.delete(id);
-
-  if (!artwork || !artwork.success) {
-    alert("Artwork preview generation failed. Check the function response/logs.");
-    renderSubmissions();
-    return;
-  }
-
-  alert("Artwork preview generated. Review it before approving and publishing.");
-  await loadSubmissions();
-}
-
-function buildPublishPayload(s) {
-  return {
-    title: s.ai_generated_title || s.title || "Untitled Mistake",
-    sport: s.ai_generated_sport || s.sport || null,
-    year: s.year || null,
-    category: s.ai_generated_category || s.category || null,
-    subcategory: s.ai_generated_subcategory || s.subcategory || null,
-    teams_people: s.ai_generated_teams_people || s.teams_people || null,
-    summary: s.ai_generated_summary || s.summary || null,
-    why_it_matters: s.ai_generated_why_it_matters || s.why_it_matters || null,
-    controversy_score: s.ai_generated_controversy_score || s.controversy_score || 70,
-    source_1: s.ai_source_1 || s.source_1 || null,
-    source_2: s.ai_source_2 || s.source_2 || null,
-    tags: s.ai_generated_tags || null,
-    related_mistake_ids: s.ai_related_mistake_ids || null,
-    submitter_email: s.submitter_email || null,
-    submitter_name: s.submitter_name || null,
-    ai_published: true,
-    source_safety_status: s.ai_source_safety_status || null,
-    source_safety_notes: s.ai_source_safety_notes || null,
-    artwork_url: s.ai_artwork_url || null,
-    artwork_prompt: s.ai_artwork_prompt || null,
-    artwork_status: s.ai_artwork_url ? "generated" : "not_generated",
-    artwork_generated_at: s.ai_artwork_generated_at || null,
-    views: 0
-  };
-}
-
-async function insertPublishedMistake(s) {
-  const payload = buildPublishPayload(s);
-
-  const { data, error: insertError } = await client
-    .from("mistakes")
-    .insert([payload])
-    .select("id,title,artwork_url,artwork_status")
-    .single();
-
-  if (insertError || !data) {
-    console.error(insertError);
-    alert("Publish failed. Check console.");
-    return null;
-  }
-
-  return { mistake: data, payload };
-}
-
-async function finishApprovedSubmission(s, publishedTitle, review_notes) {
-  const { error: updateError } = await client
-    .from("mistake_submissions")
-    .update({
-      status: "approved",
-      review_notes,
-      ai_status: "reviewed"
-    })
-    .eq("id", s.id);
-
-  if (updateError) {
-    console.error(updateError);
-    alert("Published, but could not update submission status.");
-    return;
-  }
-
-  await sendSubmissionEmail(
-    s.submitter_email,
-    publishedTitle,
-    "approved",
-    "Your submission was approved and published on SportsMistakes."
-  );
-}
-
-function getArtworkAdminSecret() {
-  let secret = sessionStorage.getItem("sportsmistakes_artwork_admin_secret") || "";
-  if (!secret) {
-    secret = prompt("Enter your ARTWORK_ADMIN_SECRET to generate artwork:") || "";
-    if (secret) sessionStorage.setItem("sportsmistakes_artwork_admin_secret", secret);
-  }
-  return secret;
-}
-
-async function generateArtworkForSubmission(submissionId) {
-  const secret = getArtworkAdminSecret();
-  if (!secret) {
-    alert("Artwork generation cancelled. Missing admin secret.");
-    return null;
-  }
-
-  try {
-    const { data, error } = await client.functions.invoke("generate-mistake-artwork", {
-      body: { submission_id: submissionId },
-      headers: { "x-admin-secret": secret }
-    });
-
-    if (error || !data || data.success === false) {
-      console.error("Artwork generation failed", error || data);
-      alert("Artwork generation failed: " + JSON.stringify(error || data, null, 2));
-      return data || null;
-    }
-
-    if (data.artwork_url) window.open(data.artwork_url, "_blank");
-    return data;
-
-  } catch (err) {
-    console.error(err);
-    alert("Artwork generation failed: " + String(err?.message || err));
-    return null;
-  }
-}
-
-async function rejectDuplicate(id) {
-  const s = submissions.find(x => x.id === id);
-  if (!s) return;
-
-  const note = `Rejected as duplicate${s.ai_duplicate_title ? " of: " + s.ai_duplicate_title : ""}.`;
-
-  if (!confirm(note)) return;
-
-  await updateSubmissionStatus(id, "rejected", note);
-
-  await sendSubmissionEmail(
-    s.submitter_email,
-    s.title || s.ai_generated_title || "your submission",
-    "rejected",
-    "This mistake already exists in the SportsMistakes database. Thank you for contributing — duplicates still help us improve coverage."
-  );
-}
-
-async function rejectSpam(id) {
-  const s = submissions.find(x => x.id === id);
-  if (!s) return;
-
-  if (!confirm("Reject this submission as spam/off-topic/unsafe?")) return;
-
-  await updateSubmissionStatus(id, "rejected", "Rejected as spam/off-topic/unsafe from AI Review 2.0.");
-
-  await sendSubmissionEmail(
-    s.submitter_email,
-    s.title || s.ai_generated_title || "your submission",
-    "rejected",
-    "This submission did not meet the SportsMistakes submission guidelines. This may happen when a submission is off-topic, unsafe, promotional, unsupported, or not sports-related."
-  );
-}
-
-async function markNeedsReview(id) {
-  const s = submissions.find(x => x.id === id);
-  if (!s) return;
-
-  const { error } = await client
-    .from("mistake_submissions")
-    .update({
-      ai_status: "reviewed",
-      ai_recommendation: "REVIEW",
-      review_notes: "Marked for human review from AI Review 2.0."
-    })
-    .eq("id", id);
-
-  if (error) {
-    console.error(error);
-    alert("Could not mark needs review.");
-    return;
-  }
-
-  await sendSubmissionEmail(
-    s.submitter_email,
-    s.title || s.ai_generated_title || "your submission",
-    "rejected",
-    "Your submission needs additional human review before it can be accepted. No action is needed right now."
-  );
-
-  await loadSubmissions();
-}
-
-async function updateSubmissionStatus(id, status, review_notes) {
-  const { error } = await client
-    .from("mistake_submissions")
-    .update({ status, review_notes })
-    .eq("id", id);
-
-  if (error) {
-    console.error(error);
-    alert("Could not update submission.");
-    return;
-  }
-
-  await loadSubmissions();
-}
-
-async function sendSubmissionEmail(email, title, status, reason = "") {
-  if (!email) return;
-
-  try {
-    const { data, error } = await client.functions.invoke("send-submission-email", {
-      body: {
-        email,
-        title,
-        status,
-        reason
-      }
-    });
-
-    if (error || (data && data.success === false)) {
-      console.error("Email notification failed", error || data);
-    }
-  } catch (err) {
-    console.error("Email notification failed", err);
-  }
-}
-
-function openOriginalAdmin() {
-  window.location.href = "admin-submissions.html";
-}
-
-function escapeHtml(value) {
-  return String(value || "")
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#039;");
-}
-
-loadSubmissions();
-</script>
-</body>
-</html>
