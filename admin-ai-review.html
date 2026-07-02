@@ -294,9 +294,15 @@ function renderSubmissions() {
           </div>
 
           <div class="box bluebox">
-            <div class="label">AI Artwork</div>
-            <div class="artwork-placeholder">Artwork will be generated when you publish this submission.</div>
-            <div class="studio-note">Use <strong>Approve + Generate Artwork + Publish</strong> to create the painting, save it to Storage, attach it to the published mistake, and email the contributor.</div>
+            <div class="label">AI Artwork Preview</div>
+            ${s.ai_artwork_url ? `
+              <img class="artwork-preview" src="${escapeHtml(s.ai_artwork_url)}" alt="Generated artwork preview">
+              <a class="artwork-link" href="${escapeHtml(s.ai_artwork_url)}" target="_blank">👁 View full artwork</a>
+              <div class="studio-note"><strong>Review this artwork before publishing.</strong> If it has wrong letters/logos/text, click Regenerate Artwork Preview.</div>
+            ` : `
+              <div class="artwork-placeholder">No artwork generated yet.<br><br>Generate a preview before publishing.</div>
+              <div class="studio-note">The contributor will not be emailed and the mistake will not go live until you click Approve & Publish.</div>
+            `}
           </div>
 
           <div class="box">
@@ -310,8 +316,8 @@ function renderSubmissions() {
 
         <div class="actions">
           <button class="purple" onclick="reviewOne('${s.id}')" ${isRunning ? "disabled" : ""}>${isRunning ? "Reviewing..." : "🤖 Review with AI"}</button>
-          <button class="secondary" onclick="approveSubmission('${s.id}')">✅ Approve Only</button>
-          <button class="green" onclick="approveSubmissionWithArtwork('${s.id}')" ${isGeneratingArtwork ? "disabled" : ""}>${isGeneratingArtwork ? "🖼 Generating..." : "🖼 Approve + Generate Artwork + Publish"}</button>
+          <button class="green" onclick="generateArtworkPreview('${s.id}')" ${isGeneratingArtwork ? "disabled" : ""}>${isGeneratingArtwork ? "🖼 Generating..." : (s.ai_artwork_url ? "🔄 Regenerate Artwork Preview" : "🖼 Generate Artwork Preview")}</button>
+          <button class="secondary" onclick="approveSubmission('${s.id}')">✅ Approve & Publish</button>
           <button class="gold" onclick="markNeedsReview('${s.id}')">🟡 Needs Review</button>
           <button class="danger" onclick="rejectDuplicate('${s.id}')">🟣 Reject Duplicate</button>
           <button class="danger" onclick="rejectSpam('${s.id}')">🚫 Reject Spam</button>
@@ -412,7 +418,10 @@ async function approveSubmission(id) {
     return alert("This submission has a BLOCKED source. Do not approve until source is fixed.");
   }
 
-  if (!confirm(`Approve and publish "${s.ai_generated_title || s.title}" without generating artwork?`)) return;
+  const artworkNote = s.ai_artwork_url ? "with the approved artwork preview" : "without artwork";
+  if (!confirm(`Approve and publish "${s.ai_generated_title || s.title}" ${artworkNote}?
+
+This will email the contributor and make the mistake live.`)) return;
 
   const result = await insertPublishedMistake(s);
   if (!result) return;
@@ -421,36 +430,28 @@ async function approveSubmission(id) {
   await loadSubmissions();
 }
 
-async function approveSubmissionWithArtwork(id) {
+async function generateArtworkPreview(id) {
   const s = submissions.find(x => x.id === id);
   if (!s) return alert("Submission not found.");
 
-  if (s.ai_source_safety_status === "BLOCK") {
-    return alert("This submission has a BLOCKED source. Do not approve until source is fixed.");
-  }
-
   const title = s.ai_generated_title || s.title || "Untitled Mistake";
-  if (!confirm(`Approve, generate artwork, and publish "${title}"?\n\nThis will use the OpenAI image API and may cost about 4 cents.`)) return;
+  const verb = s.ai_artwork_url ? "regenerate" : "generate";
+  if (!confirm(`Generate artwork preview for "${title}"?\n\nThis uses the OpenAI image API and may cost about 4 cents. It will NOT publish the mistake or email the contributor.`)) return;
 
   generatingArtworkIds.add(id);
   renderSubmissions();
 
-  const result = await insertPublishedMistake(s);
-  if (!result) {
-    generatingArtworkIds.delete(id);
-    renderSubmissions();
-    return;
-  }
-
-  const artwork = await generateArtworkForMistake(result.mistake.id);
+  const artwork = await generateArtworkForSubmission(id);
 
   generatingArtworkIds.delete(id);
 
   if (!artwork || !artwork.success) {
-    alert("The mistake was published, but artwork generation failed. You can generate artwork later. Check the function response/logs.");
+    alert("Artwork preview generation failed. Check the function response/logs.");
+    renderSubmissions();
+    return;
   }
 
-  await finishApprovedSubmission(s, result.payload.title, artwork?.success ? "Approved, published, and artwork generated from AI Editorial Studio." : "Approved and published from AI Editorial Studio. Artwork generation failed.");
+  alert("Artwork preview generated. Review it before approving and publishing.");
   await loadSubmissions();
 }
 
@@ -474,7 +475,10 @@ function buildPublishPayload(s) {
     ai_published: true,
     source_safety_status: s.ai_source_safety_status || null,
     source_safety_notes: s.ai_source_safety_notes || null,
-    artwork_status: "not_generated",
+    artwork_url: s.ai_artwork_url || null,
+    artwork_prompt: s.ai_artwork_prompt || null,
+    artwork_status: s.ai_artwork_url ? "generated" : "not_generated",
+    artwork_generated_at: s.ai_artwork_generated_at || null,
     views: 0
   };
 }
@@ -530,7 +534,7 @@ function getArtworkAdminSecret() {
   return secret;
 }
 
-async function generateArtworkForMistake(mistakeId) {
+async function generateArtworkForSubmission(submissionId) {
   const secret = getArtworkAdminSecret();
   if (!secret) {
     alert("Artwork generation cancelled. Missing admin secret.");
@@ -539,7 +543,7 @@ async function generateArtworkForMistake(mistakeId) {
 
   try {
     const { data, error } = await client.functions.invoke("generate-mistake-artwork", {
-      body: { mistake_id: mistakeId },
+      body: { submission_id: submissionId },
       headers: { "x-admin-secret": secret }
     });
 
@@ -549,7 +553,6 @@ async function generateArtworkForMistake(mistakeId) {
       return data || null;
     }
 
-    alert("Artwork generated successfully!");
     if (data.artwork_url) window.open(data.artwork_url, "_blank");
     return data;
 
