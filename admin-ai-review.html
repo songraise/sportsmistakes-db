@@ -544,7 +544,7 @@ async function generateArtworkForSubmission(submissionId) {
 
   try {
     const response = await fetch(
-      `${SUPABASE_URL}/functions/v1/artwork-test,
+      `${SUPABASE_URL}/functions/v1/artwork-test`,
       {
         method: "POST",
         headers: {
