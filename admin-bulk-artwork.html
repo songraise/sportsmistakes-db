@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Bulk Artwork | SportsMistakes Admin</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    body{margin:0;font-family:Arial,sans-serif;background:#07111f;color:#fff}
+    .top-nav{display:flex;justify-content:space-between;align-items:center;background:#0d1b2e;border-bottom:1px solid #203852;padding:14px 20px}
+    .nav-brand{font-weight:bold;font-size:20px;color:#fff;cursor:pointer}.nav-brand span{color:#ffcc00}
+    .nav-links a,.nav-links button{color:#74b9ff;background:none;border:none;text-decoration:none;font-weight:bold;margin-left:14px;cursor:pointer;font-size:14px}
+    .container{max-width:1100px;margin:30px auto;padding:0 20px}
+    .hero,.panel,.stat{background:#fff;color:#111827;border:1px solid #d8e0ea;border-radius:16px;box-shadow:0 8px 22px rgba(0,0,0,.15)}
+    .hero{padding:24px;margin-bottom:20px}.sub{color:#5f6f82;line-height:1.45}.panel{padding:20px;margin-top:18px}
+    .stats{display:flex;gap:12px;flex-wrap:wrap;margin:18px 0}.stat{padding:14px 18px;min-width:150px}.stat strong{display:block;font-size:28px;color:#b58100}
+    input,button{font-family:Arial,sans-serif} input{padding:12px;border:1px solid #d8e0ea;border-radius:8px;width:90px}
+    button{padding:12px 16px;border:none;border-radius:8px;background:#1e90ff;color:white;font-weight:bold;cursor:pointer;margin-right:8px}button:disabled{opacity:.55;cursor:not-allowed}
+    .green{background:#166534}.danger{background:#b91c1c}.secondary{background:#203852}.gold{background:#ffcc00;color:#111}
+    .row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}.log{background:#07111f;color:#d8e8ff;border-radius:12px;padding:14px;min-height:250px;max-height:420px;overflow:auto;font-family:Menlo,monospace;font-size:13px;line-height:1.45}
+    .bar{height:16px;background:#e5e7eb;border-radius:999px;overflow:hidden;margin-top:12px}.fill{height:100%;width:0%;background:#1e90ff}.warning{color:#8a5200;background:#fff7d6;border:1px solid #f5d56b;border-radius:12px;padding:14px;margin-top:12px}
+  </style>
+</head>
+<body>
+<nav class="top-nav">
+  <div class="nav-brand" onclick="window.location.href='admin-dashboard.html'">Sports<span>Mistakes</span> Admin</div>
+  <div class="nav-links">
+    <a href="admin-dashboard.html">Dashboard</a>
+    <a href="admin-submissions.html">Submissions</a>
+    <a href="admin-ai-review.html">AI Review</a>
+    <a href="admin-bulk-artwork.html">Bulk Artwork</a>
+    <button onclick="logout()">Logout</button>
+  </div>
+</nav>
+
+<div class="container">
+  <div class="hero">
+    <h1>Bulk Artwork Generator</h1>
+    <div class="sub">Generate artwork for existing published mistakes that do not yet have an artwork URL. Run small batches, review progress, and resume anytime.</div>
+  </div>
+
+  <div class="stats" id="stats"></div>
+
+  <div class="panel">
+    <h2>Batch controls</h2>
+    <div class="warning"><strong>Recommended:</strong> start with 5 or 10. Do not run all 950 at once. This uses the OpenAI image API and can cost money per image.</div>
+    <div class="row" style="margin-top:16px">
+      <label>Batch size: <input id="batchSize" type="number" min="1" max="50" value="10"></label>
+      <button onclick="loadMissingMistakes()">Refresh Missing List</button>
+      <button class="green" id="startBtn" onclick="startBatch()">Generate Next Batch</button>
+      <button class="danger" id="stopBtn" onclick="stopBatch()" disabled>Stop After Current Image</button>
+    </div>
+    <div class="bar"><div class="fill" id="fill"></div></div>
+    <p id="statusText">Ready.</p>
+  </div>
+
+  <div class="panel">
+    <h2>Progress log</h2>
+    <div class="log" id="log">Waiting...</div>
+  </div>
+</div>
+
+<script>
+const SUPABASE_URL = "https://scwjlljurircxuufhqih.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNjd2psbGp1cmlyY3h1dWZocWloIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyNjUyMjcsImV4cCI6MjA5Njg0MTIyN30.WF0HRRb9mAkuOySjabTd8CZXVZRqF0MhMl0N2mafnns";
+const client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+let missingMistakes = [];
+let running = false;
+let stopRequested = false;
+
+async function requireLogin() {
+  const { data } = await client.auth.getSession();
+  if (!data.session) {
+    window.location.href = "admin-login.html";
+    return false;
+  }
+  return true;
+}
+
+async function logout() {
+  await client.auth.signOut();
+  window.location.href = "admin-login.html";
+}
+
+function getArtworkAdminSecret() {
+  let secret = sessionStorage.getItem("sportsmistakes_artwork_admin_secret") || "";
+  if (!secret) {
+    secret = prompt("Enter your ARTWORK_ADMIN_SECRET to generate artwork:") || "";
+    if (secret) sessionStorage.setItem("sportsmistakes_artwork_admin_secret", secret);
+  }
+  return secret;
+}
+
+function log(msg) {
+  const el = document.getElementById("log");
+  const time = new Date().toLocaleTimeString();
+  el.innerHTML += `\n[${time}] ${escapeHtml(msg)}`;
+  el.scrollTop = el.scrollHeight;
+}
+
+function escapeHtml(value) {
+  return String(value || "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
+async function loadMissingMistakes() {
+  const ok = await requireLogin();
+  if (!ok) return;
+
+  document.getElementById("statusText").innerText = "Loading existing mistakes...";
+  document.getElementById("log").innerText = "Loading existing mistakes...";
+
+  const { data, error } = await client
+    .from("mistakes")
+    .select("id,title,sport,year,category,artwork_url")
+    .order("title", { ascending: true })
+    .limit(1500);
+
+  if (error) {
+    console.error(error);
+    document.getElementById("statusText").innerText = "Error loading mistakes.";
+    log("ERROR loading mistakes: " + JSON.stringify(error));
+    return;
+  }
+
+  const all = data || [];
+  missingMistakes = all.filter(m => !m.artwork_url);
+
+  document.getElementById("stats").innerHTML = `
+    <div class="stat"><strong>${all.length}</strong>Total loaded</div>
+    <div class="stat"><strong>${all.length - missingMistakes.length}</strong>Already have art</div>
+    <div class="stat"><strong>${missingMistakes.length}</strong>Missing art</div>
+  `;
+
+  document.getElementById("statusText").innerText = `${missingMistakes.length} mistakes missing artwork.`;
+  log(`${missingMistakes.length} mistakes missing artwork.`);
+}
+
+async function startBatch() {
+  const secret = getArtworkAdminSecret();
+  if (!secret) return alert("Missing admin secret.");
+
+  if (!missingMistakes.length) await loadMissingMistakes();
+  if (!missingMistakes.length) return alert("No missing artwork found.");
+
+  const batchSize = Math.min(Math.max(parseInt(document.getElementById("batchSize").value || "10", 10), 1), 50);
+  const batch = missingMistakes.slice(0, batchSize);
+
+  if (!confirm(`Generate artwork for next ${batch.length} existing mistakes?\n\nThis uses the OpenAI image API and may cost money.`)) return;
+
+  running = true;
+  stopRequested = false;
+  document.getElementById("startBtn").disabled = true;
+  document.getElementById("stopBtn").disabled = false;
+  document.getElementById("fill").style.width = "0%";
+
+  let success = 0;
+  let failed = 0;
+
+  for (let i = 0; i < batch.length; i++) {
+    const m = batch[i];
+    document.getElementById("statusText").innerText = `Generating ${i + 1} of ${batch.length}: ${m.title}`;
+    document.getElementById("fill").style.width = Math.round((i / batch.length) * 100) + "%";
+    log(`START: ${m.title}`);
+
+    try {
+      const response = await fetch(`${SUPABASE_URL}/functions/v1/generate-existing-mistake-artwork`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "apikey": SUPABASE_ANON_KEY,
+          "Authorization": `Bearer ${SUPABASE_ANON_KEY}`,
+          "x-admin-secret": secret
+        },
+        body: JSON.stringify({ mistake_id: m.id })
+      });
+
+      const result = await response.json();
+
+      if (!response.ok || !result.success) {
+        failed++;
+        log(`FAILED: ${m.title} — ${JSON.stringify(result)}`);
+      } else if (result.skipped) {
+        log(`SKIPPED: ${m.title} already has artwork.`);
+      } else {
+        success++;
+        log(`SUCCESS: ${m.title} — ${result.artwork_url}`);
+      }
+    } catch (err) {
+      failed++;
+      log(`FAILED: ${m.title} — ${String(err?.message || err)}`);
+    }
+
+    if (stopRequested) {
+      log("Stop requested. Batch stopped after current image.");
+      break;
+    }
+  }
+
+  document.getElementById("fill").style.width = "100%";
+  document.getElementById("statusText").innerText = `Batch complete. ${success} generated, ${failed} failed.`;
+  document.getElementById("startBtn").disabled = false;
+  document.getElementById("stopBtn").disabled = true;
+  running = false;
+
+  await loadMissingMistakes();
+}
+
+function stopBatch() {
+  if (!running) return;
+  stopRequested = true;
+  document.getElementById("statusText").innerText = "Stop requested. Finishing current image...";
+}
+
+loadMissingMistakes();
+</script>
+</body>
+</html>
