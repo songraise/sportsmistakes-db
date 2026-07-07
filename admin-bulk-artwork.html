@@ -10,15 +10,17 @@
     .top-nav{display:flex;justify-content:space-between;align-items:center;background:#0d1b2e;border-bottom:1px solid #203852;padding:14px 20px}
     .nav-brand{font-weight:bold;font-size:20px;color:#fff;cursor:pointer}.nav-brand span{color:#ffcc00}
     .nav-links a,.nav-links button{color:#74b9ff;background:none;border:none;text-decoration:none;font-weight:bold;margin-left:14px;cursor:pointer;font-size:14px}
-    .container{max-width:1100px;margin:30px auto;padding:0 20px}
-    .hero,.panel,.stat{background:#fff;color:#111827;border:1px solid #d8e0ea;border-radius:16px;box-shadow:0 8px 22px rgba(0,0,0,.15)}
-    .hero{padding:24px;margin-bottom:20px}.sub{color:#5f6f82;line-height:1.45}.panel{padding:20px;margin-top:18px}
-    .stats{display:flex;gap:12px;flex-wrap:wrap;margin:18px 0}.stat{padding:14px 18px;min-width:150px}.stat strong{display:block;font-size:28px;color:#b58100}
-    input,button{font-family:Arial,sans-serif} input{padding:12px;border:1px solid #d8e0ea;border-radius:8px;width:90px}
-    button{padding:12px 16px;border:none;border-radius:8px;background:#1e90ff;color:white;font-weight:bold;cursor:pointer;margin-right:8px}button:disabled{opacity:.55;cursor:not-allowed}
-    .green{background:#166534}.danger{background:#b91c1c}.secondary{background:#203852}.gold{background:#ffcc00;color:#111}
-    .row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}.log{background:#07111f;color:#d8e8ff;border-radius:12px;padding:14px;min-height:250px;max-height:420px;overflow:auto;font-family:Menlo,monospace;font-size:13px;line-height:1.45}
-    .bar{height:16px;background:#e5e7eb;border-radius:999px;overflow:hidden;margin-top:12px}.fill{height:100%;width:0%;background:#1e90ff}.warning{color:#8a5200;background:#fff7d6;border:1px solid #f5d56b;border-radius:12px;padding:14px;margin-top:12px}
+    .container{max-width:1180px;margin:30px auto;padding:0 20px;display:grid;grid-template-columns:320px 1fr;gap:20px}
+    .hero,.panel,.card{background:#fff;color:#111827;border:1px solid #d8e0ea;border-radius:16px;box-shadow:0 8px 22px rgba(0,0,0,.15)}
+    .hero{grid-column:1/-1;padding:24px}.sub{color:#5f6f82;line-height:1.45}.panel{padding:20px}.panel h2{margin-top:0}
+    button{padding:12px 15px;border:none;border-radius:8px;background:#1e90ff;color:white;font-weight:bold;cursor:pointer;margin:6px 0;width:100%}
+    button:disabled{opacity:.55;cursor:not-allowed}.green{background:#166534}.danger{background:#cc4b4b}.secondary{background:#203852}
+    input{padding:12px;border:1px solid #d8e0ea;border-radius:8px;width:90px;font-size:16px}
+    .warn{background:#fff7d6;color:#8a5200;border:1px solid #facc15;border-radius:10px;padding:12px;margin:12px 0;line-height:1.25}
+    .progress{height:16px;background:#dbeafe;border-radius:999px;overflow:hidden;margin:14px 0}.bar{height:100%;width:0%;background:#1e90ff;transition:.25s}
+    .log{background:#020817;color:#e5f0ff;border-radius:12px;padding:14px;font-family:Menlo,monospace;font-size:13px;white-space:pre-wrap;line-height:1.45;max-height:560px;overflow:auto}
+    .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px}.card{padding:12px}.card h3{font-size:15px;margin:8px 0}.meta{font-size:13px;color:#5f6f82;line-height:1.35}.thumb{height:120px;background:#eef6ff;border:1px dashed #b8c4d3;border-radius:10px;display:flex;align-items:center;justify-content:center;color:#5f6f82;text-align:center;font-weight:bold}.thumb img{width:100%;height:100%;object-fit:cover;border-radius:10px}
+    @media(max-width:900px){.container{grid-template-columns:1fr}.hero{grid-column:auto}}
   </style>
 </head>
 <body>
@@ -36,27 +38,29 @@
 <div class="container">
   <div class="hero">
     <h1>Bulk Artwork Generator</h1>
-    <div class="sub">Generate artwork for existing published mistakes that do not yet have an artwork URL. Run small batches, review progress, and resume anytime.</div>
+    <div class="sub">Generate artwork for existing published mistakes that do not have an artwork URL yet. This reuses the proven <strong>artwork-test</strong> Edge Function.</div>
   </div>
-
-  <div class="stats" id="stats"></div>
 
   <div class="panel">
     <h2>Batch controls</h2>
-    <div class="warning"><strong>Recommended:</strong> start with 5 or 10. Do not run all 950 at once. This uses the OpenAI image API and can cost money per image.</div>
-    <div class="row" style="margin-top:16px">
-      <label>Batch size: <input id="batchSize" type="number" min="1" max="50" value="10"></label>
-      <button onclick="loadMissingMistakes()">Refresh Missing List</button>
-      <button class="green" id="startBtn" onclick="startBatch()">Generate Next Batch</button>
-      <button class="danger" id="stopBtn" onclick="stopBatch()" disabled>Stop After Current Image</button>
-    </div>
-    <div class="bar"><div class="fill" id="fill"></div></div>
-    <p id="statusText">Ready.</p>
+    <div class="warn"><strong>Recommended:</strong> start with 5 or 10. Do not run all missing artwork at once. This uses the OpenAI image API and costs money per image.</div>
+    <p><strong>Batch size:</strong></p>
+    <input id="batchSize" type="number" min="1" max="25" value="5" />
+    <button onclick="loadMissingMistakes()">Refresh Missing List</button>
+    <button class="green" id="runBtn" onclick="generateNextBatch()">Generate Next Batch</button>
+    <button class="danger" onclick="stopAfterCurrent=true">Stop After Current Image</button>
+    <div class="progress"><div class="bar" id="bar"></div></div>
+    <p id="summary">Loading...</p>
   </div>
 
   <div class="panel">
     <h2>Progress log</h2>
-    <div class="log" id="log">Waiting...</div>
+    <div class="log" id="log">Starting...</div>
+  </div>
+
+  <div class="panel" style="grid-column:1/-1">
+    <h2>Missing artwork preview</h2>
+    <div class="grid" id="grid"></div>
   </div>
 </div>
 
@@ -66,10 +70,17 @@ const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 const client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 let missingMistakes = [];
+let stopAfterCurrent = false;
 let running = false;
-let stopRequested = false;
 
-async function requireLogin() {
+function log(msg){
+  const el = document.getElementById("log");
+  const time = new Date().toLocaleTimeString();
+  el.textContent += `\n[${time}] ${msg}`;
+  el.scrollTop = el.scrollHeight;
+}
+
+async function requireLogin(){
   const { data } = await client.auth.getSession();
   if (!data.session) {
     window.location.href = "admin-login.html";
@@ -78,12 +89,12 @@ async function requireLogin() {
   return true;
 }
 
-async function logout() {
+async function logout(){
   await client.auth.signOut();
   window.location.href = "admin-login.html";
 }
 
-function getArtworkAdminSecret() {
+function getArtworkAdminSecret(){
   let secret = sessionStorage.getItem("sportsmistakes_artwork_admin_secret") || "";
   if (!secret) {
     secret = prompt("Enter your ARTWORK_ADMIN_SECRET to generate artwork:") || "";
@@ -92,84 +103,68 @@ function getArtworkAdminSecret() {
   return secret;
 }
 
-function log(msg) {
-  const el = document.getElementById("log");
-  const time = new Date().toLocaleTimeString();
-  el.innerHTML += `\n[${time}] ${escapeHtml(msg)}`;
-  el.scrollTop = el.scrollHeight;
-}
-
-function escapeHtml(value) {
-  return String(value || "")
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#039;");
-}
-
-async function loadMissingMistakes() {
+async function loadMissingMistakes(){
   const ok = await requireLogin();
   if (!ok) return;
-
-  document.getElementById("statusText").innerText = "Loading existing mistakes...";
-  document.getElementById("log").innerText = "Loading existing mistakes...";
+  document.getElementById("summary").textContent = "Loading missing artwork list...";
+  log("Loading existing mistakes without artwork...");
 
   const { data, error } = await client
     .from("mistakes")
-    .select("id,title,sport,year,category,artwork_url")
-    .order("title", { ascending: true })
-    .limit(1500);
+    .select("id,title,sport,year,category,teams_people,summary,artwork_url")
+    .or("artwork_url.is.null,artwork_url.eq.")
+    .order("created_at", { ascending: false })
+    .limit(1000);
 
   if (error) {
     console.error(error);
-    document.getElementById("statusText").innerText = "Error loading mistakes.";
+    document.getElementById("summary").textContent = "Error loading missing artwork list.";
     log("ERROR loading mistakes: " + JSON.stringify(error));
     return;
   }
 
-  const all = data || [];
-  missingMistakes = all.filter(m => !m.artwork_url);
-
-  document.getElementById("stats").innerHTML = `
-    <div class="stat"><strong>${all.length}</strong>Total loaded</div>
-    <div class="stat"><strong>${all.length - missingMistakes.length}</strong>Already have art</div>
-    <div class="stat"><strong>${missingMistakes.length}</strong>Missing art</div>
-  `;
-
-  document.getElementById("statusText").innerText = `${missingMistakes.length} mistakes missing artwork.`;
+  missingMistakes = data || [];
+  document.getElementById("summary").textContent = `${missingMistakes.length} mistakes missing artwork.`;
   log(`${missingMistakes.length} mistakes missing artwork.`);
+  renderGrid();
 }
 
-async function startBatch() {
+function renderGrid(){
+  const shown = missingMistakes.slice(0, 24);
+  document.getElementById("grid").innerHTML = shown.map(m => `
+    <div class="card">
+      <div class="thumb">No artwork yet</div>
+      <h3>${escapeHtml(m.title || "Untitled")}</h3>
+      <div class="meta">${escapeHtml(m.sport || "")} ${m.year ? "• " + escapeHtml(m.year) : ""}<br>${escapeHtml(m.category || "")}</div>
+    </div>
+  `).join("");
+}
+
+async function generateNextBatch(){
+  if (running) return;
   const secret = getArtworkAdminSecret();
-  if (!secret) return alert("Missing admin secret.");
-
+  if (!secret) return alert("Missing ARTWORK_ADMIN_SECRET.");
   if (!missingMistakes.length) await loadMissingMistakes();
-  if (!missingMistakes.length) return alert("No missing artwork found.");
 
-  const batchSize = Math.min(Math.max(parseInt(document.getElementById("batchSize").value || "10", 10), 1), 50);
+  const batchSize = Math.max(1, Math.min(25, Number(document.getElementById("batchSize").value || 5)));
   const batch = missingMistakes.slice(0, batchSize);
+  if (!batch.length) return alert("No missing artwork to generate.");
 
-  if (!confirm(`Generate artwork for next ${batch.length} existing mistakes?\n\nThis uses the OpenAI image API and may cost money.`)) return;
+  if (!confirm(`Generate artwork for the next ${batch.length} existing mistakes?\n\nThis uses OpenAI image API and costs money per image.`)) return;
 
   running = true;
-  stopRequested = false;
-  document.getElementById("startBtn").disabled = true;
-  document.getElementById("stopBtn").disabled = false;
-  document.getElementById("fill").style.width = "0%";
+  stopAfterCurrent = false;
+  document.getElementById("runBtn").disabled = true;
+  document.getElementById("bar").style.width = "0%";
 
-  let success = 0;
+  let completed = 0;
   let failed = 0;
 
-  for (let i = 0; i < batch.length; i++) {
-    const m = batch[i];
-    document.getElementById("statusText").innerText = `Generating ${i + 1} of ${batch.length}: ${m.title}`;
-    document.getElementById("fill").style.width = Math.round((i / batch.length) * 100) + "%";
-    log(`START: ${m.title}`);
+  for (const m of batch) {
+    log(`Generating: ${m.title}`);
 
     try {
-      const response = await fetch(`${SUPABASE_URL}/functions/v1/generate-existing-mistake-artwork`, {
+      const response = await fetch(`${SUPABASE_URL}/functions/v1/artwork-test`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -180,41 +175,45 @@ async function startBatch() {
         body: JSON.stringify({ mistake_id: m.id })
       });
 
-      const result = await response.json();
+      const data = await response.json();
 
-      if (!response.ok || !result.success) {
+      if (!response.ok || !data.success) {
         failed++;
-        log(`FAILED: ${m.title} — ${JSON.stringify(result)}`);
-      } else if (result.skipped) {
-        log(`SKIPPED: ${m.title} already has artwork.`);
+        console.error(data);
+        log(`FAILED: ${m.title} — ${JSON.stringify(data)}`);
       } else {
-        success++;
-        log(`SUCCESS: ${m.title} — ${result.artwork_url}`);
+        completed++;
+        log(`SUCCESS: ${m.title}`);
       }
     } catch (err) {
       failed++;
+      console.error(err);
       log(`FAILED: ${m.title} — ${String(err?.message || err)}`);
     }
 
-    if (stopRequested) {
-      log("Stop requested. Batch stopped after current image.");
+    const pct = Math.round(((completed + failed) / batch.length) * 100);
+    document.getElementById("bar").style.width = pct + "%";
+    document.getElementById("summary").textContent = `${completed} succeeded, ${failed} failed, ${batch.length - completed - failed} remaining in this batch.`;
+
+    if (stopAfterCurrent) {
+      log("Stopped after current image by user request.");
       break;
     }
   }
 
-  document.getElementById("fill").style.width = "100%";
-  document.getElementById("statusText").innerText = `Batch complete. ${success} generated, ${failed} failed.`;
-  document.getElementById("startBtn").disabled = false;
-  document.getElementById("stopBtn").disabled = true;
   running = false;
-
+  document.getElementById("runBtn").disabled = false;
   await loadMissingMistakes();
+  log(`Batch complete. ${completed} succeeded, ${failed} failed.`);
 }
 
-function stopBatch() {
-  if (!running) return;
-  stopRequested = true;
-  document.getElementById("statusText").innerText = "Stop requested. Finishing current image...";
+function escapeHtml(value){
+  return String(value || "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
 }
 
 loadMissingMistakes();
