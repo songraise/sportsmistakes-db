@@ -7,9 +7,22 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     body{margin:0;font-family:Arial,sans-serif;background:#07111f;color:#fff}
-    .top-nav{display:flex;justify-content:space-between;align-items:center;background:#0d1b2e;border-bottom:1px solid #203852;padding:14px 20px}
-    .nav-brand{font-weight:bold;font-size:20px;color:#fff;cursor:pointer}.nav-brand span{color:#ffcc00}
-    .nav-links a,.nav-links button{color:#74b9ff;background:none;border:none;text-decoration:none;font-weight:bold;margin-left:14px;cursor:pointer;font-size:14px}
+
+    .top-nav{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      background:#0d1b2e;
+      border-bottom:1px solid #203852;
+      padding:14px 20px;
+    }
+    .nav-brand{font-weight:bold;font-size:20px;color:#fff;cursor:pointer}
+    .nav-brand span{color:#ffcc00}
+    .nav-links{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+    .nav-links a{color:#74b9ff;text-decoration:none;font-weight:bold;font-size:14px}
+    .nav-links a:hover{color:#ffcc00}
+    .logout{background:#444;color:white;border:none;border-radius:8px;padding:9px 12px;font-weight:bold;cursor:pointer;width:auto;margin:0}
+
     .container{max-width:1180px;margin:30px auto;padding:0 20px;display:grid;grid-template-columns:320px 1fr;gap:20px}
     .hero,.panel,.card{background:#fff;color:#111827;border:1px solid #d8e0ea;border-radius:16px;box-shadow:0 8px 22px rgba(0,0,0,.15)}
     .hero{grid-column:1/-1;padding:24px}.sub{color:#5f6f82;line-height:1.45}.panel{padding:20px}.panel h2{margin-top:0}
@@ -20,7 +33,7 @@
     .progress{height:16px;background:#dbeafe;border-radius:999px;overflow:hidden;margin:14px 0}.bar{height:100%;width:0%;background:#1e90ff;transition:.25s}
     .log{background:#020817;color:#e5f0ff;border-radius:12px;padding:14px;font-family:Menlo,monospace;font-size:13px;white-space:pre-wrap;line-height:1.45;max-height:560px;overflow:auto}
     .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px}.card{padding:12px}.card h3{font-size:15px;margin:8px 0}.meta{font-size:13px;color:#5f6f82;line-height:1.35}.thumb{height:120px;background:#eef6ff;border:1px dashed #b8c4d3;border-radius:10px;display:flex;align-items:center;justify-content:center;color:#5f6f82;text-align:center;font-weight:bold}.thumb img{width:100%;height:100%;object-fit:cover;border-radius:10px}
-    @media(max-width:900px){.container{grid-template-columns:1fr}.hero{grid-column:auto}}
+    @media(max-width:900px){.container{grid-template-columns:1fr}.hero{grid-column:auto}.top-nav{align-items:flex-start;flex-direction:column}.nav-links{gap:12px}.nav-links a{font-size:13px}}
   </style>
 </head>
 <body>
@@ -28,10 +41,13 @@
   <div class="nav-brand" onclick="window.location.href='admin-dashboard.html'">Sports<span>Mistakes</span> Admin</div>
   <div class="nav-links">
     <a href="admin-dashboard.html">Dashboard</a>
+    <a href="index.html">Public Site</a>
     <a href="admin-submissions.html">Submissions</a>
     <a href="admin-ai-review.html">AI Review</a>
     <a href="admin-bulk-artwork.html">Bulk Artwork</a>
-    <button onclick="logout()">Logout</button>
+    <a href="admin-reports.html">Reports</a>
+    <a href="admin-mistakes.html">Mistakes</a>
+    <button class="logout" onclick="logout()">Log Out</button>
   </div>
 </nav>
 
