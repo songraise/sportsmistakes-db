@@ -9,7 +9,12 @@
   <style>
     body{margin:0;font-family:Arial,sans-serif;background:#07111f;color:#fff}
     .top-nav{display:flex;justify-content:space-between;align-items:center;background:#0d1b2e;border-bottom:1px solid #203852;padding:14px 20px}
-    .nav-brand{font-weight:bold;font-size:20px;color:#fff;cursor:pointer}.nav-links a{color:#74b9ff;text-decoration:none;font-weight:bold;margin-left:18px}
+    .nav-brand{font-weight:bold;font-size:20px;color:#fff;cursor:pointer}
+    .nav-brand span{color:#ffcc00}
+    .nav-links{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+    .nav-links a{color:#74b9ff;text-decoration:none;font-weight:bold;font-size:14px}
+    .nav-links a:hover{color:#ffcc00}
+    .logout{background:#444;color:white;border:none;border-radius:8px;padding:9px 12px;font-weight:bold;cursor:pointer;margin:0}
     .container{max-width:1100px;margin:35px auto 60px;padding:0 20px}.sub{color:#b7c7d9;line-height:1.5}
     .filters{display:flex;gap:10px;flex-wrap:wrap;margin:20px 0}select,input{padding:11px;border-radius:8px;border:1px solid #203852;background:#07111f;color:white;font-size:15px}input{flex:1;min-width:240px}
     .status{color:#ffcc00;margin:12px 0;white-space:pre-wrap}.report-card{background:#0d1b2e;border:1px solid #203852;border-radius:14px;padding:18px;margin-bottom:14px}
@@ -17,16 +22,21 @@
     .details{color:#d8e4f2;line-height:1.45;margin-top:8px}button{border:none;border-radius:8px;padding:10px 13px;margin-right:8px;margin-top:12px;color:white;font-weight:bold;cursor:pointer}
     .open-btn{background:#444}.resolved-btn{background:#166534}.dismiss-btn{background:#8b1e1e}.review-btn{background:#1e90ff}
     textarea{width:100%;box-sizing:border-box;margin-top:10px;min-height:70px;border-radius:8px;border:1px solid #203852;background:#07111f;color:white;padding:11px}
+    @media(max-width:760px){.top-nav{align-items:flex-start;flex-direction:column}.nav-links{gap:12px}.nav-links a{font-size:13px}}
   </style>
 </head>
 <body>
 <nav class="top-nav">
-  <div class="nav-brand" onclick="window.location.href='index.html'">SportsMistakes Admin</div>
+  <div class="nav-brand" onclick="window.location.href='admin-dashboard.html'">Sports<span>Mistakes</span> Admin</div>
   <div class="nav-links">
-    <a href="index.html">Home</a>
+    <a href="admin-dashboard.html">Dashboard</a>
+    <a href="index.html">Public Site</a>
     <a href="admin-submissions.html">Submissions</a>
+    <a href="admin-ai-review.html">AI Review</a>
+    <a href="admin-bulk-artwork.html">Bulk Artwork</a>
+    <a href="admin-reports.html">Reports</a>
     <a href="admin-mistakes.html">Mistakes</a>
-    <a href="duplicate-finder.html">Duplicates</a>
+    <button class="logout" onclick="logout()">Log Out</button>
   </div>
 </nav>
 
@@ -53,6 +63,11 @@ const SUPABASE_ANON_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYm
 const client=supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
 let reports=[];
 let mistakesById={};
+
+async function logout(){
+  await client.auth.signOut();
+  window.location.href="admin-login.html";
+}
 
 async function loadReports(){
   document.getElementById("status").innerText="Loading reports...";
