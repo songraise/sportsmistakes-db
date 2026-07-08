@@ -11,7 +11,10 @@
     .top-nav{display:flex;justify-content:space-between;align-items:center;background:#0d1b2e;border-bottom:1px solid #203852;padding:14px 20px}
     .nav-brand{font-weight:bold;font-size:20px;color:#fff;cursor:pointer}
     .nav-brand span{color:#ffcc00}
-    .nav-links a,.nav-links button{color:#74b9ff;background:none;border:none;text-decoration:none;font-weight:bold;margin-left:14px;cursor:pointer;font-size:14px}
+    .nav-links{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+    .nav-links a{color:#74b9ff;text-decoration:none;font-weight:bold;font-size:14px}
+    .nav-links a:hover{color:#ffcc00}
+    .logout{background:#444;color:white;border:none;border-radius:8px;padding:9px 12px;font-weight:bold;cursor:pointer}
     .container{max-width:1250px;margin:30px auto;padding:0 20px}
     .hero,.card,.stat{background:#fff;color:#111827;border:1px solid #d8e0ea;border-radius:16px;box-shadow:0 8px 22px rgba(0,0,0,.15)}
     .hero{padding:24px;margin-bottom:20px}
@@ -42,7 +45,7 @@
     .artwork-placeholder{height:180px;display:flex;align-items:center;justify-content:center;border:1px dashed #b8c4d3;border-radius:10px;background:#eef6ff;color:#5f6f82;font-weight:bold;text-align:center;padding:12px}
     .artwork-link{display:inline-block;margin-top:10px;color:#1e90ff;font-weight:bold;text-decoration:none}
     .studio-note{font-size:13px;color:#5f6f82;line-height:1.45;margin-top:8px}
-    @media(max-width:900px){.grid{grid-template-columns:1fr}.nav-links a{margin-left:8px;font-size:13px}}
+    @media(max-width:900px){.grid{grid-template-columns:1fr}.top-nav{align-items:flex-start;flex-direction:column}.nav-links{gap:12px}.nav-links a{font-size:13px}}
   </style>
 </head>
 
@@ -51,9 +54,13 @@
   <div class="nav-brand" onclick="window.location.href='admin-dashboard.html'">Sports<span>Mistakes</span> Admin</div>
   <div class="nav-links">
     <a href="admin-dashboard.html">Dashboard</a>
+    <a href="index.html">Public Site</a>
     <a href="admin-submissions.html">Submissions</a>
     <a href="admin-ai-review.html">AI Review</a>
-    <button onclick="logout()">Logout</button>
+    <a href="admin-bulk-artwork.html">Bulk Artwork</a>
+    <a href="admin-reports.html">Reports</a>
+    <a href="admin-mistakes.html">Mistakes</a>
+    <button class="logout" onclick="logout()">Log Out</button>
   </div>
 </nav>
 
