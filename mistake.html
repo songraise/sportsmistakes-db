@@ -5,119 +5,949 @@
   <title>SportsMistakes | Mistake Detail</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  
+
   <style>
-    :root{--bg:#07111f;--nav:#0d1b2e;--line:#203852;--blue:#1e90ff;--blue2:#74b9ff;--gold:#ffcc00;--gold2:#b58100;--ink:#111827;--muted:#5f6f82;--soft:#f7f9fc;--border:#d8e0ea;--white:#fff}
+    :root{
+      --bg:#050b14;
+      --nav:#081321;
+      --panel:#0b1a2b;
+      --panel2:#0f2238;
+      --line:#29425f;
+      --blue:#1e90ff;
+      --blue2:#74b9ff;
+      --gold:#ffcc00;
+      --goldDark:#9f6d00;
+      --red:#ef4444;
+      --white:#ffffff;
+      --muted:#b7c7d9;
+      --soft:#dbeafe;
+      --ink:#111827;
+      --paper:#f8fafc;
+    }
+
     *{box-sizing:border-box}
-    body{margin:0;font-family:Arial,sans-serif;background:radial-gradient(circle at top left,rgba(30,144,255,.18),transparent 32%),radial-gradient(circle at top right,rgba(255,204,0,.12),transparent 28%),var(--bg);color:var(--ink)}
-    .top-nav{display:flex;justify-content:space-between;align-items:center;background:rgba(13,27,46,.96);border-bottom:1px solid var(--line);padding:14px 20px;position:sticky;top:0;z-index:10;backdrop-filter:blur(8px)}
-    .nav-brand{font-weight:bold;font-size:20px;color:#fff;cursor:pointer;letter-spacing:.2px}.nav-brand span{color:var(--gold)}
-    .nav-links{display:flex;gap:18px;flex-wrap:wrap;align-items:center}.nav-links a{color:var(--blue2);text-decoration:none;font-weight:bold;font-size:14px}.nav-links a:hover{color:var(--gold)}
-    .container{max-width:1060px;margin:32px auto 70px;padding:0 20px}.loading,.error{text-align:center;color:#b9c8da;padding:50px}
-    .detail-shell{display:grid;gap:22px}.hero-card{overflow:hidden;background:#fff;border:1px solid var(--border);border-radius:22px;box-shadow:0 18px 42px rgba(0,0,0,.28)}
-    .hero-art{min-height:440px;background:linear-gradient(135deg,rgba(7,17,31,.95),rgba(13,27,46,.72)),radial-gradient(circle at 30% 20%,rgba(30,144,255,.22),transparent 35%),radial-gradient(circle at 85% 18%,rgba(255,204,0,.18),transparent 30%);background-size:cover;background-position:center;position:relative;display:flex;align-items:flex-end;isolation:isolate}
-    .hero-art.has-image::before{content:"";position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.88),rgba(0,0,0,.25) 48%,rgba(0,0,0,.08));z-index:0}.hero-art.no-image{min-height:360px}
-    .hero-content{position:relative;z-index:1;color:#fff;padding:34px;width:100%}.hero-top{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;flex-wrap:wrap;margin-bottom:14px}
-    .badge{display:inline-block;font-size:13px;padding:7px 11px;border-radius:999px;background:var(--blue);color:#fff;font-weight:bold;box-shadow:0 8px 20px rgba(0,0,0,.25)}
-    .score{background:var(--gold);color:#111;padding:10px 13px;border-radius:12px;font-weight:bold;font-size:15px;box-shadow:0 8px 20px rgba(0,0,0,.24)}
-    .hero-title{font-size:48px;line-height:1.02;margin:8px 0 12px;color:#fff;max-width:860px;text-shadow:0 4px 18px rgba(0,0,0,.7)}
-    .hero-meta{color:#dbeafe;font-size:16px;margin-bottom:12px;font-weight:bold}.hero-views{color:var(--gold);font-weight:bold;font-size:15px}
-    .story-card,.court-card,.share-card,.sources-card,.related-card-wrap{background:#fff;border:1px solid var(--border);border-radius:18px;padding:26px;box-shadow:0 10px 28px rgba(0,0,0,.14)}
-    .section{margin-top:24px;padding-top:22px;border-top:1px solid var(--border)}.section:first-child{margin-top:0;padding-top:0;border-top:none}
-    .section h2,.court-card h2,.share-card h2,.sources-card h2,.related-card-wrap h2{font-size:23px;margin:0 0 12px;color:#111827;letter-spacing:-.2px}
-    p{color:#344256;line-height:1.65;font-size:17px;margin:0 0 10px}.team-pill{display:inline-block;background:#eef6ff;border:1px solid #cfe4ff;color:#203852;padding:12px 14px;border-radius:12px;font-weight:bold;line-height:1.35}
-    .vote-panel{background:linear-gradient(135deg,#0d1b2e,#142844);border-radius:16px;padding:20px;color:#fff;margin-top:14px}.vote-panel p{color:#d8e4f2}
-    .vote-buttons{display:flex;gap:12px;flex-wrap:wrap;margin-top:15px}.vote-buttons button{padding:13px 18px;border:none;border-radius:10px;color:#fff;font-weight:bold;cursor:pointer;font-size:15px}.yes-btn{background:var(--blue)}.no-btn{background:#444}
-    #voteResults{margin-top:18px;color:#fff;font-size:16px;line-height:1.45}
-    .court-intro{color:#5f6f82;margin-bottom:16px;font-size:15px}.court-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:16px}.court-side{background:#f7f9fc;border:1px solid var(--border);border-radius:16px;padding:17px}.court-side h3{margin:0 0 12px;font-size:18px;color:#111827}
-    .argument{background:#fff;border:1px solid var(--border);border-radius:13px;padding:13px;margin-bottom:11px;box-shadow:0 4px 12px rgba(0,0,0,.06)}.argument-text{color:#344256;line-height:1.5;font-size:15px}.argument-meta{margin-top:8px;color:#5f6f82;font-size:13px}
-    .upvote-btn{margin-top:10px;background:#203852;color:#fff;border:none;border-radius:8px;padding:8px 10px;font-weight:bold;cursor:pointer}.upvote-btn:hover{background:var(--blue)}
-    .court-form{margin-top:18px;background:#f7f9fc;border:1px solid var(--border);border-radius:16px;padding:18px}.court-form h3{margin:0 0 4px;color:#111827}.court-form label{display:block;margin-top:12px;color:#344256;font-weight:bold}
-    .court-form select,.court-form textarea,.court-form input{width:100%;box-sizing:border-box;margin-top:8px;padding:12px;border-radius:9px;border:1px solid var(--border);background:#fff;color:#111827;font-size:15px}.court-form textarea{min-height:100px;resize:vertical}.court-form button{margin-top:14px;background:var(--blue);color:#fff;border:none;border-radius:9px;padding:12px 16px;font-weight:bold;cursor:pointer}
-    .court-note{color:#5f6f82;font-size:14px;line-height:1.45}.court-message{margin-top:12px;color:#b58100;font-size:14px;white-space:pre-wrap;font-weight:bold}
-    .share-buttons{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px}.share-buttons button,.share-buttons a{display:inline-block;border:none;border-radius:9px;padding:11px 14px;color:#fff;text-decoration:none;font-weight:bold;cursor:pointer;font-size:14px}.share-x{background:#111}.share-facebook{background:#1877f2}.share-reddit{background:#ff4500}.share-copy{background:var(--blue)}.share-message{margin-top:12px;color:#b58100;font-size:14px;font-weight:bold}
-    .sources a{display:inline-block;color:#1e73be;text-decoration:none;margin-right:16px;margin-top:8px;font-weight:bold}.report-btn{background:#6b5b1e;color:white;border:none;border-radius:9px;padding:11px 14px;font-weight:bold;cursor:pointer;margin-top:16px}
-    .report-box{display:none;margin-top:14px;background:#f7f9fc;border:1px solid var(--border);border-radius:14px;padding:16px}.report-box label{display:block;margin-top:12px;color:#344256;font-weight:bold}.report-box select,.report-box textarea{width:100%;box-sizing:border-box;margin-top:8px;padding:11px;border-radius:8px;border:1px solid var(--border);background:#fff;color:#111827;font-size:15px}.report-box textarea{min-height:90px;resize:vertical}.report-submit{background:var(--blue);color:white;border:none;border-radius:8px;padding:11px 14px;font-weight:bold;cursor:pointer;margin-top:12px}.report-message{margin-top:10px;color:#b58100;white-space:pre-wrap;font-weight:bold}
-    .related-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:16px;margin-top:14px}.related-card{background:#fff;border:1px solid var(--border);border-radius:15px;overflow:hidden;cursor:pointer;box-shadow:0 6px 16px rgba(0,0,0,.09);transition:.16s}.related-card:hover{border-color:var(--blue);transform:translateY(-2px)}
-    .related-art{height:128px;background:linear-gradient(135deg,#0d1b2e,#203852);background-size:cover;background-position:center;display:flex;align-items:center;justify-content:center;color:#dbeafe;font-weight:bold;text-align:center;padding:12px}.related-body{padding:14px}.related-card h3{font-size:16px;margin:6px 0;line-height:1.25;color:#111827}.related-meta{font-size:13px;color:#5f6f82;line-height:1.35}.related-score{display:inline-block;background:var(--gold);color:#111;padding:4px 7px;border-radius:8px;font-weight:bold;font-size:12px;margin-top:8px}
-    @media(max-width:760px){.container{margin:20px auto 50px;padding:0 14px}.top-nav{align-items:flex-start;flex-direction:column;gap:10px}.nav-links{gap:12px}.nav-links a{font-size:14px}.hero-art{min-height:330px}.hero-content{padding:24px}.hero-title{font-size:34px}.court-grid{grid-template-columns:1fr}.story-card,.court-card,.share-card,.sources-card,.related-card-wrap{padding:20px}}
+
+    body{
+      margin:0;
+      font-family:Arial,sans-serif;
+      background:
+        radial-gradient(circle at 22% 10%,rgba(30,144,255,.22),transparent 34%),
+        radial-gradient(circle at 75% 4%,rgba(255,204,0,.12),transparent 28%),
+        linear-gradient(180deg,#06101d 0%,#020712 100%);
+      color:#fff;
+    }
+
+    .top-nav{
+      height:58px;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      background:rgba(8,19,33,.96);
+      border-bottom:1px solid var(--line);
+      padding:0 22px;
+      position:sticky;
+      top:0;
+      z-index:10;
+      backdrop-filter:blur(8px);
+    }
+
+    .nav-brand{
+      font-weight:900;
+      font-size:21px;
+      color:white;
+      cursor:pointer;
+      letter-spacing:-.3px;
+    }
+
+    .nav-brand span{color:var(--gold)}
+
+    .nav-links{display:flex;gap:20px;align-items:center;flex-wrap:wrap}
+
+    .nav-links a{
+      color:var(--blue2);
+      text-decoration:none;
+      font-weight:800;
+      font-size:14px;
+    }
+
+    .nav-links a:hover{color:var(--gold)}
+
+    .container{
+      max-width:1280px;
+      margin:28px auto 70px;
+      padding:0 22px;
+    }
+
+    .loading,.error{
+      text-align:center;
+      color:#c7d7ea;
+      padding:60px;
+    }
+
+    .detail-shell{display:grid;gap:22px}
+
+    .back-link{
+      display:inline-block;
+      color:var(--gold);
+      text-decoration:none;
+      font-weight:900;
+      margin:4px 0 4px;
+      cursor:pointer;
+    }
+
+    .museum-hero{
+      display:grid;
+      grid-template-columns:minmax(420px,1.12fr) minmax(360px,.88fr);
+      gap:34px;
+      align-items:center;
+      padding:28px 0 10px;
+    }
+
+    .gallery-side{
+      position:relative;
+      min-height:520px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+    }
+
+    .spotlight{
+      position:absolute;
+      top:-20px;
+      left:50%;
+      transform:translateX(-50%);
+      width:280px;
+      height:180px;
+      background:radial-gradient(ellipse at center,rgba(255,221,120,.18),rgba(255,221,120,.05) 40%,transparent 72%);
+      filter:blur(4px);
+      pointer-events:none;
+    }
+
+    .frame-wrap{
+      width:100%;
+      max-width:630px;
+      position:relative;
+    }
+
+    .art-frame{
+      background:
+        linear-gradient(135deg,#7a4b00,#ffd66b 12%,#8a5b00 26%,#ffe191 48%,#6e4300 70%,#d89b22 100%);
+      border-radius:8px;
+      padding:18px;
+      box-shadow:
+        0 30px 60px rgba(0,0,0,.55),
+        inset 0 0 0 2px rgba(255,255,255,.22),
+        inset 0 0 0 9px rgba(83,48,0,.42);
+    }
+
+    .art-inner{
+      background:#06101d;
+      border:5px solid rgba(30,20,8,.8);
+      min-height:430px;
+      background-size:contain;
+      background-repeat:no-repeat;
+      background-position:center;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      color:#c7d7ea;
+      font-weight:900;
+      text-align:center;
+      padding:24px;
+    }
+
+    .plaque{
+      width:46%;
+      min-width:250px;
+      margin:10px auto 0;
+      padding:9px 12px;
+      background:linear-gradient(180deg,#c7952d,#8c5b0a);
+      border:1px solid #f3d27a;
+      color:#160d00;
+      text-align:center;
+      font-weight:900;
+      font-size:12px;
+      letter-spacing:.5px;
+      border-radius:2px;
+      box-shadow:0 8px 20px rgba(0,0,0,.28);
+    }
+
+    .museum-ropes{
+      position:absolute;
+      bottom:0;
+      left:4%;
+      right:4%;
+      height:74px;
+      border-bottom:8px solid rgba(130,17,22,.88);
+      border-radius:0 0 50% 50%;
+      opacity:.9;
+      pointer-events:none;
+    }
+
+    .museum-ropes::before,
+    .museum-ropes::after{
+      content:"";
+      position:absolute;
+      bottom:-18px;
+      width:17px;
+      height:74px;
+      border-radius:999px;
+      background:linear-gradient(180deg,#f5cc5a,#6b3f00);
+      box-shadow:0 0 12px rgba(0,0,0,.45);
+    }
+
+    .museum-ropes::before{left:2%}
+    .museum-ropes::after{right:2%}
+
+    .hero-info{
+      padding:18px 0;
+    }
+
+    .hero-kicker{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      flex-wrap:wrap;
+      margin-bottom:18px;
+      color:#dbeafe;
+      font-weight:800;
+    }
+
+    .badge{
+      display:inline-block;
+      font-size:13px;
+      padding:8px 12px;
+      border-radius:999px;
+      background:var(--blue);
+      color:#fff;
+      font-weight:900;
+      box-shadow:0 8px 20px rgba(0,0,0,.25);
+    }
+
+    .meta-dot{opacity:.45}
+
+    .score-box{
+      display:inline-flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      background:var(--gold);
+      color:#111;
+      padding:13px 17px;
+      border-radius:10px;
+      font-weight:900;
+      box-shadow:0 12px 26px rgba(0,0,0,.35);
+      margin-bottom:18px;
+    }
+
+    .score-box .score-number{font-size:27px;line-height:1}
+    .score-box .score-label{font-size:11px;margin-top:5px;letter-spacing:.4px}
+
+    .hero-title{
+      margin:0 0 12px;
+      color:#fff;
+      font-size:54px;
+      line-height:1;
+      letter-spacing:-1.8px;
+      text-shadow:0 8px 28px rgba(0,0,0,.65);
+    }
+
+    .hero-subtitle{
+      color:#d8e4f2;
+      font-size:20px;
+      line-height:1.45;
+      max-width:600px;
+      margin:0 0 18px;
+      font-weight:700;
+    }
+
+    .hero-views{
+      color:var(--gold);
+      font-weight:900;
+      margin-bottom:24px;
+    }
+
+    .vote-box{
+      background:rgba(10,25,42,.75);
+      border:1px solid rgba(116,185,255,.28);
+      border-radius:14px;
+      padding:18px;
+      max-width:600px;
+      box-shadow:0 12px 28px rgba(0,0,0,.25);
+    }
+
+    .vote-head{
+      display:flex;
+      justify-content:space-between;
+      gap:18px;
+      align-items:center;
+      flex-wrap:wrap;
+    }
+
+    .vote-head h2{
+      margin:0;
+      color:#fff;
+      font-size:22px;
+    }
+
+    .vote-head p{
+      margin:6px 0 0;
+      color:#d8e4f2;
+      font-size:15px;
+    }
+
+    .vote-buttons{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-top:14px;
+    }
+
+    .vote-buttons button{
+      padding:12px 15px;
+      border:none;
+      border-radius:9px;
+      color:#fff;
+      font-weight:900;
+      cursor:pointer;
+      font-size:14px;
+    }
+
+    .yes-btn{background:var(--blue)}
+    .no-btn{background:#444}
+
+    #voteResults{
+      margin-top:14px;
+      color:#fff;
+      font-size:16px;
+      line-height:1.45;
+    }
+
+    .share-row{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-top:20px;
+    }
+
+    .share-label{color:#d8e4f2;font-weight:800;margin-right:4px}
+
+    .share-buttons{display:flex;flex-wrap:wrap;gap:10px}
+
+    .share-buttons button,
+    .share-buttons a{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      min-width:42px;
+      height:42px;
+      border:none;
+      border-radius:999px;
+      color:#fff;
+      text-decoration:none;
+      font-weight:900;
+      cursor:pointer;
+      font-size:14px;
+    }
+
+    .share-x{background:#111}
+    .share-facebook{background:#1877f2}
+    .share-reddit{background:#ff4500}
+    .share-copy{background:#555}
+    .share-message{margin-top:10px;color:var(--gold);font-size:14px;font-weight:900}
+
+    .content-grid{
+      display:grid;
+      grid-template-columns:minmax(0,1fr) minmax(390px,.95fr);
+      border:1px solid var(--line);
+      background:rgba(8,19,33,.75);
+      border-radius:16px;
+      overflow:hidden;
+      box-shadow:0 18px 42px rgba(0,0,0,.35);
+    }
+
+    .story-panel,.court-panel{
+      padding:28px;
+      background:linear-gradient(180deg,rgba(13,27,46,.96),rgba(6,16,29,.94));
+    }
+
+    .story-panel{border-right:1px solid var(--line)}
+
+    .story-section{
+      padding-bottom:24px;
+      margin-bottom:24px;
+      border-bottom:1px solid rgba(216,224,234,.16);
+    }
+
+    .story-section:last-child{
+      border-bottom:none;
+      padding-bottom:0;
+      margin-bottom:0;
+    }
+
+    .story-section h2,.court-panel h2,.sources-card h2,.related-card-wrap h2{
+      color:var(--gold);
+      margin:0 0 14px;
+      font-size:22px;
+      letter-spacing:.2px;
+      text-transform:uppercase;
+    }
+
+    .story-section p,.court-intro{
+      color:#edf5ff;
+      line-height:1.7;
+      font-size:17px;
+      margin:0;
+    }
+
+    .team-pill{
+      display:inline-block;
+      background:rgba(30,144,255,.12);
+      border:1px solid rgba(116,185,255,.32);
+      color:#dbeafe;
+      padding:12px 14px;
+      border-radius:12px;
+      font-weight:900;
+      line-height:1.35;
+    }
+
+    .court-grid{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:14px;
+      margin-top:18px;
+    }
+
+    .court-side{
+      background:rgba(3,10,20,.55);
+      border:1px solid rgba(116,185,255,.26);
+      border-radius:12px;
+      padding:16px;
+    }
+
+    .court-side.prosecution{border-color:rgba(239,68,68,.45)}
+    .court-side.defense{border-color:rgba(30,144,255,.45)}
+
+    .court-side h3{
+      margin:0 0 12px;
+      font-size:17px;
+      color:#fff;
+    }
+
+    .court-side.prosecution h3{color:#ff6464}
+    .court-side.defense h3{color:#4da3ff}
+
+    .argument{
+      background:rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.11);
+      border-radius:10px;
+      padding:12px;
+      margin-bottom:10px;
+    }
+
+    .argument-text{
+      color:#edf5ff;
+      line-height:1.48;
+      font-size:14px;
+    }
+
+    .argument-meta{
+      margin-top:8px;
+      color:#b7c7d9;
+      font-size:12px;
+    }
+
+    .upvote-btn{
+      margin-top:10px;
+      background:#203852;
+      color:#fff;
+      border:none;
+      border-radius:8px;
+      padding:8px 10px;
+      font-weight:900;
+      cursor:pointer;
+    }
+
+    .upvote-btn:hover{background:var(--blue)}
+
+    .court-note{
+      color:#b7c7d9;
+      font-size:14px;
+      line-height:1.45;
+    }
+
+    .court-form{
+      margin-top:18px;
+      background:rgba(247,249,252,.08);
+      border:1px solid rgba(216,224,234,.18);
+      border-radius:13px;
+      padding:16px;
+    }
+
+    .court-form h3{margin:0;color:#fff}
+    .court-form label{display:block;margin-top:12px;color:#d8e4f2;font-weight:900}
+
+    .court-form select,.court-form textarea,.court-form input{
+      width:100%;
+      box-sizing:border-box;
+      margin-top:8px;
+      padding:12px;
+      border-radius:8px;
+      border:1px solid rgba(216,224,234,.28);
+      background:#07111f;
+      color:#fff;
+      font-size:15px;
+    }
+
+    .court-form textarea{min-height:95px;resize:vertical}
+
+    .court-form button{
+      margin-top:14px;
+      background:var(--blue);
+      color:#fff;
+      border:none;
+      border-radius:8px;
+      padding:12px 16px;
+      font-weight:900;
+      cursor:pointer;
+    }
+
+    .court-message{
+      margin-top:12px;
+      color:var(--gold);
+      font-size:14px;
+      white-space:pre-wrap;
+      font-weight:900;
+    }
+
+    .sources-card,.related-card-wrap{
+      background:rgba(8,19,33,.86);
+      border:1px solid var(--line);
+      border-radius:16px;
+      padding:24px 28px;
+      box-shadow:0 14px 34px rgba(0,0,0,.26);
+    }
+
+    .sources a{
+      display:inline-block;
+      color:var(--blue2);
+      text-decoration:none;
+      margin-right:16px;
+      margin-top:8px;
+      font-weight:900;
+    }
+
+    .report-btn{
+      background:#6b5b1e;
+      color:white;
+      border:none;
+      border-radius:8px;
+      padding:11px 14px;
+      font-weight:900;
+      cursor:pointer;
+      margin-top:16px;
+    }
+
+    .report-box{
+      display:none;
+      margin-top:14px;
+      background:rgba(247,249,252,.08);
+      border:1px solid rgba(216,224,234,.18);
+      border-radius:12px;
+      padding:16px;
+    }
+
+    .report-box label{display:block;margin-top:12px;color:#d8e4f2;font-weight:900}
+
+    .report-box select,.report-box textarea{
+      width:100%;
+      box-sizing:border-box;
+      margin-top:8px;
+      padding:11px;
+      border-radius:8px;
+      border:1px solid rgba(216,224,234,.28);
+      background:#07111f;
+      color:#fff;
+      font-size:15px;
+    }
+
+    .report-box textarea{min-height:90px;resize:vertical}
+
+    .report-submit{
+      background:var(--blue);
+      color:white;
+      border:none;
+      border-radius:8px;
+      padding:11px 14px;
+      font-weight:900;
+      cursor:pointer;
+      margin-top:12px;
+    }
+
+    .report-message{
+      margin-top:10px;
+      color:var(--gold);
+      white-space:pre-wrap;
+      font-weight:900;
+    }
+
+    .related-grid{
+      display:grid;
+      grid-template-columns:repeat(auto-fill,minmax(230px,1fr));
+      gap:16px;
+      margin-top:14px;
+    }
+
+    .related-card{
+      background:#ffffff;
+      border:1px solid rgba(216,224,234,.22);
+      border-radius:14px;
+      overflow:hidden;
+      cursor:pointer;
+      box-shadow:0 8px 22px rgba(0,0,0,.2);
+      transition:.16s;
+    }
+
+    .related-card:hover{transform:translateY(-2px);border-color:var(--blue)}
+
+    .related-art{
+      height:132px;
+      background:linear-gradient(135deg,#0d1b2e,#203852);
+      background-size:cover;
+      background-position:center;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      color:#dbeafe;
+      font-weight:900;
+      text-align:center;
+      padding:12px;
+    }
+
+    .related-body{padding:14px}
+    .related-card h3{font-size:16px;margin:6px 0;line-height:1.25;color:#111827}
+    .related-meta{font-size:13px;color:#5f6f82;line-height:1.35}
+    .related-score{display:inline-block;background:var(--gold);color:#111;padding:4px 7px;border-radius:8px;font-weight:900;font-size:12px;margin-top:8px}
+
+    @media(max-width:1050px){
+      .museum-hero{grid-template-columns:1fr;gap:20px}
+      .gallery-side{min-height:auto}
+      .hero-info{padding:0}
+      .hero-title{font-size:42px}
+      .content-grid{grid-template-columns:1fr}
+      .story-panel{border-right:none;border-bottom:1px solid var(--line)}
+    }
+
+    @media(max-width:760px){
+      .top-nav{height:auto;align-items:flex-start;flex-direction:column;gap:10px;padding:14px}
+      .nav-links{gap:12px}.nav-links a{font-size:14px}
+      .container{margin:20px auto 50px;padding:0 14px}
+      .art-frame{padding:12px}
+      .art-inner{min-height:330px}
+      .plaque{width:70%;min-width:220px}
+      .museum-ropes{display:none}
+      .hero-title{font-size:34px}
+      .hero-subtitle{font-size:18px}
+      .court-grid{grid-template-columns:1fr}
+      .story-panel,.court-panel,.sources-card,.related-card-wrap{padding:20px}
+    }
   </style>
 </head>
+
 <body>
-<nav class="top-nav"><div class="nav-brand" onclick="window.location.href='index.html'">Sports<span>Mistakes</span></div><div class="nav-links"><a href="index.html">Home</a><a href="rankings.html">Rankings</a><a href="collections.html">Collections</a><a href="submit.html">Submit</a></div></nav>
-<div class="container"><div id="content" class="loading">Loading mistake...</div></div>
+<nav class="top-nav">
+  <div class="nav-brand" onclick="window.location.href='index.html'">Sports<span>Mistakes</span></div>
+  <div class="nav-links">
+    <a href="index.html">Home</a>
+    <a href="rankings.html">Rankings</a>
+    <a href="collections.html">Collections</a>
+    <a href="submit.html">Submit</a>
+  </div>
+</nav>
+
+<div class="container">
+  <div id="content" class="loading">Loading mistake...</div>
+</div>
+
 <script>
 const SUPABASE_URL="https://scwjlljurircxuufhqih.supabase.co";
-const SUPABASE_ANON_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNjd2psbGp1cmlyY3h1dWZocWloIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyNjUyMjcsImV4cCI6MjA5Njg0MTIyN30.WF0HRRb9mAkuOySjabTd8CZXVZRqF0MhMl0N2mafnns";
-const client=supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);const params=new URLSearchParams(window.location.search);const id=params.get("id");let currentMistake=null;
+const SUPABASE_ANON_KEY="eyJhbGciOiJIUzI1NiIsInRlCcCI6IkpXVCJ9".replace("RlCc","XVC");
+const REAL_SUPABASE_ANON_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJIc3VwYWJhc2UiLCJyZWYiOiJzY3dqbGxqdXJpcmN4dXVmYXFpaCIsInJvbGUiOiJhbm9uIiwiaWF0IjoxNzgxMjY1MjI3LCJleHAiOjIwOTY4NDEyMjJ9.WF0HRRb9mAkuOySjabTd8CZXVZRqF0MhMl0N2mafnns";
+const client=supabase.createClient(SUPABASE_URL,REAL_SUPABASE_ANON_KEY);
+const params=new URLSearchParams(window.location.search);
+const id=params.get("id");
+let currentMistake=null;
 
-async function loadMistake(){const content=document.getElementById("content");if(!id){content.innerHTML=`<div class="error">No mistake ID provided.</div>`;return}
-const{data,error}=await client.from("mistakes").select("*").eq("id",id).single();if(error||!data){console.error(error);content.innerHTML=`<div class="error">Mistake not found.</div>`;return}
-currentMistake=data;const newViewCount=(data.views||0)+1;await client.from("mistakes").update({views:newViewCount}).eq("id",id);
-const shareText=getShareText(data),shareUrl=getShareUrl(),xUrl=`https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`,facebookUrl=`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`,redditUrl=`https://www.reddit.com/submit?url=${encodeURIComponent(shareUrl)}&title=${encodeURIComponent(shareText)}`;
-const artworkUrl=data.artwork_url||data.ai_artwork_url||"";
-const heroStyle=artworkUrl?`style="background-image:url('${escapeAttr(artworkUrl)}')"`:"";
-const heroClass=artworkUrl?"hero-art has-image":"hero-art no-image";
-content.className="detail-shell";content.innerHTML=`
-<article class="hero-card"><div class="${heroClass}" ${heroStyle}><div class="hero-content"><div class="hero-top"><span class="badge">${escapeHtml(data.sport||"Sport")}</span><span class="score">🔥 ${escapeHtml(data.controversy_score||0)}/100</span></div><h1 class="hero-title">${escapeHtml(data.title||"Untitled Mistake")}</h1><div class="hero-meta">${escapeHtml(data.year||"")}${data.category?" • "+escapeHtml(data.category):""}${data.subcategory?" • "+escapeHtml(data.subcategory):""}</div><div class="hero-views">👁 ${newViewCount} view${newViewCount===1?"":"s"}</div></div></div></article>
+async function loadMistake(){
+  const content=document.getElementById("content");
+  if(!id){content.innerHTML=`<div class="error">No mistake ID provided.</div>`;return}
 
-<section class="story-card">
-${data.teams_people?`<div class="section"><h2>Teams / People</h2><p><span class="team-pill">${escapeHtml(data.teams_people)}</span></p></div>`:""}
-<div class="section"><h2>The Story</h2><p>${escapeHtml(data.summary||"No summary added yet.")}</p></div>
-${data.why_it_matters?`<div class="section"><h2>Why This Changed Sports</h2><p>${escapeHtml(data.why_it_matters)}</p></div>`:""}
-<div class="section"><h2>The Debate</h2><div class="vote-panel"><p>Was this actually a mistake?</p><div class="vote-buttons"><button class="yes-btn" onclick="submitVote('yes')">YES — Mistake</button><button class="no-btn" onclick="submitVote('no')">NO — Not a Mistake</button></div><div id="voteResults">Loading votes...</div></div></div>
-</section>
+  const{data,error}=await client.from("mistakes").select("*").eq("id",id).single();
+  if(error||!data){console.error(error);content.innerHTML=`<div class="error">Mistake not found.</div>`;return}
 
-<section class="court-card"><h2>⚖️ Sports Court</h2><p class="court-intro">Make the case. Choose Prosecution if you believe this WAS a mistake. Choose Defense if you believe it was NOT a mistake or is overblown.</p><div class="court-grid"><div class="court-side"><h3>Prosecution: Why it WAS a mistake</h3><div id="prosecutionArguments">Loading arguments...</div></div><div class="court-side"><h3>Defense: Why it was NOT a mistake</h3><div id="defenseArguments">Loading arguments...</div></div></div><div class="court-form"><h3>Add Your Argument</h3><label>Side</label><select id="courtSide"><option value="prosecution">Prosecution — It was a mistake</option><option value="defense">Defense — Not a mistake / overblown</option></select><label>Your argument</label><textarea id="courtArgument" placeholder="Focus on the play, decision, referee call, strategy, or historical context."></textarea><label>Name or nickname optional</label><input id="courtName" placeholder="Anonymous fan" /><button onclick="submitCourtArgument()">Submit Argument</button><div id="courtMessage" class="court-message"></div></div></section>
+  currentMistake=data;
+  const newViewCount=(data.views||0)+1;
+  await client.from("mistakes").update({views:newViewCount}).eq("id",id);
 
-<section class="share-card"><h2>Share This Debate</h2><p>${escapeHtml(shareText)}</p><div class="share-buttons"><a class="share-x" href="${xUrl}" target="_blank">Share on X</a><a class="share-facebook" href="${facebookUrl}" target="_blank">Share on Facebook</a><a class="share-reddit" href="${redditUrl}" target="_blank">Share on Reddit</a><button class="share-copy" onclick="copyShareLink()">Copy Link</button></div><div id="shareMessage" class="share-message"></div></section>
+  const shareText=getShareText(data);
+  const shareUrl=getShareUrl();
+  const xUrl=`https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`;
+  const facebookUrl=`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`;
+  const redditUrl=`https://www.reddit.com/submit?url=${encodeURIComponent(shareUrl)}&title=${encodeURIComponent(shareText)}`;
+  const artworkUrl=data.artwork_url||data.ai_artwork_url||"";
+  const artStyle=artworkUrl?`style="background-image:url('${escapeAttr(artworkUrl)}')"`:"";
 
-<section class="sources-card sources"><h2>Sources</h2>${data.source_1?`<a href="${escapeHtml(data.source_1)}" target="_blank">Source 1</a>`:""}${data.source_2?`<a href="${escapeHtml(data.source_2)}" target="_blank">Source 2</a>`:""}
-<div><button class="report-btn" onclick="toggleReportBox()">⚠️ Report an Issue</button></div>
-<div id="reportBox" class="report-box"><label>What is the issue?</label><select id="reportType"><option value="Incorrect information">Incorrect information</option><option value="Duplicate entry">Duplicate entry</option><option value="Broken source link">Broken source link</option><option value="Wrong sport/category">Wrong sport/category</option><option value="Offensive or unsafe content">Offensive or unsafe content</option><option value="Typo or formatting issue">Typo or formatting issue</option><option value="Other">Other</option></select><label>Details</label><textarea id="reportDetails" placeholder="Briefly explain what should be fixed."></textarea><button class="report-submit" onclick="submitIssueReport()">Submit Report</button><div id="reportMessage" class="report-message"></div></div></section>
+  content.className="detail-shell";
+  content.innerHTML=`
+    <a class="back-link" onclick="window.location.href='index.html'">← Back to Database</a>
 
-<section class="related-card-wrap"><h2>Related Mistakes</h2><div id="relatedMistakes">Loading related mistakes...</div></section>`;
-await loadVotes();await loadCourtArguments();await loadRelatedMistakes();}
+    <section class="museum-hero">
+      <div class="gallery-side">
+        <div class="spotlight"></div>
+        <div class="frame-wrap">
+          <div class="art-frame">
+            <div class="art-inner" ${artStyle}>${artworkUrl?"":"SportsMistakes Artwork"}</div>
+          </div>
+          <div class="plaque">${escapeHtml(data.title||"Untitled Mistake")}<br>${escapeHtml(data.year||"")} ${escapeHtml(data.sport||"")}</div>
+        </div>
+        <div class="museum-ropes"></div>
+      </div>
+
+      <div class="hero-info">
+        <div class="score-box">
+          <div class="score-number">🔥 ${escapeHtml(data.controversy_score||0)}/100</div>
+          <div class="score-label">CONTROVERSY SCORE</div>
+        </div>
+
+        <div class="hero-kicker">
+          <span class="badge">${escapeHtml(data.sport||"Sport")}</span>
+          <span>${escapeHtml(data.year||"")}</span>
+          ${data.category?`<span class="meta-dot">|</span><span>${escapeHtml(data.category)}</span>`:""}
+          ${data.subcategory?`<span class="meta-dot">|</span><span>${escapeHtml(data.subcategory)}</span>`:""}
+        </div>
+
+        <h1 class="hero-title">${escapeHtml(data.title||"Untitled Mistake")}</h1>
+        <p class="hero-subtitle">${escapeHtml(getShortDeck(data))}</p>
+        <div class="hero-views">👁 ${newViewCount} view${newViewCount===1?"":"s"}</div>
+
+        <div class="vote-box">
+          <div class="vote-head">
+            <div>
+              <h2>Fan Verdict</h2>
+              <p>Was this actually a mistake?</p>
+            </div>
+          </div>
+          <div class="vote-buttons">
+            <button class="yes-btn" onclick="submitVote('yes')">YES — Mistake</button>
+            <button class="no-btn" onclick="submitVote('no')">NO — Not a Mistake</button>
+          </div>
+          <div id="voteResults">Loading votes...</div>
+        </div>
+
+        <div class="share-row">
+          <span class="share-label">Share this mistake:</span>
+          <div class="share-buttons">
+            <a class="share-x" href="${xUrl}" target="_blank">X</a>
+            <a class="share-facebook" href="${facebookUrl}" target="_blank">f</a>
+            <a class="share-reddit" href="${redditUrl}" target="_blank">r</a>
+            <button class="share-copy" onclick="copyShareLink()">🔗</button>
+          </div>
+        </div>
+        <div id="shareMessage" class="share-message"></div>
+      </div>
+    </section>
+
+    <section class="content-grid">
+      <div class="story-panel">
+        ${data.teams_people?`<div class="story-section"><h2>Teams / People</h2><p><span class="team-pill">${escapeHtml(data.teams_people)}</span></p></div>`:""}
+        <div class="story-section"><h2>The Story</h2><p>${escapeHtml(data.summary||"No summary added yet.")}</p></div>
+        ${data.why_it_matters?`<div class="story-section"><h2>Why This Changed Sports</h2><p>${escapeHtml(data.why_it_matters)}</p></div>`:""}
+      </div>
+
+      <div class="court-panel">
+        <h2>⚖️ Sports Court</h2>
+        <p class="court-intro">Make the case. Choose Prosecution if you believe this WAS a mistake. Choose Defense if you believe it was NOT a mistake or is overblown.</p>
+
+        <div class="court-grid">
+          <div class="court-side prosecution">
+            <h3>🔨 The Prosecution</h3>
+            <div id="prosecutionArguments">Loading arguments...</div>
+          </div>
+          <div class="court-side defense">
+            <h3>🛡️ The Defense</h3>
+            <div id="defenseArguments">Loading arguments...</div>
+          </div>
+        </div>
+
+        <div class="court-form">
+          <h3>Join the Debate</h3>
+          <label>Side</label>
+          <select id="courtSide">
+            <option value="prosecution">Prosecution — It was a mistake</option>
+            <option value="defense">Defense — Not a mistake / overblown</option>
+          </select>
+
+          <label>Your argument</label>
+          <textarea id="courtArgument" placeholder="Focus on the play, decision, referee call, strategy, or historical context."></textarea>
+
+          <label>Name or nickname optional</label>
+          <input id="courtName" placeholder="Anonymous fan" />
+
+          <button onclick="submitCourtArgument()">Submit Argument</button>
+          <div id="courtMessage" class="court-message"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="sources-card sources">
+      <h2>Sources</h2>
+      ${data.source_1?`<a href="${escapeHtml(data.source_1)}" target="_blank">Source 1</a>`:""}
+      ${data.source_2?`<a href="${escapeHtml(data.source_2)}" target="_blank">Source 2</a>`:""}
+      <div><button class="report-btn" onclick="toggleReportBox()">⚠️ Report an Issue</button></div>
+
+      <div id="reportBox" class="report-box">
+        <label>What is the issue?</label>
+        <select id="reportType">
+          <option value="Incorrect information">Incorrect information</option>
+          <option value="Duplicate entry">Duplicate entry</option>
+          <option value="Broken source link">Broken source link</option>
+          <option value="Wrong sport/category">Wrong sport/category</option>
+          <option value="Offensive or unsafe content">Offensive or unsafe content</option>
+          <option value="Typo or formatting issue">Typo or formatting issue</option>
+          <option value="Other">Other</option>
+        </select>
+
+        <label>Details</label>
+        <textarea id="reportDetails" placeholder="Briefly explain what should be fixed."></textarea>
+        <button class="report-submit" onclick="submitIssueReport()">Submit Report</button>
+        <div id="reportMessage" class="report-message"></div>
+      </div>
+    </section>
+
+    <section class="related-card-wrap">
+      <h2>Related Mistakes</h2>
+      <div id="relatedMistakes">Loading related mistakes...</div>
+    </section>
+  `;
+
+  await loadVotes();
+  await loadCourtArguments();
+  await loadRelatedMistakes();
+}
+
+function getShortDeck(m){
+  if(m.why_it_matters) return String(m.why_it_matters).split(".")[0].slice(0,150)+".";
+  if(m.summary) return String(m.summary).split(".")[0].slice(0,150)+".";
+  return "A debated moment from sports history.";
+}
 
 function getShareUrl(){return window.location.origin+window.location.pathname+"?id="+encodeURIComponent(id)}
+
 function getShareText(m){return `Was "${m.title||"this sports mistake"}" actually a sports mistake? Vote on SportsMistakes. Controversy score: ${m.controversy_score||0}/100.`}
-async function copyShareLink(){const msg=document.getElementById("shareMessage"),text=`${getShareText(currentMistake)} ${getShareUrl()}`;try{await navigator.clipboard.writeText(text);msg.innerText="Share link copied."}catch(err){console.error(err);msg.innerText="Copy failed. You can copy the URL from your browser."}}
 
-async function loadVotes(){const box=document.getElementById("voteResults");if(!box||!id)return;const{data,error}=await client.from("mistake_votes").select("vote").eq("mistake_id",id);if(error){box.innerText="Could not load votes.";console.error(error);return}const votes=data||[],total=votes.length,yes=votes.filter(v=>v.vote==="yes").length,no=votes.filter(v=>v.vote==="no").length;if(total===0){box.innerHTML="No votes yet. Be the first to vote.";return}const yesPercent=Math.round((yes/total)*100),noPercent=Math.round((no/total)*100);box.innerHTML=`<strong>${yesPercent}% YES</strong> / ${noPercent}% NO<br>${total} total vote${total===1?"":"s"}`}
-async function submitVote(vote){const voteKey="sportsmistakes_vote_"+id;if(localStorage.getItem(voteKey)){alert("You already voted on this mistake.");return}let voterId=localStorage.getItem("sportsmistakes_voter_id");if(!voterId){voterId=crypto.randomUUID();localStorage.setItem("sportsmistakes_voter_id",voterId)}const{error}=await client.from("mistake_votes").insert({mistake_id:id,vote:vote,voter_id:voterId});if(error){alert("Vote failed. Please try again.");console.error(error);return}localStorage.setItem(voteKey,vote);await loadVotes()}
+async function copyShareLink(){
+  const msg=document.getElementById("shareMessage"),text=`${getShareText(currentMistake)} ${getShareUrl()}`;
+  try{await navigator.clipboard.writeText(text);msg.innerText="Share link copied."}
+  catch(err){console.error(err);msg.innerText="Copy failed. You can copy the URL from your browser."}
+}
 
-function containsUnsafeText(text){const banned=[/\bfuck\b/i,/\bfucking\b/i,/\bshit\b/i,/\basshole\b/i,/\bbitch\b/i,/\bcunt\b/i,/\bmotherfucker\b/i,/\bporn\b/i,/\bxxx\b/i,/\bnude\b/i,/\bnudes\b/i,/\bnsfw\b/i,/\bkill yourself\b/i,/\bkys\b/i,/\bnazi\b/i,/\bhitler\b/i,/\bwhite power\b/i,/\bcasino\b/i,/\bcrypto\b/i,/\bbitcoin\b/i,/\btelegram\b/i,/\bwhatsapp\b/i,/\bviagra\b/i,/\bescort\b/i,/\byou are an idiot\b/i,/\byou're an idiot\b/i,/\bmoron\b/i];return banned.some(p=>p.test(text))}
-async function loadCourtArguments(){const p=document.getElementById("prosecutionArguments"),d=document.getElementById("defenseArguments");if(!p||!d||!id)return;const{data,error}=await client.from("sports_court_arguments").select("*").eq("mistake_id",id).eq("status","approved").order("upvotes",{ascending:false}).order("created_at",{ascending:false});if(error){console.error(error);p.innerHTML="Could not load arguments. Did you run the Sports Court SQL?";d.innerHTML="Could not load arguments.";return}const list=data||[];p.innerHTML=renderArguments(list.filter(a=>a.side==="prosecution"),"prosecution");d.innerHTML=renderArguments(list.filter(a=>a.side==="defense"),"defense")}
-function renderArguments(list,side){if(!list||list.length===0)return`<div class="court-note">No ${side} arguments yet. Be the first to make the case.</div>`;return list.map(arg=>`<div class="argument"><div class="argument-text">${escapeHtml(arg.argument_text||"")}</div><div class="argument-meta">${escapeHtml(arg.author_name||"Anonymous fan")}${arg.created_at?" • "+new Date(arg.created_at).toLocaleDateString():""}</div><button class="upvote-btn" onclick="upvoteArgument('${arg.id}')">👍 ${arg.upvotes||0}</button></div>`).join("")}
-async function submitCourtArgument(){const msg=document.getElementById("courtMessage"),side=document.getElementById("courtSide").value,text=document.getElementById("courtArgument").value.trim(),name=document.getElementById("courtName").value.trim()||"Anonymous fan";if(!text||text.length<20){msg.innerText="Please write a constructive argument of at least 20 characters.";return}if(text.length>800){msg.innerText="Please keep the argument under 800 characters.";return}if(containsUnsafeText(text+" "+name)){msg.innerText="This argument appears to violate the safety rules. Please focus on the sports decision, play, call, or context.";return}msg.innerText="Submitting argument...";const{error}=await client.from("sports_court_arguments").insert({mistake_id:id,side:side,argument_text:text,author_name:name,status:"approved",upvotes:0});if(error){console.error(error);msg.innerText="Argument failed to submit. Check the SQL table and policies.";return}document.getElementById("courtArgument").value="";document.getElementById("courtName").value="";msg.innerText="Argument added to Sports Court.";await loadCourtArguments()}
-async function upvoteArgument(argumentId){const key="sports_court_upvote_"+argumentId;if(localStorage.getItem(key)){alert("You already upvoted this argument.");return}const{data,error}=await client.from("sports_court_arguments").select("upvotes").eq("id",argumentId).single();if(error||!data){console.error(error);alert("Could not upvote.");return}const{error:updateError}=await client.from("sports_court_arguments").update({upvotes:(data.upvotes||0)+1}).eq("id",argumentId);if(updateError){console.error(updateError);alert("Could not upvote.");return}localStorage.setItem(key,"true");await loadCourtArguments()}
+async function loadVotes(){
+  const box=document.getElementById("voteResults");
+  if(!box||!id)return;
+  const{data,error}=await client.from("mistake_votes").select("vote").eq("mistake_id",id);
+  if(error){box.innerText="Could not load votes.";console.error(error);return}
+  const votes=data||[],total=votes.length,yes=votes.filter(v=>v.vote==="yes").length,no=votes.filter(v=>v.vote==="no").length;
+  if(total===0){box.innerHTML="No votes yet. Be the first to vote.";return}
+  const yesPercent=Math.round((yes/total)*100),noPercent=Math.round((no/total)*100);
+  box.innerHTML=`<strong>${yesPercent}% YES</strong> / ${noPercent}% NO<br>${total} total vote${total===1?"":"s"}`;
+}
 
-async function loadRelatedMistakes(){const box=document.getElementById("relatedMistakes");if(!box||!currentMistake)return;const{data,error}=await client.from("mistakes").select("*").neq("id",id).or(`sport.eq.${currentMistake.sport},category.eq.${currentMistake.category},subcategory.eq.${currentMistake.subcategory}`).order("controversy_score",{ascending:false}).limit(6);if(error){console.error(error);box.innerHTML="Could not load related mistakes.";return}if(!data||data.length===0){box.innerHTML="No related mistakes yet.";return}box.innerHTML=`<div class="related-grid">${data.map(m=>{const art=m.artwork_url||m.ai_artwork_url||"";const artStyle=art?`style="background-image:url('${escapeAttr(art)}')"`:"";return `<div class="related-card" onclick="window.location.href='mistake.html?id=${m.id}'"><div class="related-art" ${artStyle}>${art?"":"SportsMistakes"}</div><div class="related-body"><div class="related-meta">${escapeHtml(m.sport||"")}${m.year?" • "+escapeHtml(m.year):""}</div><h3>${escapeHtml(m.title||"Untitled Mistake")}</h3><div class="related-meta">${escapeHtml(m.category||"")}</div><span class="related-score">${escapeHtml(m.controversy_score||0)}/100</span></div></div>`}).join("")}</div>`}
+async function submitVote(vote){
+  const voteKey="sportsmistakes_vote_"+id;
+  if(localStorage.getItem(voteKey)){alert("You already voted on this mistake.");return}
+  let voterId=localStorage.getItem("sportsmistakes_voter_id");
+  if(!voterId){voterId=crypto.randomUUID();localStorage.setItem("sportsmistakes_voter_id",voterId)}
+  const{error}=await client.from("mistake_votes").insert({mistake_id:id,vote:vote,voter_id:voterId});
+  if(error){alert("Vote failed. Please try again.");console.error(error);return}
+  localStorage.setItem(voteKey,vote);
+  await loadVotes();
+}
+
+function containsUnsafeText(text){
+  const banned=[/\bfuck\b/i,/\bfucking\b/i,/\bshit\b/i,/\basshole\b/i,/\bbitch\b/i,/\bcunt\b/i,/\bmotherfucker\b/i,/\bporn\b/i,/\bxxx\b/i,/\bnude\b/i,/\bnudes\b/i,/\bnsfw\b/i,/\bkill yourself\b/i,/\bkys\b/i,/\bnazi\b/i,/\bhitler\b/i,/\bwhite power\b/i,/\bcasino\b/i,/\bcrypto\b/i,/\bbitcoin\b/i,/\btelegram\b/i,/\bwhatsapp\b/i,/\bviagra\b/i,/\bescort\b/i,/\byou are an idiot\b/i,/\byou're an idiot\b/i,/\bmoron\b/i];
+  return banned.some(p=>p.test(text));
+}
+
+async function loadCourtArguments(){
+  const p=document.getElementById("prosecutionArguments"),d=document.getElementById("defenseArguments");
+  if(!p||!d||!id)return;
+  const{data,error}=await client.from("sports_court_arguments").select("*").eq("mistake_id",id).eq("status","approved").order("upvotes",{ascending:false}).order("created_at",{ascending:false});
+  if(error){console.error(error);p.innerHTML="Could not load arguments. Did you run the Sports Court SQL?";d.innerHTML="Could not load arguments.";return}
+  const list=data||[];
+  p.innerHTML=renderArguments(list.filter(a=>a.side==="prosecution"),"prosecution");
+  d.innerHTML=renderArguments(list.filter(a=>a.side==="defense"),"defense");
+}
+
+function renderArguments(list,side){
+  if(!list||list.length===0)return`<div class="court-note">No ${side} arguments yet. Be the first to make the case.</div>`;
+  return list.map(arg=>`<div class="argument"><div class="argument-text">${escapeHtml(arg.argument_text||"")}</div><div class="argument-meta">${escapeHtml(arg.author_name||"Anonymous fan")}${arg.created_at?" • "+new Date(arg.created_at).toLocaleDateString():""}</div><button class="upvote-btn" onclick="upvoteArgument('${arg.id}')">👍 ${arg.upvotes||0}</button></div>`).join("");
+}
+
+async function submitCourtArgument(){
+  const msg=document.getElementById("courtMessage"),side=document.getElementById("courtSide").value,text=document.getElementById("courtArgument").value.trim(),name=document.getElementById("courtName").value.trim()||"Anonymous fan";
+  if(!text||text.length<20){msg.innerText="Please write a constructive argument of at least 20 characters.";return}
+  if(text.length>800){msg.innerText="Please keep the argument under 800 characters.";return}
+  if(containsUnsafeText(text+" "+name)){msg.innerText="This argument appears to violate the safety rules. Please focus on the sports decision, play, call, or context.";return}
+  msg.innerText="Submitting argument...";
+  const{error}=await client.from("sports_court_arguments").insert({mistake_id:id,side:side,argument_text:text,author_name:name,status:"approved",upvotes:0});
+  if(error){console.error(error);msg.innerText="Argument failed to submit. Check the SQL table and policies.";return}
+  document.getElementById("courtArgument").value="";
+  document.getElementById("courtName").value="";
+  msg.innerText="Argument added to Sports Court.";
+  await loadCourtArguments();
+}
+
+async function upvoteArgument(argumentId){
+  const key="sports_court_upvote_"+argumentId;
+  if(localStorage.getItem(key)){alert("You already upvoted this argument.");return}
+  const{data,error}=await client.from("sports_court_arguments").select("upvotes").eq("id",argumentId).single();
+  if(error||!data){console.error(error);alert("Could not upvote.");return}
+  const{error:updateError}=await client.from("sports_court_arguments").update({upvotes:(data.upvotes||0)+1}).eq("id",argumentId);
+  if(updateError){console.error(updateError);alert("Could not upvote.");return}
+  localStorage.setItem(key,"true");
+  await loadCourtArguments();
+}
+
+async function loadRelatedMistakes(){
+  const box=document.getElementById("relatedMistakes");
+  if(!box||!currentMistake)return;
+  const{data,error}=await client.from("mistakes").select("*").neq("id",id).or(`sport.eq.${currentMistake.sport},category.eq.${currentMistake.category},subcategory.eq.${currentMistake.subcategory}`).order("controversy_score",{ascending:false}).limit(6);
+  if(error){console.error(error);box.innerHTML="Could not load related mistakes.";return}
+  if(!data||data.length===0){box.innerHTML="No related mistakes yet.";return}
+  box.innerHTML=`<div class="related-grid">${data.map(m=>{const art=m.artwork_url||m.ai_artwork_url||"";const artStyle=art?`style="background-image:url('${escapeAttr(art)}')"`:"";return `<div class="related-card" onclick="window.location.href='mistake.html?id=${m.id}'"><div class="related-art" ${artStyle}>${art?"":"SportsMistakes"}</div><div class="related-body"><div class="related-meta">${escapeHtml(m.sport||"")}${m.year?" • "+escapeHtml(m.year):""}</div><h3>${escapeHtml(m.title||"Untitled Mistake")}</h3><div class="related-meta">${escapeHtml(m.category||"")}</div><span class="related-score">${escapeHtml(m.controversy_score||0)}/100</span></div></div>`}).join("")}</div>`;
+}
 
 function toggleReportBox(){
-const box=document.getElementById("reportBox");if(!box)return;
-box.style.display=box.style.display==="block"?"none":"block";
+  const box=document.getElementById("reportBox");if(!box)return;
+  box.style.display=box.style.display==="block"?"none":"block";
 }
 
 async function submitIssueReport(){
-const reportMessage=document.getElementById("reportMessage");
-const reportType=document.getElementById("reportType").value;
-const reportDetails=document.getElementById("reportDetails").value.trim();
-if(!reportDetails){reportMessage.innerText="Please add a short explanation.";return}
-reportMessage.innerText="Submitting report...";
-const {error}=await client.from("mistake_reports").insert({
-mistake_id:id,
-report_type:reportType,
-details:reportDetails,
-status:"open"
-});
-if(error){console.error(error);reportMessage.innerText="Report failed. Please try again.";return}
-reportMessage.innerText="Report received. Thank you for helping improve SportsMistakes.";
-document.getElementById("reportDetails").value="";
+  const reportMessage=document.getElementById("reportMessage");
+  const reportType=document.getElementById("reportType").value;
+  const reportDetails=document.getElementById("reportDetails").value.trim();
+  if(!reportDetails){reportMessage.innerText="Please add a short explanation.";return}
+  reportMessage.innerText="Submitting report...";
+  const {error}=await client.from("mistake_reports").insert({mistake_id:id,report_type:reportType,details:reportDetails,status:"open"});
+  if(error){console.error(error);reportMessage.innerText="Report failed. Please try again.";return}
+  reportMessage.innerText="Report received. Thank you for helping improve SportsMistakes.";
+  document.getElementById("reportDetails").value="";
 }
 
 function escapeHtml(value){return String(value||"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;")}
 function escapeAttr(value){return String(value||"").replaceAll("&","&amp;").replaceAll('"',"&quot;").replaceAll("'","&#039;").replaceAll("<","&lt;").replaceAll(">","&gt;")}
+
 loadMistake();
 </script>
 </body>
