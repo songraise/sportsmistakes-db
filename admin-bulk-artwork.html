@@ -180,7 +180,7 @@ async function generateNextBatch(){
     log(`Generating: ${m.title}`);
 
     try {
-      const response = await fetch(`${SUPABASE_URL}/functions/v1/artwork-test`, {
+      const response = await fetch(`${SUPABASE_URL}/functions/v1/generate-artwork`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
