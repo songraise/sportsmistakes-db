@@ -672,9 +672,8 @@
 
 <script>
 const SUPABASE_URL="https://scwjlljurircxuufhqih.supabase.co";
-const SUPABASE_ANON_KEY="eyJhbGciOiJIUzI1NiIsInRlCcCI6IkpXVCJ9".replace("RlCc","XVC");
-const REAL_SUPABASE_ANON_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJIc3VwYWJhc2UiLCJyZWYiOiJzY3dqbGxqdXJpcmN4dXVmYXFpaCIsInJvbGUiOiJhbm9uIiwiaWF0IjoxNzgxMjY1MjI3LCJleHAiOjIwOTY4NDEyMjJ9.WF0HRRb9mAkuOySjabTd8CZXVZRqF0MhMl0N2mafnns";
-const client=supabase.createClient(SUPABASE_URL,REAL_SUPABASE_ANON_KEY);
+const SUPABASE_ANON_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNjd2psbGp1cmlyY3h1dWZocWloIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyNjUyMjcsImV4cCI6MjA5Njg0MTIyN30.WF0HRRb9mAkuOySjabTd8CZXVZRqF0MhMl0N2mafnns";
+const client=supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
 const params=new URLSearchParams(window.location.search);
 const id=params.get("id");
 let currentMistake=null;
