@@ -187,6 +187,21 @@
       padding:12px 10px 20px;
     }
 
+    .tagline-sub {
+      margin:-6px 0 24px;
+      color:#d6dee8;
+      font-size:18px;
+      line-height:1.5;
+    }
+
+    .tagline-sub strong {
+      display:block;
+      color:#fff;
+      font-size:20px;
+      letter-spacing:.5px;
+      margin-bottom:2px;
+    }
+
     .tagline {
       font-size:52px;
       line-height:1.02;
@@ -276,6 +291,118 @@
       font-size:14px;
     }
 
+    .search-results-wrap {
+      max-width:1060px;
+      margin:18px auto 0;
+      text-align:left;
+      display:none;
+    }
+
+    .search-results-wrap.active { display:block; }
+
+    .search-results-head {
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:14px;
+      margin-bottom:10px;
+      color:#fff;
+    }
+
+    .search-results-head h2 {
+      margin:0;
+      font-size:18px;
+      text-transform:uppercase;
+      letter-spacing:.8px;
+    }
+
+    .search-results-count {
+      color:#b8c1cc;
+      font-size:14px;
+      font-weight:700;
+    }
+
+    .search-results-list {
+      display:grid;
+      gap:10px;
+    }
+
+    .search-result-card {
+      display:grid;
+      grid-template-columns:116px 1fr auto;
+      gap:16px;
+      align-items:center;
+      min-height:108px;
+      padding:10px;
+      border:1px solid rgba(255,255,255,.15);
+      border-radius:10px;
+      background:rgba(9,15,22,.95);
+      cursor:pointer;
+      box-shadow:0 10px 24px rgba(0,0,0,.24);
+    }
+
+    .search-result-card:hover {
+      border-color:rgba(226,36,36,.75);
+      background:rgba(14,22,32,.98);
+    }
+
+    .search-result-art {
+      width:116px;
+      height:86px;
+      border-radius:8px;
+      overflow:hidden;
+      background:linear-gradient(135deg,#1f2937,#070b10);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:38px;
+    }
+
+    .search-result-art img {
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      display:block;
+    }
+
+    .search-result-title {
+      margin:0 0 7px;
+      font-size:20px;
+      line-height:1.2;
+      font-weight:1000;
+      color:#fff;
+    }
+
+    .search-result-meta {
+      color:#b8c1cc;
+      font-size:14px;
+      margin-bottom:7px;
+    }
+
+    .search-result-score {
+      color:#ff5555;
+      font-size:14px;
+      font-weight:900;
+    }
+
+    .search-result-read {
+      color:#fff;
+      font-size:14px;
+      font-weight:1000;
+      text-transform:uppercase;
+      white-space:nowrap;
+      padding:10px 12px;
+    }
+
+    .search-no-results {
+      padding:20px;
+      border:1px solid rgba(255,255,255,.14);
+      border-radius:10px;
+      background:rgba(9,15,22,.9);
+      color:#cbd5e1;
+      text-align:center;
+    }
+
     .stats-strip {
       margin:22px 0 16px;
       border:1px solid rgba(255,255,255,.16);
@@ -325,7 +452,7 @@
       margin-top:14px;
       display:grid;
       grid-template-columns:1.15fr 1fr;
-      min-height:390px;
+      min-height:500px;
       border:1px solid rgba(255,255,255,.16);
       border-radius:10px;
       overflow:hidden;
@@ -334,7 +461,7 @@
     }
 
     .featured-art {
-      min-height:390px;
+      min-height:500px;
       background:
         linear-gradient(90deg, rgba(0,0,0,.1), rgba(0,0,0,.35)),
         radial-gradient(circle at 45% 45%, rgba(226,36,36,.28), transparent 30%),
@@ -764,7 +891,119 @@
       .tagline { font-size:42px; }
       .featured-hero { grid-template-columns:1fr; }
       .dashboard-four { grid-template-columns:repeat(2,1fr); }
-      .stats-strip { grid-template-columns:repeat(2,1fr); }
+      .search-results-wrap {
+      max-width:1060px;
+      margin:18px auto 0;
+      text-align:left;
+      display:none;
+    }
+
+    .search-results-wrap.active { display:block; }
+
+    .search-results-head {
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:14px;
+      margin-bottom:10px;
+      color:#fff;
+    }
+
+    .search-results-head h2 {
+      margin:0;
+      font-size:18px;
+      text-transform:uppercase;
+      letter-spacing:.8px;
+    }
+
+    .search-results-count {
+      color:#b8c1cc;
+      font-size:14px;
+      font-weight:700;
+    }
+
+    .search-results-list {
+      display:grid;
+      gap:10px;
+    }
+
+    .search-result-card {
+      display:grid;
+      grid-template-columns:116px 1fr auto;
+      gap:16px;
+      align-items:center;
+      min-height:108px;
+      padding:10px;
+      border:1px solid rgba(255,255,255,.15);
+      border-radius:10px;
+      background:rgba(9,15,22,.95);
+      cursor:pointer;
+      box-shadow:0 10px 24px rgba(0,0,0,.24);
+    }
+
+    .search-result-card:hover {
+      border-color:rgba(226,36,36,.75);
+      background:rgba(14,22,32,.98);
+    }
+
+    .search-result-art {
+      width:116px;
+      height:86px;
+      border-radius:8px;
+      overflow:hidden;
+      background:linear-gradient(135deg,#1f2937,#070b10);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:38px;
+    }
+
+    .search-result-art img {
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      display:block;
+    }
+
+    .search-result-title {
+      margin:0 0 7px;
+      font-size:20px;
+      line-height:1.2;
+      font-weight:1000;
+      color:#fff;
+    }
+
+    .search-result-meta {
+      color:#b8c1cc;
+      font-size:14px;
+      margin-bottom:7px;
+    }
+
+    .search-result-score {
+      color:#ff5555;
+      font-size:14px;
+      font-weight:900;
+    }
+
+    .search-result-read {
+      color:#fff;
+      font-size:14px;
+      font-weight:1000;
+      text-transform:uppercase;
+      white-space:nowrap;
+      padding:10px 12px;
+    }
+
+    .search-no-results {
+      padding:20px;
+      border:1px solid rgba(255,255,255,.14);
+      border-radius:10px;
+      background:rgba(9,15,22,.9);
+      color:#cbd5e1;
+      text-align:center;
+    }
+
+    .stats-strip { grid-template-columns:repeat(2,1fr); }
       .stat-box { border-bottom:1px solid rgba(255,255,255,.13); }
       .top-cta, .bottom-submit { grid-template-columns:1fr; text-align:center; }
       .cta-icon, .bottom-submit-icon { margin:0 auto; }
@@ -779,11 +1018,128 @@
       .filter-row { grid-template-columns:1fr; }
       .dashboard-four { grid-template-columns:1fr; }
       .featured-info h2 { font-size:32px; }
-      .stats-strip { grid-template-columns:1fr; }
+      .search-results-wrap {
+      max-width:1060px;
+      margin:18px auto 0;
+      text-align:left;
+      display:none;
+    }
+
+    .search-results-wrap.active { display:block; }
+
+    .search-results-head {
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:14px;
+      margin-bottom:10px;
+      color:#fff;
+    }
+
+    .search-results-head h2 {
+      margin:0;
+      font-size:18px;
+      text-transform:uppercase;
+      letter-spacing:.8px;
+    }
+
+    .search-results-count {
+      color:#b8c1cc;
+      font-size:14px;
+      font-weight:700;
+    }
+
+    .search-results-list {
+      display:grid;
+      gap:10px;
+    }
+
+    .search-result-card {
+      display:grid;
+      grid-template-columns:116px 1fr auto;
+      gap:16px;
+      align-items:center;
+      min-height:108px;
+      padding:10px;
+      border:1px solid rgba(255,255,255,.15);
+      border-radius:10px;
+      background:rgba(9,15,22,.95);
+      cursor:pointer;
+      box-shadow:0 10px 24px rgba(0,0,0,.24);
+    }
+
+    .search-result-card:hover {
+      border-color:rgba(226,36,36,.75);
+      background:rgba(14,22,32,.98);
+    }
+
+    .search-result-art {
+      width:116px;
+      height:86px;
+      border-radius:8px;
+      overflow:hidden;
+      background:linear-gradient(135deg,#1f2937,#070b10);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:38px;
+    }
+
+    .search-result-art img {
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      display:block;
+    }
+
+    .search-result-title {
+      margin:0 0 7px;
+      font-size:20px;
+      line-height:1.2;
+      font-weight:1000;
+      color:#fff;
+    }
+
+    .search-result-meta {
+      color:#b8c1cc;
+      font-size:14px;
+      margin-bottom:7px;
+    }
+
+    .search-result-score {
+      color:#ff5555;
+      font-size:14px;
+      font-weight:900;
+    }
+
+    .search-result-read {
+      color:#fff;
+      font-size:14px;
+      font-weight:1000;
+      text-transform:uppercase;
+      white-space:nowrap;
+      padding:10px 12px;
+    }
+
+    .search-no-results {
+      padding:20px;
+      border:1px solid rgba(255,255,255,.14);
+      border-radius:10px;
+      background:rgba(9,15,22,.9);
+      color:#cbd5e1;
+      text-align:center;
+    }
+
+    .stats-strip { grid-template-columns:1fr; }
       .stat-box { border-right:none; }
       .search-row { padding:0 12px; }
       .search-icon { padding:0 10px; }
       #searchInput { font-size:17px; }
+      .search-result-card { grid-template-columns:86px 1fr; }
+      .search-result-art { width:86px; height:72px; }
+      .search-result-read { display:none; }
+      .tagline-sub { font-size:16px; }
+      .tagline-sub strong { font-size:18px; }
       footer { flex-direction:column; }
     }
   </style>
@@ -805,20 +1161,11 @@
   </nav>
 
   <main class="page-shell">
-    <section class="top-cta">
-      <div class="cta-icon">✎</div>
-      <div>
-        <h2>Love sports? Help build the database.</h2>
-        <p>Submit a sports mistake and help preserve sports history.</p>
-      </div>
-      <div>
-        <a class="cta-button" href="submit.html">Submit a Sports Mistake ›</a>
-        <div class="cta-small">It's quick, easy and makes a difference.</div>
-      </div>
-    </section>
+
 
     <section class="search-hero">
       <h1 class="tagline">The Internet's Database of <span class="red">Sports Mistakes</span></h1>
+      <div class="tagline-sub"><strong>Discover. Debate. Preserve.</strong>The biggest mistakes in sports history.</div>
 
       <div class="search-row">
         <div class="search-icon">⌕</div>
@@ -877,7 +1224,7 @@
           <option value="League Mistake">League Mistake</option>
           <option value="Fan Interference">Fan Interference</option>
         </select>
-        <button onclick="renderMistakes()">Search</button>
+        <button onclick="renderMistakes(); renderLiveSearchResults();">Search</button>
       </div>
 
       <div class="popular">
@@ -889,6 +1236,14 @@
         <button onclick="quickSearch('Steve Bartman')">Steve Bartman</button>
         <button onclick="quickSearch('Fail Mary')">Fail Mary</button>
         <button onclick="quickSearch('JR Smith')">JR Smith</button>
+      </div>
+
+      <div class="search-results-wrap" id="searchResultsWrap">
+        <div class="search-results-head">
+          <h2>Search Results</h2>
+          <div class="search-results-count" id="searchResultsCount"></div>
+        </div>
+        <div class="search-results-list" id="searchResultsList"></div>
       </div>
     </section>
 
@@ -909,7 +1264,7 @@
       </div>
     </section>
 
-    <div class="database-title">Browse the Database</div>
+    <div class="database-title">Explore the Database</div>
 
     <section class="dashboard-four">
       <div class="dash-panel">
@@ -930,6 +1285,18 @@
       <div class="dash-panel">
         <div class="panel-head"><span>🕘 Recently Added</span><span class="view-link" onclick="sortByRecent()">View all →</span></div>
         <div id="recentList"></div>
+      </div>
+    </section>
+
+    <section class="top-cta">
+      <div class="cta-icon">✎</div>
+      <div>
+        <h2>Love sports? Help build the database.</h2>
+        <p>Submit a sports mistake and help preserve sports history.</p>
+      </div>
+      <div>
+        <a class="cta-button" href="submit.html">Submit a Sports Mistake ›</a>
+        <div class="cta-small">It's quick, easy and makes a difference.</div>
       </div>
     </section>
 
@@ -1050,6 +1417,7 @@
       renderFeaturedHero();
       renderDashboardLists();
       renderMistakes();
+      renderLiveSearchResults();
       await loadSiteStats();
     }
 
@@ -1240,6 +1608,74 @@
       return filtered;
     }
 
+
+    function getSearchMatches() {
+      const query = normalize(document.getElementById("searchInput").value).trim();
+      if (!query) return [];
+
+      const sport = document.getElementById("sportFilter").value;
+      const league = document.getElementById("leagueFilter").value;
+      const team = document.getElementById("teamFilter").value;
+      const year = document.getElementById("yearFilter").value;
+      const category = document.getElementById("categoryFilter").value;
+
+      return mistakes
+        .filter(m => {
+          const text = normalize(`${m.title || ""} ${m.sport || ""} ${m.league || ""} ${m.category || ""} ${m.subcategory || ""} ${m.teams_people || ""} ${m.key_people || ""} ${m.summary || ""}`);
+          return text.includes(query)
+            && (!sport || m.sport === sport)
+            && (!league || m.league === league || m.sport === league)
+            && (!team || normalize(m.teams_people).includes(normalize(team)))
+            && (!year || String(m.year || "") === year)
+            && (!category || m.category === category);
+        })
+        .sort((a,b) => {
+          const at = normalize(a.title);
+          const bt = normalize(b.title);
+          const aExact = at === query ? 0 : at.startsWith(query) ? 1 : at.includes(query) ? 2 : 3;
+          const bExact = bt === query ? 0 : bt.startsWith(query) ? 1 : bt.includes(query) ? 2 : 3;
+          if (aExact !== bExact) return aExact - bExact;
+          return (b.controversy_score || 0) - (a.controversy_score || 0);
+        });
+    }
+
+    function renderLiveSearchResults() {
+      const wrap = document.getElementById("searchResultsWrap");
+      const list = document.getElementById("searchResultsList");
+      const count = document.getElementById("searchResultsCount");
+      const query = document.getElementById("searchInput").value.trim();
+
+      if (!query) {
+        wrap.classList.remove("active");
+        list.innerHTML = "";
+        count.textContent = "";
+        return;
+      }
+
+      const matches = getSearchMatches();
+      wrap.classList.add("active");
+      count.textContent = `${matches.length} result${matches.length === 1 ? "" : "s"}`;
+
+      if (!matches.length) {
+        list.innerHTML = `<div class="search-no-results">No sports mistakes found for “${escapeHtml(query)}”.</div>`;
+        return;
+      }
+
+      list.innerHTML = matches.slice(0, 6).map(m => {
+        const meta = [m.year, m.league || m.sport, m.category].filter(Boolean).join(" • ");
+        return `
+          <div class="search-result-card" onclick="window.location.href='mistake.html?id=${m.id}'">
+            <div class="search-result-art">${renderArt(m, "search")}</div>
+            <div>
+              <div class="search-result-title">${escapeHtml(m.title || "Untitled Mistake")}</div>
+              <div class="search-result-meta">${escapeHtml(meta)}</div>
+              <div class="search-result-score">${escapeHtml(m.controversy_score || 0)}/100 controversy</div>
+            </div>
+            <div class="search-result-read">Read →</div>
+          </div>`;
+      }).join("");
+    }
+
     function renderMistakes() {
       const grid = document.getElementById("mistakesGrid");
       const stats = document.getElementById("stats");
@@ -1316,6 +1752,8 @@
       document.getElementById("searchInput").value = term;
       currentSortMode = "default";
       renderMistakes();
+      renderLiveSearchResults();
+      document.getElementById("searchResultsWrap").scrollIntoView({ behavior: "smooth", block: "nearest" });
     }
 
     function getSportIcon(sport) {
@@ -1366,12 +1804,13 @@
     document.getElementById("searchInput").addEventListener("input", () => {
       currentSortMode = "default";
       renderMistakes();
+      renderLiveSearchResults();
     });
-    document.getElementById("sportFilter").addEventListener("change", renderMistakes);
-    document.getElementById("leagueFilter").addEventListener("change", renderMistakes);
-    document.getElementById("teamFilter").addEventListener("change", renderMistakes);
-    document.getElementById("yearFilter").addEventListener("change", renderMistakes);
-    document.getElementById("categoryFilter").addEventListener("change", renderMistakes);
+    document.getElementById("sportFilter").addEventListener("change", () => { renderMistakes(); renderLiveSearchResults(); });
+    document.getElementById("leagueFilter").addEventListener("change", () => { renderMistakes(); renderLiveSearchResults(); });
+    document.getElementById("teamFilter").addEventListener("change", () => { renderMistakes(); renderLiveSearchResults(); });
+    document.getElementById("yearFilter").addEventListener("change", () => { renderMistakes(); renderLiveSearchResults(); });
+    document.getElementById("categoryFilter").addEventListener("change", () => { renderMistakes(); renderLiveSearchResults(); });
 
     loadMistakes().catch(err => {
       console.error(err);
