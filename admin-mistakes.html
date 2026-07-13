@@ -213,9 +213,7 @@ The current artwork will remain in place unless generation succeeds. This costs 
         console.error("Artwork generation failed",data);
         const detail=data?.details?.error?.message||data?.details?.message||data?.error||`HTTP ${response.status}`;
         if(status)status.textContent="Artwork generation failed: "+detail;
-        alert("Artwork generation failed:
-
-"+detail);
+        alert("Artwork generation failed:\n\n" + detail);
         return;
       }
 
@@ -226,9 +224,7 @@ The current artwork will remain in place unless generation succeeds. This costs 
       console.error(err);
       const message=String(err?.message||err);
       if(status)status.textContent="Artwork generation failed: "+message;
-      alert("Artwork generation failed:
-
-"+message);
+      alert("Artwork generation failed:\n\n" + message);
     }finally{
       if(button){button.disabled=false;button.textContent="Regenerate Artwork";}
     }
