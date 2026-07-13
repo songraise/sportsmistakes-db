@@ -21,11 +21,11 @@
     input,select,textarea{padding:12px;border-radius:8px;border:1px solid #203852;background:#07111f;color:white;font-size:15px;box-sizing:border-box}
     input{flex:1;min-width:240px}select{min-width:170px}
     button{padding:11px 14px;border:none;border-radius:8px;color:white;font-weight:bold;cursor:pointer;margin-right:8px;margin-top:8px}
-    .search-btn{background:#1e90ff}.save-btn{background:#166534}.delete-btn{background:#8b1e1e}.open-btn{background:#444}.cancel-btn{background:#6b5b1e}
+    .search-btn{background:#1e90ff}.save-btn{background:#166534}.delete-btn{background:#8b1e1e}.open-btn{background:#444}.cancel-btn{background:#6b5b1e}.art-btn{background:#7c3aed}
     .status{color:#ffcc00;margin:12px 0;white-space:pre-wrap}.mistake-list{display:grid;gap:12px}
     .mistake-title{font-size:20px;font-weight:bold;margin-bottom:6px}.meta{color:#9fb2c7;font-size:14px;margin-bottom:10px}.summary{color:#d8e4f2;line-height:1.45;font-size:15px}
     .edit-form{display:none;margin-top:15px;padding-top:15px;border-top:1px solid #203852}.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}.form-full{grid-column:1/-1}
-    label{display:block;color:#d8e4f2;font-weight:bold;margin-bottom:6px;font-size:14px}textarea{width:100%;min-height:90px;resize:vertical}.form-grid input,.form-grid select{width:100%}
+    label{display:block;color:#d8e4f2;font-weight:bold;margin-bottom:6px;font-size:14px}textarea{width:100%;min-height:90px;resize:vertical}.form-grid input,.form-grid select{width:100%}.artwork-box{margin:14px 0;padding:14px;background:#07111f;border:1px solid #203852;border-radius:12px}.artwork-preview{width:100%;max-width:460px;max-height:300px;object-fit:cover;border-radius:10px;border:1px solid #304b69;display:block;margin-bottom:10px}.artwork-empty{color:#9fb2c7;font-style:italic;margin-bottom:8px}.artwork-status{color:#ffcc00;font-size:13px;white-space:pre-wrap;margin-top:8px}
     @media(max-width:760px){.form-grid{grid-template-columns:1fr}.top-nav{align-items:flex-start;flex-direction:column}.nav-links{gap:12px}.nav-links a{font-size:13px}}
   </style>
 </head>
@@ -105,6 +105,7 @@
         <div class="summary">${escapeHtml(m.summary||"No summary added.")}</div>
         <button class="open-btn" onclick="window.open('mistake.html?id=${m.id}','_blank')">Open</button>
         <button class="search-btn" onclick="toggleEdit('${m.id}')">Edit</button>
+        <button class="art-btn" id="art-btn-${m.id}" onclick="regenerateArtwork('${m.id}','${escapeJs(m.title||"")}')">${m.artwork_url ? "Regenerate Artwork" : "Generate Artwork"}</button>
         <button class="delete-btn" onclick="deleteMistake('${m.id}','${escapeJs(m.title||"")}')">Delete</button>
         <div class="edit-form" id="edit-${m.id}">
           <div class="form-grid">
@@ -115,7 +116,14 @@
             <div><label>Subcategory</label><input id="subcategory-${m.id}" value="${escapeAttribute(m.subcategory||"")}" /></div>
             <div><label>Controversy Score</label><input id="score-${m.id}" type="number" min="0" max="100" value="${escapeAttribute(m.controversy_score||0)}" /></div>
             <div class="form-full"><label>Teams / People</label><input id="teams-${m.id}" value="${escapeAttribute(m.teams_people||"")}" /></div>
-            <div class="form-full"><label>Artwork URL</label><input id="artwork-${m.id}" value="${escapeAttribute(m.artwork_url||"")}" /></div>
+            <div class="form-full">
+              <label>Artwork</label>
+              <div class="artwork-box" id="artwork-box-${m.id}">
+                ${m.artwork_url ? `<img class="artwork-preview" src="${escapeAttribute(m.artwork_url)}" alt="Artwork for ${escapeAttribute(m.title||"Sports mistake")}" />` : `<div class="artwork-empty">No artwork currently attached.</div>`}
+                <input id="artwork-${m.id}" value="${escapeAttribute(m.artwork_url||"")}" placeholder="Artwork URL" />
+                <div class="artwork-status" id="artwork-status-${m.id}"></div>
+              </div>
+            </div>
             <div class="form-full"><label>Summary</label><textarea id="summary-${m.id}">${escapeHtml(m.summary||"")}</textarea></div>
             <div class="form-full"><label>Why It Matters</label><textarea id="why-${m.id}">${escapeHtml(m.why_it_matters||"")}</textarea></div>
             <div class="form-full"><label>Source 1</label><input id="source1-${m.id}" value="${escapeAttribute(m.source_1||"")}" /></div>
@@ -148,6 +156,82 @@
     const {error}=await client.from("mistakes").update(updated).eq("id",id);
     if(error){console.error(error);alert("Save failed. Run the admin mistakes SQL policies if needed.");return}
     alert("Mistake updated.");await loadMistakes();
+  }
+
+
+  function getArtworkAdminSecret(){
+    let secret=sessionStorage.getItem("sportsmistakes_artwork_admin_secret")||"";
+    if(!secret){
+      secret=prompt("Enter your ARTWORK_ADMIN_SECRET to generate artwork:")||"";
+      if(secret)sessionStorage.setItem("sportsmistakes_artwork_admin_secret",secret);
+    }
+    return secret;
+  }
+
+  async function regenerateArtwork(id,title){
+    const secret=getArtworkAdminSecret();
+    if(!secret)return alert("Artwork generation cancelled. Missing admin secret.");
+
+    const action=document.getElementById("artwork-"+id)?.value.trim()?"replace the current artwork":"generate artwork";
+    if(!confirm(`Use OpenAI to ${action} for:
+
+${title}
+
+The current artwork will remain in place unless generation succeeds. This costs money per image.`))return;
+
+    const button=document.getElementById("art-btn-"+id);
+    const status=document.getElementById("artwork-status-"+id);
+    if(button){button.disabled=true;button.textContent="Generating...";}
+    if(status)status.textContent="Generating new artwork. This may take a minute or two...";
+
+    try{
+      const {data:sessionData}=await client.auth.getSession();
+      const accessToken=sessionData.session?.access_token||SUPABASE_ANON_KEY;
+
+      const response=await fetch(`${SUPABASE_URL}/functions/v1/generate-artwork`,{
+        method:"POST",
+        headers:{
+          "Content-Type":"application/json",
+          "apikey":SUPABASE_ANON_KEY,
+          "Authorization":`Bearer ${accessToken}`,
+          "x-admin-secret":secret
+        },
+        body:JSON.stringify({mistake_id:id})
+      });
+
+      let data={};
+      try{data=await response.json();}catch(_){data={success:false,error:"The artwork function returned an unreadable response."};}
+
+      if(response.status===401){
+        sessionStorage.removeItem("sportsmistakes_artwork_admin_secret");
+        if(status)status.textContent="Incorrect admin password. The saved password was cleared.";
+        alert("Incorrect artwork admin password. It has been cleared. Click the button again to retry.");
+        return;
+      }
+
+      if(!response.ok||!data.success){
+        console.error("Artwork generation failed",data);
+        const detail=data?.details?.error?.message||data?.details?.message||data?.error||`HTTP ${response.status}`;
+        if(status)status.textContent="Artwork generation failed: "+detail;
+        alert("Artwork generation failed:
+
+"+detail);
+        return;
+      }
+
+      if(status)status.textContent="Artwork regenerated successfully.";
+      alert("New artwork generated successfully.");
+      await loadMistakes();
+    }catch(err){
+      console.error(err);
+      const message=String(err?.message||err);
+      if(status)status.textContent="Artwork generation failed: "+message;
+      alert("Artwork generation failed:
+
+"+message);
+    }finally{
+      if(button){button.disabled=false;button.textContent="Regenerate Artwork";}
+    }
   }
 
   async function deleteMistake(id,title){
