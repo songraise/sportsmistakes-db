@@ -8,350 +8,672 @@
 
   <style>
     :root {
-      --page-bg: #07111f;
-      --surface: #ffffff;
-      --surface-soft: #f7f9fc;
-      --border: #d8e0ea;
-      --text: #111827;
-      --muted: #5f6f82;
-      --blue: #1e90ff;
-      --blue-dark: #0d3b66;
-      --gold: #ffcc00;
-      --gold-dark: #b58100;
-      --nav-bg: #0d1b2e;
+      --bg:#05080c;
+      --panel:#0b1118;
+      --panel-2:#0e1620;
+      --line:#243140;
+      --text:#f8fafc;
+      --muted:#a8b3c1;
+      --soft:#d7dee8;
+      --red:#e22424;
+      --red-dark:#b91313;
+      --gold:#e7b84b;
     }
 
+    * { box-sizing:border-box; }
+
     body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: var(--page-bg);
-      color: #ffffff;
+      margin:0;
+      font-family:Arial, Helvetica, sans-serif;
+      background:
+        radial-gradient(circle at 50% -10%, rgba(226,36,36,.18), transparent 30%),
+        linear-gradient(180deg, #05080c 0%, #091017 45%, #05080c 100%);
+      color:var(--text);
+    }
+
+    body::before {
+      content:"";
+      position:fixed;
+      inset:0;
+      z-index:-1;
+      pointer-events:none;
+      background:
+        linear-gradient(rgba(0,0,0,.58), rgba(0,0,0,.78)),
+        radial-gradient(circle at 30% 10%, rgba(255,255,255,.05), transparent 30%);
     }
 
     .top-nav {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      background: var(--nav-bg);
-      border-bottom: 1px solid #203852;
-      padding: 14px 20px;
+      position:sticky;
+      top:0;
+      z-index:20;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:18px;
+      padding:18px 26px;
+      background:rgba(5,8,12,.96);
+      border-bottom:1px solid rgba(255,255,255,.08);
+      backdrop-filter:blur(10px);
+    }
+
+    .brand-wrap {
+      display:flex;
+      align-items:center;
+      cursor:pointer;
     }
 
     .nav-brand {
-      font-weight: bold;
-      font-size: 20px;
-      color: #ffffff;
-      cursor: pointer;
+      font-weight:1000;
+      font-size:30px;
+      line-height:.82;
+      letter-spacing:-1px;
+      text-transform:uppercase;
+      color:#fff;
     }
 
-    .nav-brand span {
-      color: var(--gold);
+    .nav-brand span { color:var(--red); }
+
+    .nav-links {
+      display:flex;
+      align-items:center;
+      gap:28px;
+      flex-wrap:wrap;
     }
 
     .nav-links a {
-      color: #74b9ff;
-      text-decoration: none;
-      font-weight: bold;
-      margin-left: 18px;
+      color:#f4f4f5;
+      text-decoration:none;
+      font-weight:900;
+      font-size:14px;
+      letter-spacing:.8px;
+      text-transform:uppercase;
     }
 
-    .nav-links a:hover {
-      color: var(--gold);
+    .nav-links a:hover,
+    .nav-links a.active { color:var(--red); }
+
+    .page-shell {
+      width:min(1180px, calc(100% - 36px));
+      margin:0 auto;
+      padding:38px 0 64px;
     }
 
-    .container {
-      max-width: 1050px;
-      margin: 35px auto 60px;
-      padding: 0 20px;
+    .hero {
+      position:relative;
+      overflow:hidden;
+      border:1px solid rgba(255,255,255,.14);
+      border-radius:16px;
+      padding:42px 40px;
+      background:
+        linear-gradient(110deg, rgba(8,13,19,.98), rgba(12,19,28,.88)),
+        radial-gradient(circle at 90% 25%, rgba(226,36,36,.3), transparent 34%);
+      box-shadow:0 24px 60px rgba(0,0,0,.38);
     }
 
-    .hero-card {
-      background: rgba(5, 15, 28, .86);
-      border: 1px solid rgba(255,255,255,.14);
-      border-radius: 18px;
-      padding: 26px;
-      box-shadow: 0 12px 30px rgba(0,0,0,.25);
-      margin-bottom: 22px;
+    .hero::after {
+      content:"🏆";
+      position:absolute;
+      right:34px;
+      top:50%;
+      transform:translateY(-50%);
+      font-size:150px;
+      opacity:.075;
+      filter:grayscale(1);
+    }
+
+    .eyebrow {
+      color:var(--red);
+      font-size:13px;
+      font-weight:1000;
+      letter-spacing:1.5px;
+      text-transform:uppercase;
+      margin-bottom:12px;
     }
 
     h1 {
-      margin: 0 0 8px;
-      color: #ffffff;
-      font-size: 36px;
+      margin:0;
+      max-width:760px;
+      font-size:clamp(38px, 6vw, 68px);
+      line-height:.98;
+      letter-spacing:-2.4px;
     }
 
-    .sub {
-      color: #d8e8ff;
-      margin-bottom: 0;
-      line-height: 1.5;
+    .hero p {
+      max-width:700px;
+      margin:18px 0 0;
+      color:var(--soft);
+      font-size:18px;
+      line-height:1.55;
+    }
+
+    .tabs-wrap {
+      margin:24px 0 20px;
+      padding:18px;
+      border:1px solid rgba(255,255,255,.12);
+      border-radius:13px;
+      background:rgba(9,15,22,.82);
+    }
+
+    .tabs-label {
+      margin-bottom:12px;
+      color:var(--muted);
+      font-size:12px;
+      font-weight:1000;
+      letter-spacing:1px;
+      text-transform:uppercase;
     }
 
     .tabs {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin: 22px 0;
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
     }
 
-    button {
-      padding: 11px 14px;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      background: #203852;
-      color: white;
-      font-weight: bold;
+    .tabs button {
+      padding:11px 15px;
+      border:1px solid rgba(255,255,255,.14);
+      border-radius:999px;
+      cursor:pointer;
+      background:#111a24;
+      color:#edf2f7;
+      font-weight:900;
+      font-size:13px;
+      transition:.16s ease;
     }
 
-    button:hover {
-      background: #2e4a6d;
+    .tabs button:hover {
+      border-color:rgba(226,36,36,.75);
+      color:#fff;
+      transform:translateY(-1px);
     }
 
-    button.active {
-      background: var(--blue);
+    .tabs button.active {
+      background:linear-gradient(135deg,var(--red),var(--red-dark));
+      border-color:transparent;
+      color:#fff;
+      box-shadow:0 9px 20px rgba(226,36,36,.24);
+    }
+
+    .section-head {
+      display:flex;
+      justify-content:space-between;
+      align-items:end;
+      gap:18px;
+      margin:28px 0 16px;
+    }
+
+    .section-head h2 {
+      margin:0;
+      font-size:29px;
+      letter-spacing:-.7px;
     }
 
     .message {
-      color: #d8e8ff;
-      margin: 18px 0;
-      font-weight: bold;
+      color:var(--muted);
+      font-size:14px;
+      font-weight:900;
     }
 
-    .list {
-      display: grid;
-      gap: 14px;
+    .podium {
+      display:grid;
+      grid-template-columns:repeat(3, 1fr);
+      gap:16px;
+      margin-bottom:20px;
     }
 
-    .row {
-      background: var(--surface);
-      color: var(--text);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 16px;
-      cursor: pointer;
-      box-shadow: 0 8px 22px rgba(0,0,0,.16);
+    .podium-card {
+      position:relative;
+      min-height:360px;
+      overflow:hidden;
+      border:1px solid rgba(255,255,255,.14);
+      border-radius:14px;
+      background:var(--panel);
+      cursor:pointer;
+      box-shadow:0 14px 34px rgba(0,0,0,.28);
+      transition:.18s ease;
     }
 
-    .row:hover {
-      border-color: var(--blue);
-      box-shadow: 0 10px 26px rgba(0,0,0,.22);
+    .podium-card:hover,
+    .rank-row:hover {
+      transform:translateY(-2px);
+      border-color:rgba(226,36,36,.68);
     }
 
-    .rank {
-      color: var(--gold-dark);
-      font-weight: bold;
-      font-size: 18px;
-      margin-right: 8px;
+    .podium-art {
+      height:205px;
+      background:
+        radial-gradient(circle at 50% 30%, rgba(226,36,36,.4), transparent 38%),
+        linear-gradient(135deg,#1b2633,#070b10);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:66px;
+      overflow:hidden;
     }
 
-    .score {
-      float: right;
-      background: var(--gold);
-      color: #111;
-      padding: 5px 8px;
-      border-radius: 8px;
-      font-weight: bold;
-      font-size: 12px;
+    .podium-art img {
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      display:block;
     }
 
-    h2 {
-      margin: 8px 0;
-      font-size: 20px;
-      color: var(--text);
+    .podium-rank {
+      position:absolute;
+      top:14px;
+      left:14px;
+      width:46px;
+      height:46px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      border-radius:50%;
+      background:rgba(5,8,12,.9);
+      border:2px solid var(--gold);
+      color:var(--gold);
+      font-size:19px;
+      font-weight:1000;
+      box-shadow:0 8px 22px rgba(0,0,0,.4);
+    }
+
+    .podium-score {
+      position:absolute;
+      top:16px;
+      right:14px;
+      padding:7px 9px;
+      border-radius:8px;
+      background:rgba(226,36,36,.92);
+      color:#fff;
+      font-size:12px;
+      font-weight:1000;
+    }
+
+    .podium-body { padding:17px; }
+
+    .sport-badge {
+      display:inline-block;
+      padding:5px 8px;
+      border-radius:999px;
+      background:rgba(226,36,36,.14);
+      color:#ff6464;
+      font-size:11px;
+      font-weight:1000;
+      text-transform:uppercase;
+      letter-spacing:.5px;
+    }
+
+    .podium-title {
+      margin:10px 0 7px;
+      color:#fff;
+      font-size:21px;
+      line-height:1.15;
+      font-weight:1000;
     }
 
     .meta {
-      color: var(--muted);
-      font-size: 14px;
-      margin-bottom: 8px;
+      color:var(--muted);
+      font-size:13px;
+      line-height:1.4;
     }
 
-    .summary {
-      color: #344256;
-      line-height: 1.45;
+    .rank-list {
+      display:grid;
+      gap:12px;
     }
 
-    @media(max-width:760px) {
-      h1 { font-size: 30px; }
-      .nav-links a { margin-left: 10px; font-size: 14px; }
-      .score { float: none; display: inline-block; margin-top: 8px; }
-    }
-  
-    .sport-icon {
-      width:42px;
-      height:42px;
-      border-radius:12px;
-      background:#f7f9fc;
-      border:1px solid #d8e0ea;
-      display:inline-flex;
+    .rank-row {
+      display:grid;
+      grid-template-columns:58px 116px minmax(0,1fr) auto;
+      gap:18px;
       align-items:center;
-      justify-content:center;
-      font-size:24px;
-      margin-bottom:10px;
-      box-shadow:0 2px 8px rgba(0,0,0,.08);
+      padding:13px;
+      border:1px solid rgba(255,255,255,.13);
+      border-radius:12px;
+      background:rgba(11,17,24,.9);
+      cursor:pointer;
+      box-shadow:0 8px 22px rgba(0,0,0,.2);
+      transition:.16s ease;
     }
-    .card-topline,.row-topline,.podium-topline {
+
+    .rank-number {
+      color:var(--red);
+      font-size:24px;
+      font-weight:1000;
+      text-align:center;
+    }
+
+    .row-art {
+      width:116px;
+      height:78px;
+      overflow:hidden;
+      border-radius:8px;
+      background:
+        radial-gradient(circle at 50% 30%, rgba(226,36,36,.38), transparent 38%),
+        linear-gradient(135deg,#1b2633,#070b10);
       display:flex;
       align-items:center;
-      gap:12px;
-      margin-bottom:8px;
+      justify-content:center;
+      font-size:35px;
     }
 
+    .row-art img {
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      display:block;
+    }
+
+    .row-title {
+      margin:0 0 6px;
+      color:#fff;
+      font-size:18px;
+      line-height:1.2;
+      font-weight:1000;
+    }
+
+    .row-summary {
+      margin-top:6px;
+      color:#cbd5df;
+      font-size:13px;
+      line-height:1.42;
+      display:-webkit-box;
+      -webkit-line-clamp:2;
+      -webkit-box-orient:vertical;
+      overflow:hidden;
+    }
+
+    .row-score {
+      min-width:82px;
+      padding:11px 10px;
+      border-radius:9px;
+      background:rgba(226,36,36,.14);
+      border:1px solid rgba(226,36,36,.28);
+      color:#ff6262;
+      text-align:center;
+      font-size:15px;
+      font-weight:1000;
+    }
+
+    .empty {
+      padding:44px;
+      border:1px solid rgba(255,255,255,.13);
+      border-radius:12px;
+      background:rgba(11,17,24,.9);
+      color:var(--muted);
+      text-align:center;
+    }
+
+    footer {
+      margin-top:38px;
+      padding:24px 0 4px;
+      display:flex;
+      justify-content:space-between;
+      gap:20px;
+      color:#aeb8c4;
+      font-size:14px;
+      border-top:1px solid rgba(255,255,255,.11);
+    }
+
+    footer a {
+      color:#cbd5df;
+      text-decoration:none;
+      margin-right:20px;
+    }
+
+    footer a:hover { color:var(--red); }
+
+    @media (max-width:900px) {
+      .podium { grid-template-columns:1fr; }
+      .podium-card { min-height:0; display:grid; grid-template-columns:220px 1fr; }
+      .podium-art { height:100%; min-height:190px; }
+      .rank-row { grid-template-columns:48px 96px minmax(0,1fr); }
+      .row-score { grid-column:3; justify-self:start; }
+    }
+
+    @media (max-width:700px) {
+      .top-nav { align-items:flex-start; flex-direction:column; }
+      .nav-links { gap:14px; }
+      .page-shell { width:min(100% - 24px, 1180px); padding-top:22px; }
+      .hero { padding:30px 22px; }
+      .hero::after { display:none; }
+      .podium-card { display:block; }
+      .podium-art { height:210px; }
+      .rank-row { grid-template-columns:42px 80px minmax(0,1fr); gap:11px; }
+      .row-art { width:80px; height:68px; }
+      .row-summary { display:none; }
+      .row-score { grid-column:3; }
+      footer { flex-direction:column; }
+    }
   </style>
 </head>
 
 <body>
+  <nav class="top-nav">
+    <div class="brand-wrap" onclick="window.location.href='index.html'">
+      <div class="nav-brand">Sports<br><span>Mistakes</span></div>
+    </div>
 
-<nav class="top-nav">
-  <div class="nav-brand" onclick="window.location.href='index.html'">Sports<span>Mistakes</span></div>
-  <div class="nav-links">
-    <a href="index.html">Home</a>
-    <a href="rankings.html">Rankings</a>
-    <a href="collections.html">Collections</a>
-    <a href="hall-of-fame.html">Hall of Fame</a>
-    <a href="submit.html">Submit</a>
-  </div>
-</nav>
+    <div class="nav-links">
+      <a href="index.html">Home</a>
+      <a class="active" href="rankings.html">Rankings</a>
+      <a href="collections.html">Collections</a>
+      <a href="hall-of-fame.html">Hall of Fame</a>
+      <a href="submit.html">Submit</a>
+    </div>
+  </nav>
 
-<div class="container">
-  <div class="hero-card">
-    <h1>SportsMistakes Rankings</h1>
-    <div class="sub">Browse the most controversial mistakes by sport and category.</div>
-  </div>
+  <main class="page-shell">
+    <section class="hero">
+      <div class="eyebrow">The definitive leaderboard</div>
+      <h1>The Most Controversial Mistakes in Sports History</h1>
+      <p>Explore the moments fans still argue about, ranked by their SportsMistakes controversy score.</p>
+    </section>
 
-  <div class="tabs">
-    <button class="active" onclick="setRanking('all', this)">Top Overall</button>
-    <button onclick="setRanking('NFL', this)">Top NFL</button>
-    <button onclick="setRanking('NHL', this)">Top NHL</button>
-    <button onclick="setRanking('NBA', this)">Top NBA</button>
-    <button onclick="setRanking('MLB', this)">Top MLB</button>
-    <button onclick="setRanking('Soccer', this)">Top Soccer</button>
-    <button onclick="setRanking('Coaching Mistake', this)">Coaching</button>
-    <button onclick="setRanking('Referee Mistake', this)">Referee</button>
-    <button onclick="setRanking('Player Mistake', this)">Player</button>
-    <button onclick="setRanking('Front Office Mistake', this)">Front Office</button>
-  </div>
-
-  <div id="message" class="message">Loading rankings...</div>
-  <div id="rankingsList" class="list"></div>
-</div>
-
-<script>
-  const SUPABASE_URL = "https://scwjlljurircxuufhqih.supabase.co";
-  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNjd2psbGp1cmlyY3h1dWZocWloIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyNjUyMjcsImV4cCI6MjA5Njg0MTIyN30.WF0HRRb9mAkuOySjabTd8CZXVZRqF0MhMl0N2mafnns";
-
-  const client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-  let mistakes = [];
-  let currentRanking = "all";
-
-  async function loadMistakes() {
-    const { data, error } = await client
-      .from("mistakes")
-      .select("*")
-      .order("controversy_score", { ascending: false });
-
-    if (error) {
-      console.error(error);
-      document.getElementById("message").innerText = "Could not load rankings.";
-      return;
-    }
-
-    mistakes = data || [];
-    renderRankings();
-  }
-
-  function setRanking(type, button) {
-    currentRanking = type;
-
-    document.querySelectorAll(".tabs button").forEach(btn => btn.classList.remove("active"));
-    button.classList.add("active");
-
-    renderRankings();
-  }
-
-  function renderRankings() {
-    const list = document.getElementById("rankingsList");
-    const message = document.getElementById("message");
-
-    let filtered = mistakes;
-
-    if (currentRanking !== "all") {
-      filtered = mistakes.filter(m =>
-        m.sport === currentRanking || m.category === currentRanking
-      );
-    }
-
-    filtered = filtered
-      .sort((a, b) => (b.controversy_score || 0) - (a.controversy_score || 0))
-      .slice(0, 100);
-
-    if (filtered.length === 0) {
-      message.innerText = "No mistakes found for this ranking.";
-      list.innerHTML = "";
-      return;
-    }
-
-    message.innerText = `${filtered.length} ranked mistake${filtered.length === 1 ? "" : "s"}`;
-
-    list.innerHTML = filtered.map((m, index) => `
-      <div class="row" onclick="window.location.href='mistake.html?id=${m.id}'">
-        <div class="row-topline"><span class="sport-icon">${getSportIcon(m.sport)}</span><span class="rank">#${index + 1}</span></div>
-        <span class="score">${escapeHtml(m.controversy_score || 0)}/100</span>
-
-        <h2>${escapeHtml(m.title || "Untitled Mistake")}</h2>
-
-        <div class="meta">
-          ${escapeHtml(m.sport || "")}
-          ${m.year ? " • " + escapeHtml(m.year) : ""}
-          ${m.category ? " • " + escapeHtml(m.category) : ""}
-          ${m.subcategory ? " • " + escapeHtml(m.subcategory) : ""}
-        </div>
-
-        <div class="summary">
-          ${escapeHtml(m.summary || "No summary added yet.")}
-        </div>
+    <section class="tabs-wrap">
+      <div class="tabs-label">Choose a ranking</div>
+      <div class="tabs">
+        <button class="active" onclick="setRanking('all', this)">Top Overall</button>
+        <button onclick="setRanking('NFL', this)">Top NFL</button>
+        <button onclick="setRanking('NHL', this)">Top NHL</button>
+        <button onclick="setRanking('NBA', this)">Top NBA</button>
+        <button onclick="setRanking('MLB', this)">Top MLB</button>
+        <button onclick="setRanking('Soccer', this)">Top Soccer</button>
+        <button onclick="setRanking('Coaching Mistake', this)">Coaching</button>
+        <button onclick="setRanking('Referee Mistake', this)">Referee</button>
+        <button onclick="setRanking('Player Mistake', this)">Player</button>
+        <button onclick="setRanking('Front Office Mistake', this)">Front Office</button>
       </div>
-    `).join("");
-  }
+    </section>
 
+    <div class="section-head">
+      <h2 id="rankingTitle">Top Overall</h2>
+      <div id="message" class="message">Loading rankings...</div>
+    </div>
 
-  function getSportIcon(sport) {
-    const s = String(sport || "").toLowerCase();
-    if (s.includes("nfl") || s.includes("football")) return "🏈";
-    if (s.includes("nhl") || s.includes("hockey")) return "🏒";
-    if (s.includes("mlb") || s.includes("baseball")) return "⚾";
-    if (s.includes("nba") || s.includes("basketball")) return "🏀";
-    if (s.includes("soccer")) return "⚽";
-    if (s.includes("formula") || s.includes("f1")) return "🏎️";
-    if (s.includes("boxing")) return "🥊";
-    if (s.includes("ufc") || s.includes("mma")) return "🥋";
-    if (s.includes("tennis")) return "🎾";
-    if (s.includes("golf")) return "⛳";
-    if (s.includes("olympic")) return "🥇";
-    if (s.includes("ncaa")) return "🏟️";
-    if (s.includes("sailing")) return "⛵";
-    if (s.includes("cricket")) return "🏏";
-    if (s.includes("track") || s.includes("field")) return "🏃";
-    if (s.includes("rugby")) return "🏉";
-    if (s.includes("lacrosse")) return "🥍";
-    if (s.includes("curling")) return "🥌";
-    if (s.includes("cycling")) return "🚴";
-    if (s.includes("running")) return "🏃";
-    return "🏆";
-  }
+    <section id="podium" class="podium"></section>
+    <section id="rankingsList" class="rank-list"></section>
 
-  function escapeHtml(value) {
-    return String(value)
-      .replaceAll("&", "&amp;")
-      .replaceAll("<", "&lt;")
-      .replaceAll(">", "&gt;")
-      .replaceAll('"', "&quot;")
-      .replaceAll("'", "&#039;");
-  }
+    <footer>
+      <div>
+        <a href="about.html">About</a>
+        <a href="how-it-works.html">How It Works</a>
+        <a href="contact.html">Contact</a>
+        <a href="privacy.html">Privacy</a>
+        <a href="terms.html">Terms</a>
+      </div>
+      <div>SportsMistakes.com</div>
+    </footer>
+  </main>
 
-  loadMistakes();
-</script>
+  <script>
+    const SUPABASE_URL = "https://scwjlljurircxuufhqih.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNjd2psbGp1cmlyY3h1dWZocWloIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyNjUyMjcsImV4cCI6MjA5Njg0MTIyN30.WF0HRRb9mAkuOySjabTd8CZXVZRqF0MhMl0N2mafnns";
 
+    const client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    let mistakes = [];
+    let currentRanking = "all";
+
+    const rankingLabels = {
+      all: "Top Overall",
+      NFL: "Top NFL Mistakes",
+      NHL: "Top NHL Mistakes",
+      NBA: "Top NBA Mistakes",
+      MLB: "Top MLB Mistakes",
+      Soccer: "Top Soccer Mistakes",
+      "Coaching Mistake": "Top Coaching Mistakes",
+      "Referee Mistake": "Top Referee Mistakes",
+      "Player Mistake": "Top Player Mistakes",
+      "Front Office Mistake": "Top Front Office Mistakes"
+    };
+
+    async function fetchAllMistakes() {
+      const pageSize = 500;
+      let from = 0;
+      let allRows = [];
+
+      while (true) {
+        const { data, error } = await client
+          .from("mistakes")
+          .select("*")
+          .order("controversy_score", { ascending: false })
+          .range(from, from + pageSize - 1);
+
+        if (error) throw error;
+
+        const rows = data || [];
+        allRows = allRows.concat(rows);
+        if (rows.length < pageSize) break;
+        from += pageSize;
+      }
+
+      return allRows;
+    }
+
+    async function loadMistakes() {
+      try {
+        mistakes = await fetchAllMistakes();
+        renderRankings();
+      } catch (error) {
+        console.error(error);
+        document.getElementById("message").innerText = "Could not load rankings.";
+        document.getElementById("rankingsList").innerHTML = `<div class="empty">The rankings could not be loaded. Please try again.</div>`;
+      }
+    }
+
+    function setRanking(type, button) {
+      currentRanking = type;
+      document.querySelectorAll(".tabs button").forEach(btn => btn.classList.remove("active"));
+      button.classList.add("active");
+      renderRankings();
+    }
+
+    function renderRankings() {
+      const list = document.getElementById("rankingsList");
+      const podium = document.getElementById("podium");
+      const message = document.getElementById("message");
+      const title = document.getElementById("rankingTitle");
+
+      title.innerText = rankingLabels[currentRanking] || "Rankings";
+
+      let filtered = [...mistakes];
+
+      if (currentRanking !== "all") {
+        filtered = filtered.filter(m => m.sport === currentRanking || m.category === currentRanking);
+      }
+
+      filtered.sort((a, b) => Number(b.controversy_score || 0) - Number(a.controversy_score || 0));
+      filtered = filtered.slice(0, 100);
+
+      if (filtered.length === 0) {
+        message.innerText = "No ranked mistakes found";
+        podium.innerHTML = "";
+        list.innerHTML = `<div class="empty">No mistakes are available for this ranking yet.</div>`;
+        return;
+      }
+
+      message.innerText = `${filtered.length} ranked mistake${filtered.length === 1 ? "" : "s"}`;
+
+      const topThree = filtered.slice(0, 3);
+      const remaining = filtered.slice(3);
+
+      podium.innerHTML = topThree.map((m, index) => renderPodiumCard(m, index + 1)).join("");
+      list.innerHTML = remaining.map((m, index) => renderRankRow(m, index + 4)).join("");
+    }
+
+    function renderPodiumCard(m, rank) {
+      return `
+        <article class="podium-card" onclick="window.location.href='mistake.html?id=${encodeURIComponent(m.id)}'">
+          <div class="podium-rank">#${rank}</div>
+          <div class="podium-score">${escapeHtml(m.controversy_score || 0)}/100</div>
+          <div class="podium-art">${renderArt(m)}</div>
+          <div class="podium-body">
+            <span class="sport-badge">${escapeHtml(m.sport || "Sport")}</span>
+            <div class="podium-title">${escapeHtml(m.title || "Untitled Mistake")}</div>
+            <div class="meta">${escapeHtml([m.year, m.category, m.subcategory].filter(Boolean).join(" • "))}</div>
+          </div>
+        </article>
+      `;
+    }
+
+    function renderRankRow(m, rank) {
+      return `
+        <article class="rank-row" onclick="window.location.href='mistake.html?id=${encodeURIComponent(m.id)}'">
+          <div class="rank-number">#${rank}</div>
+          <div class="row-art">${renderArt(m)}</div>
+          <div>
+            <div class="row-title">${escapeHtml(m.title || "Untitled Mistake")}</div>
+            <div class="meta">${escapeHtml([m.sport, m.year, m.category, m.subcategory].filter(Boolean).join(" • "))}</div>
+            <div class="row-summary">${escapeHtml(m.summary || "No summary added yet.")}</div>
+          </div>
+          <div class="row-score">${escapeHtml(m.controversy_score || 0)}/100</div>
+        </article>
+      `;
+    }
+
+    function renderArt(m) {
+      const url = m.artwork_url || m.ai_artwork_url || m.image_url || m.thumbnail_url || "";
+      if (url) {
+        return `<img src="${escapeHtml(url)}" alt="${escapeHtml(m.title || "Sports mistake artwork")}" loading="lazy" />`;
+      }
+      return getSportIcon(m.sport);
+    }
+
+    function getSportIcon(sport) {
+      const s = String(sport || "").toLowerCase();
+      if (s.includes("nfl") || s.includes("football")) return "🏈";
+      if (s.includes("nhl") || s.includes("hockey")) return "🏒";
+      if (s.includes("mlb") || s.includes("baseball")) return "⚾";
+      if (s.includes("nba") || s.includes("basketball")) return "🏀";
+      if (s.includes("soccer")) return "⚽";
+      if (s.includes("formula") || s.includes("f1")) return "🏎️";
+      if (s.includes("boxing")) return "🥊";
+      if (s.includes("ufc") || s.includes("mma")) return "🥋";
+      if (s.includes("tennis")) return "🎾";
+      if (s.includes("golf")) return "⛳";
+      if (s.includes("olympic")) return "🥇";
+      if (s.includes("ncaa")) return "🏟️";
+      if (s.includes("sailing")) return "⛵";
+      if (s.includes("cricket")) return "🏏";
+      if (s.includes("track") || s.includes("field")) return "🏃";
+      if (s.includes("rugby")) return "🏉";
+      if (s.includes("lacrosse")) return "🥍";
+      if (s.includes("curling")) return "🥌";
+      if (s.includes("cycling")) return "🚴";
+      if (s.includes("running")) return "🏃";
+      return "🏆";
+    }
+
+    function escapeHtml(value) {
+      return String(value || "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    loadMistakes();
+  </script>
 </body>
 </html>
