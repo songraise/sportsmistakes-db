@@ -24,3 +24,8 @@ jobs:
         run: supabase functions deploy generate-artwork --project-ref scwjlljurircxuufhqih
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+
+      - name: Deploy submit-mistake
+        run: supabase functions deploy submit-mistake --project-ref scwjlljurircxuufhqih --no-verify-jwt
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
