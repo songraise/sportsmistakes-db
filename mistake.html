@@ -144,9 +144,6 @@
       background:#06101d;
       border:5px solid rgba(30,20,8,.8);
       min-height:430px;
-      background-size:contain;
-      background-repeat:no-repeat;
-      background-position:center;
       display:flex;
       align-items:center;
       justify-content:center;
@@ -154,6 +151,25 @@
       font-weight:900;
       text-align:center;
       padding:24px;
+      overflow:hidden;
+    }
+
+    /* Main artwork uses a real image element, not a CSS background.
+       This prevents portrait-mode repetition on mobile devices. */
+    .art-inner.has-art{
+      min-height:0;
+      padding:0;
+      display:block;
+      line-height:0;
+    }
+
+    .main-artwork{
+      display:block;
+      width:100%;
+      height:auto;
+      max-width:100%;
+      object-fit:contain;
+      object-position:center;
     }
 
     .plaque{
@@ -623,6 +639,7 @@
         linear-gradient(135deg,#1f2937,#070b10);
       background-size:cover;
       background-position:center;
+      background-repeat:no-repeat;
       display:flex;
       align-items:center;
       justify-content:center;
@@ -712,7 +729,7 @@
       .nav-links{gap:12px}.nav-links a{font-size:14px}
       .container{margin:20px auto 50px;padding:0 14px}
       .art-frame{padding:12px}
-      .art-inner{min-height:330px}
+      .art-inner:not(.has-art){min-height:330px}
       .plaque{width:70%;min-width:220px}
       .museum-ropes{display:none}
       .hero-title{font-size:34px}
@@ -734,15 +751,15 @@
     .nav-links{gap:28px}.nav-links a{color:#f4f4f5;font-weight:900;font-size:14px;letter-spacing:.8px;text-transform:uppercase}.nav-links a:hover{color:var(--red)}
     .container{max-width:1220px;margin:22px auto 70px;padding:0 22px}.detail-shell{gap:24px}.back-link{color:var(--red);text-transform:uppercase;letter-spacing:.5px;font-size:13px}
     .museum-hero{gap:42px;padding:18px 0 20px;border-bottom:1px solid rgba(255,255,255,.10)}.gallery-side{min-height:540px}.spotlight{background:radial-gradient(ellipse at center,rgba(226,36,36,.16),rgba(226,36,36,.04) 40%,transparent 72%)}
-    .art-frame{box-shadow:0 30px 70px rgba(0,0,0,.58),inset 0 0 0 2px rgba(255,255,255,.18),inset 0 0 0 9px rgba(83,48,0,.42)}.art-inner{background:#070b10;border-color:#19110a;min-height:450px;background-size:cover}.plaque{background:linear-gradient(180deg,#d5a846,#8c5b0a);border-color:#f3d27a}
+    .art-frame{box-shadow:0 30px 70px rgba(0,0,0,.58),inset 0 0 0 2px rgba(255,255,255,.18),inset 0 0 0 9px rgba(83,48,0,.42)}.art-inner{background:#070b10;border-color:#19110a;min-height:450px}.art-inner.has-art{min-height:0}.plaque{background:linear-gradient(180deg,#d5a846,#8c5b0a);border-color:#f3d27a}
     .score-box{background:rgba(226,36,36,.14);color:#ff6464;border:1px solid rgba(226,36,36,.40);box-shadow:none}.hero-kicker{color:#d7dee8}.badge{background:rgba(226,36,36,.16);color:#ff6464;box-shadow:none;text-transform:uppercase;letter-spacing:.5px}.hero-title{font-size:54px;letter-spacing:-1.8px}.hero-subtitle{color:#d7dee8}.hero-views{color:#ff6464}
     .vote-box,.content-grid,.sources-card,.related-card-wrap{background:rgba(9,15,22,.88);border:1px solid rgba(255,255,255,.14);box-shadow:0 18px 42px rgba(0,0,0,.30)}
     .story-panel,.court-panel{background:linear-gradient(180deg,rgba(13,22,32,.96),rgba(7,12,18,.96))}.story-panel{border-right-color:rgba(255,255,255,.12)}
     .story-section h2,.court-panel h2,.sources-card h2,.related-card-wrap h2{color:#fff}.story-section h2::after,.court-panel>h2::after,.sources-card h2::after,.related-card-wrap h2::after{content:"";display:block;width:44px;height:3px;background:var(--red);margin-top:9px;border-radius:999px}
     .story-section p,.court-intro{color:#eef2f7}.team-pill{background:rgba(226,36,36,.10);border-color:rgba(226,36,36,.30);color:#fff}.court-side{background:rgba(3,8,13,.58);border-color:rgba(255,255,255,.13)}.court-side.defense{border-color:rgba(255,255,255,.18)}.court-side.defense h3{color:#d7dee8}
     .upvote-btn{background:#243140}.upvote-btn:hover{background:var(--red)}.court-form button,.report-submit,.yes-btn{background:linear-gradient(135deg,var(--red),#c81010)}.no-btn{background:#303846}.sources a{color:#ff6464}.report-btn{background:#303846;border:1px solid rgba(255,255,255,.12)}
-    .related-card{background:rgba(13,22,32,.90);border:1px solid rgba(255,255,255,.14);border-radius:10px;box-shadow:0 8px 22px rgba(0,0,0,.25);color:#fff}.related-card:hover{border-color:rgba(226,36,36,.65);box-shadow:0 14px 30px rgba(0,0,0,.36)}.related-art{height:155px;background:radial-gradient(circle at 50% 30%,rgba(226,36,36,.45),transparent 35%),linear-gradient(135deg,#1f2937,#070b10);background-size:cover;background-position:center}.related-card h3{font-size:20px;line-height:1.15;color:#fff}.related-meta{color:#aab4c2}.related-score{background:rgba(226,36,36,.18);color:#ff5555}.related-badge{background:rgba(226,36,36,.16);color:#ff6464}.related-stats{color:#ff5555}.related-read{color:#fff}
-    @media(max-width:760px){.top-nav{padding:16px 18px}.brand-tag{display:none}.nav-links{gap:14px}.nav-brand{font-size:27px}.hero-title{font-size:36px}.art-inner{background-size:contain}}
+    .related-card{background:rgba(13,22,32,.90);border:1px solid rgba(255,255,255,.14);border-radius:10px;box-shadow:0 8px 22px rgba(0,0,0,.25);color:#fff}.related-card:hover{border-color:rgba(226,36,36,.65);box-shadow:0 14px 30px rgba(0,0,0,.36)}.related-art{height:155px;background:radial-gradient(circle at 50% 30%,rgba(226,36,36,.45),transparent 35%),linear-gradient(135deg,#1f2937,#070b10);background-size:cover;background-position:center;background-repeat:no-repeat}.related-card h3{font-size:20px;line-height:1.15;color:#fff}.related-meta{color:#aab4c2}.related-score{background:rgba(226,36,36,.18);color:#ff5555}.related-badge{background:rgba(226,36,36,.16);color:#ff6464}.related-stats{color:#ff5555}.related-read{color:#fff}
+    @media(max-width:760px){.top-nav{padding:16px 18px}.brand-tag{display:none}.nav-links{gap:14px}.nav-brand{font-size:27px}.hero-title{font-size:36px}.art-inner.has-art{min-height:0;padding:0}.main-artwork{width:100%;height:auto;object-fit:contain}}
 
   </style>
   <link rel="stylesheet" href="styles.css" />
@@ -792,7 +809,9 @@ async function loadMistake(){
   const facebookUrl=`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`;
   const redditUrl=`https://www.reddit.com/submit?url=${encodeURIComponent(shareUrl)}&title=${encodeURIComponent(shareText)}`;
   const artworkUrl=data.artwork_url||data.ai_artwork_url||"";
-  const artStyle=artworkUrl?`style="background-image:url('${escapeAttr(artworkUrl)}')"`:"";
+  const artworkMarkup=artworkUrl
+    ? `<img class="main-artwork" src="${escapeAttr(artworkUrl)}" alt="${escapeAttr(data.title||"SportsMistakes artwork")}" loading="eager" decoding="async">`
+    : "SportsMistakes Artwork";
 
   content.className="detail-shell";
   content.innerHTML=`
@@ -803,7 +822,7 @@ async function loadMistake(){
         <div class="spotlight"></div>
         <div class="frame-wrap">
           <div class="art-frame">
-            <div class="art-inner" ${artStyle}>${artworkUrl?"":"SportsMistakes Artwork"}</div>
+            <div class="art-inner${artworkUrl?" has-art":""}">${artworkMarkup}</div>
           </div>
           <div class="plaque">${escapeHtml(data.title||"Untitled Mistake")}<br>${escapeHtml(data.year||"")} ${escapeHtml(data.sport||"")}</div>
         </div>
