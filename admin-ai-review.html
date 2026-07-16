@@ -323,7 +323,7 @@ function renderSubmissions() {
 
         <div class="actions">
           <button class="purple" onclick="reviewOne('${s.id}')" ${isRunning ? "disabled" : ""}>${isRunning ? "Reviewing..." : "🤖 Review with AI"}</button>
-          <button class="green" onclick="generateArtworkPreview('${s.id}')" ${isGeneratingArtwork ? "disabled" : ""}>${isGeneratingArtwork ? "🖼 Generating..." : (s.ai_artwork_url ? "🔄 Regenerate Artwork Preview" : "🖼 Generate Artwork Preview")}</button>
+          <button class="green" data-generate-artwork-id="${s.id}" onclick="generateArtworkPreview('${s.id}')" ${isGeneratingArtwork ? "disabled" : ""}>${isGeneratingArtwork ? "🖼 Generating..." : (s.ai_artwork_url ? "🔄 Regenerate Artwork Preview" : "🖼 Generate Artwork Preview")}</button>
           <button class="secondary" onclick="approveSubmission('${s.id}')">✅ Approve & Publish</button>
           <button class="gold" onclick="markNeedsReview('${s.id}')">🟡 Needs Review</button>
           <button class="danger" onclick="rejectDuplicate('${s.id}')">🟣 Reject Duplicate</button>
@@ -549,7 +549,30 @@ async function generateArtworkForSubmission(submissionId) {
     return null;
   }
 
+  const button = document.querySelector(
+    `[data-generate-artwork-id="${submissionId}"]`
+  );
+
+  const originalText = button ? button.innerText : "";
+
+  if (button) {
+    button.disabled = true;
+    button.innerText = "🖼 Generating Artwork...";
+  }
+
   try {
+    const { data: sessionData, error: sessionError } = await client.auth.getSession();
+
+    if (sessionError) {
+      throw sessionError;
+    }
+
+    const accessToken = sessionData?.session?.access_token;
+
+    if (!accessToken) {
+      throw new Error("Your admin session has expired. Please log in again.");
+    }
+
     const response = await fetch(
       `${SUPABASE_URL}/functions/v1/generate-artwork`,
       {
@@ -557,7 +580,7 @@ async function generateArtworkForSubmission(submissionId) {
         headers: {
           "Content-Type": "application/json",
           "apikey": SUPABASE_ANON_KEY,
-          "Authorization": `Bearer ${SUPABASE_ANON_KEY}`,
+          "Authorization": `Bearer ${accessToken}`,
           "x-admin-secret": secret
         },
         body: JSON.stringify({
@@ -566,24 +589,60 @@ async function generateArtworkForSubmission(submissionId) {
       }
     );
 
-    const data = await response.json();
+    const rawText = await response.text();
+    let data;
+
+    try {
+      data = rawText ? JSON.parse(rawText) : {};
+    } catch {
+      data = {
+        success: false,
+        error: "The artwork function returned an invalid response.",
+        details: rawText
+      };
+    }
+
+    if (response.status === 401) {
+      sessionStorage.removeItem("sportsmistakes_artwork_admin_secret");
+
+      alert(
+        "Incorrect artwork admin password.\n\n" +
+        "The saved password has been cleared. Click Generate Artwork Preview to retry."
+      );
+
+      return null;
+    }
 
     if (!response.ok || !data.success) {
       console.error("Artwork generation failed", data);
-      alert("Artwork generation failed:\n\n" + JSON.stringify(data, null, 2));
-      return data;
-    }
 
-    if (data.artwork_url) {
-      window.open(data.artwork_url, "_blank");
+      const detailMessage =
+        data?.details?.error?.message ||
+        data?.details?.message ||
+        data?.error ||
+        `Request failed with status ${response.status}`;
+
+      alert("Artwork generation failed:\n\n" + detailMessage);
+      return null;
     }
 
     return data;
 
   } catch (err) {
     console.error(err);
-    alert("Artwork generation failed:\n\n" + String(err?.message || err));
+
+    alert(
+      "Artwork generation failed:\n\n" +
+      String(err?.message || err)
+    );
+
     return null;
+
+  } finally {
+    if (button) {
+      button.disabled = false;
+      button.innerText = originalText || "🖼 Generate Artwork Preview";
+    }
   }
 }
 
