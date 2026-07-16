@@ -814,10 +814,18 @@ async function loadMistake(){
 
   const{data,error}=await client
     .from("mistakes")
-    .select("id,title,sport,league,year,category,subcategory,teams_people,summary,why_it_matters,controversy_score,source_1,source_2,views,artwork_url,ai_artwork_url")
+    .select("id,title,sport,year,category,subcategory,teams_people,summary,why_it_matters,controversy_score,source_1,source_2,views,artwork_url")
     .eq("id",id)
     .single();
-  if(error||!data){console.error(error);content.innerHTML=`<div class="error">Mistake not found.</div>`;return}
+  if(error){
+    console.error("Mistake load failed:",error);
+    content.innerHTML=`<div class="error">This mistake could not be loaded. Please refresh and try again.</div>`;
+    return;
+  }
+  if(!data){
+    content.innerHTML=`<div class="error">Mistake not found.</div>`;
+    return;
+  }
 
   currentMistake=data;
   const newViewCount=(data.views||0)+1;
@@ -1068,7 +1076,7 @@ async function loadRelatedMistakes(){
   if(!box||!currentMistake)return;
   const{data,error}=await client
     .from("mistakes")
-    .select("id,title,sport,league,year,category,subcategory,controversy_score,views,artwork_url,ai_artwork_url")
+    .select("id,title,sport,year,category,subcategory,controversy_score,views,artwork_url")
     .neq("id",id)
     .or(`sport.eq.${currentMistake.sport},category.eq.${currentMistake.category},subcategory.eq.${currentMistake.subcategory}`)
     .order("controversy_score",{ascending:false})
