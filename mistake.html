@@ -488,6 +488,9 @@
     }
 
     .upvote-btn:hover{background:var(--blue)}
+    .argument-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:10px}
+    .report-argument-btn{background:transparent;color:#b7c7d9;border:1px solid rgba(255,255,255,.18);border-radius:8px;padding:8px 10px;font-size:12px;font-weight:900;cursor:pointer}
+    .report-argument-btn:hover{color:#fff;border-color:var(--red)}
 
     .court-note{
       color:#b7c7d9;
@@ -1044,7 +1047,20 @@ async function loadCourtArguments(){
 
 function renderArguments(list,side){
   if(!list||list.length===0)return`<div class="court-note">No ${side} arguments yet. Be the first to make the case.</div>`;
-  return list.map(arg=>`<div class="argument"><div class="argument-text">${escapeHtml(arg.argument_text||"")}</div><div class="argument-meta">${escapeHtml(arg.author_name||"Anonymous fan")}${arg.created_at?" • "+new Date(arg.created_at).toLocaleDateString():""}</div><button class="upvote-btn" onclick="upvoteArgument('${arg.id}')">👍 ${arg.upvotes||0}</button></div>`).join("");
+
+  return list.map(arg=>`
+    <div class="argument">
+      <div class="argument-text">${escapeHtml(arg.argument_text||"")}</div>
+      <div class="argument-meta">
+        ${escapeHtml(arg.author_name||"Anonymous fan")}
+        ${arg.created_at?" • "+new Date(arg.created_at).toLocaleDateString():""}
+      </div>
+      <div class="argument-actions">
+        <button class="upvote-btn" onclick="upvoteArgument('${arg.id}')">👍 ${arg.upvotes||0}</button>
+        <button class="report-argument-btn" onclick="reportCourtArgument('${arg.id}')">🚩 Report</button>
+      </div>
+    </div>
+  `).join("");
 }
 
 async function submitCourtArgument(){
@@ -1120,7 +1136,7 @@ async function submitCourtArgument(){
 
     document.getElementById("courtArgument").value="";
     document.getElementById("courtName").value="";
-    msg.innerText="Argument added to Sports Court.";
+    msg.innerText=result.message||"Argument submitted for moderator review.";
     await loadCourtArguments();
 
   }catch(error){
@@ -1144,6 +1160,68 @@ async function upvoteArgument(argumentId){
   if(updateError){console.error(updateError);alert("Could not upvote.");return}
   localStorage.setItem(key,"true");
   await loadCourtArguments();
+}
+
+async function reportCourtArgument(argumentId){
+  const reportKey="sports_court_report_"+argumentId;
+
+  if(localStorage.getItem(reportKey)){
+    alert("You already reported this argument.");
+    return;
+  }
+
+  const reason=prompt(
+    "Why are you reporting this argument?\n\nExamples: hate, racism, threat, harassment, sexual content, spam, or other unsafe content.",
+    "Unsafe or offensive content"
+  );
+
+  if(reason===null)return;
+
+  let reporterId=localStorage.getItem("sportsmistakes_reporter_id");
+  if(!reporterId){
+    reporterId=crypto.randomUUID();
+    localStorage.setItem("sportsmistakes_reporter_id",reporterId);
+  }
+
+  try{
+    const response=await fetch(`${SUPABASE_URL}/functions/v1/report-court-argument`,{
+      method:"POST",
+      headers:{
+        "Content-Type":"application/json",
+        "apikey":SUPABASE_ANON_KEY,
+        "Authorization":`Bearer ${SUPABASE_ANON_KEY}`
+      },
+      body:JSON.stringify({
+        argument_id:argumentId,
+        reporter_id:reporterId,
+        reason:reason.trim()||"Unsafe or offensive content"
+      })
+    });
+
+    const raw=await response.text();
+    let result={};
+
+    try{
+      result=raw?JSON.parse(raw):{};
+    }catch{
+      result={success:false,error:"The reporting service returned an invalid response."};
+    }
+
+    if(!response.ok||!result.success){
+      alert(result.error||"The report could not be submitted.");
+      return;
+    }
+
+    localStorage.setItem(reportKey,"true");
+    alert(result.message||"Report received. Thank you.");
+
+    if(result.automatically_hidden){
+      await loadCourtArguments();
+    }
+  }catch(error){
+    console.error(error);
+    alert("The reporting service could not be reached.");
+  }
 }
 
 async function loadRelatedMistakes(){
