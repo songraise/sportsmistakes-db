@@ -531,6 +531,11 @@
       cursor:pointer;
     }
 
+    .court-form button:disabled{
+      opacity:.68;
+      cursor:wait;
+    }
+
     .court-message{
       margin-top:12px;
       color:var(--gold);
@@ -1026,10 +1031,6 @@ async function submitVote(vote){
   await loadVotes();
 }
 
-function containsUnsafeText(text){
-  const banned=[/\bfuck\b/i,/\bfucking\b/i,/\bshit\b/i,/\basshole\b/i,/\bbitch\b/i,/\bcunt\b/i,/\bmotherfucker\b/i,/\bporn\b/i,/\bxxx\b/i,/\bnude\b/i,/\bnudes\b/i,/\bnsfw\b/i,/\bkill yourself\b/i,/\bkys\b/i,/\bnazi\b/i,/\bhitler\b/i,/\bwhite power\b/i,/\bcasino\b/i,/\bcrypto\b/i,/\bbitcoin\b/i,/\btelegram\b/i,/\bwhatsapp\b/i,/\bviagra\b/i,/\bescort\b/i,/\byou are an idiot\b/i,/\byou're an idiot\b/i,/\bmoron\b/i];
-  return banned.some(p=>p.test(text));
-}
 
 async function loadCourtArguments(){
   const p=document.getElementById("prosecutionArguments"),d=document.getElementById("defenseArguments");
@@ -1047,17 +1048,91 @@ function renderArguments(list,side){
 }
 
 async function submitCourtArgument(){
-  const msg=document.getElementById("courtMessage"),side=document.getElementById("courtSide").value,text=document.getElementById("courtArgument").value.trim(),name=document.getElementById("courtName").value.trim()||"Anonymous fan";
-  if(!text||text.length<20){msg.innerText="Please write a constructive argument of at least 20 characters.";return}
-  if(text.length>800){msg.innerText="Please keep the argument under 800 characters.";return}
-  if(containsUnsafeText(text+" "+name)){msg.innerText="This argument appears to violate the safety rules. Please focus on the sports decision, play, call, or context.";return}
-  msg.innerText="Submitting argument...";
-  const{error}=await client.from("sports_court_arguments").insert({mistake_id:id,side:side,argument_text:text,author_name:name,status:"approved",upvotes:0});
-  if(error){console.error(error);msg.innerText="Argument failed to submit. Check the SQL table and policies.";return}
-  document.getElementById("courtArgument").value="";
-  document.getElementById("courtName").value="";
-  msg.innerText="Argument added to Sports Court.";
-  await loadCourtArguments();
+  const msg=document.getElementById("courtMessage");
+  const side=document.getElementById("courtSide").value;
+  const text=document.getElementById("courtArgument").value.trim();
+  const name=document.getElementById("courtName").value.trim()||"Anonymous fan";
+  const button=document.querySelector('.court-form button[onclick="submitCourtArgument()"]');
+
+  if(!text||text.length<20){
+    msg.innerText="Please write a constructive argument of at least 20 characters.";
+    return;
+  }
+
+  if(text.length>800){
+    msg.innerText="Please keep the argument under 800 characters.";
+    return;
+  }
+
+  if(name.length>60){
+    msg.innerText="Please keep the name or nickname under 60 characters.";
+    return;
+  }
+
+  const originalButtonText=button?button.innerText:"Submit Argument";
+
+  if(button){
+    button.disabled=true;
+    button.innerText="Checking Safety...";
+  }
+
+  msg.innerText="Checking argument for safety...";
+
+  try{
+    const response=await fetch(
+      `${SUPABASE_URL}/functions/v1/submit-court-argument`,
+      {
+        method:"POST",
+        headers:{
+          "Content-Type":"application/json",
+          "apikey":SUPABASE_ANON_KEY,
+          "Authorization":`Bearer ${SUPABASE_ANON_KEY}`
+        },
+        body:JSON.stringify({
+          mistake_id:id,
+          side:side,
+          argument_text:text,
+          author_name:name
+        })
+      }
+    );
+
+    const raw=await response.text();
+    let result={};
+
+    try{
+      result=raw?JSON.parse(raw):{};
+    }catch{
+      result={
+        success:false,
+        error:"The safety service returned an invalid response."
+      };
+    }
+
+    if(!response.ok||!result.success){
+      console.error("Sports Court moderation rejected or failed:",result);
+      msg.innerText=
+        result.message||
+        result.error||
+        "This argument could not be submitted.";
+      return;
+    }
+
+    document.getElementById("courtArgument").value="";
+    document.getElementById("courtName").value="";
+    msg.innerText="Argument added to Sports Court.";
+    await loadCourtArguments();
+
+  }catch(error){
+    console.error("Sports Court submission failed:",error);
+    msg.innerText="The safety check could not be completed. Please try again.";
+
+  }finally{
+    if(button){
+      button.disabled=false;
+      button.innerText=originalButtonText;
+    }
+  }
 }
 
 async function upvoteArgument(argumentId){
