@@ -40,6 +40,8 @@
     .court-side-pill.defense{background:#17395b;color:#9dcbff}
     .court-status-pill.approved{background:#164e2d;color:#9cf0b8}
     .court-status-pill.hidden{background:#5b4517;color:#ffe39a}
+    .court-status-pill.pending{background:#4b3d12;color:#ffe08a}
+    .court-status-pill.rejected{background:#5b1717;color:#ffaaaa}
     .court-argument-meta{color:#9fb2c7;font-size:12px;line-height:1.5}
     .court-argument-text{color:#eef5ff;line-height:1.55;white-space:pre-wrap;margin:10px 0}
     .court-edit-area{display:none;margin-top:12px}
@@ -101,15 +103,18 @@
   let mistakes=[];
   let courtArguments=[];
   let courtArgumentsByMistake={};
+  let courtReportCounts={};
 
   async function loadMistakes(){
     document.getElementById("status").innerText="Loading mistakes and Sports Court arguments...";
 
-    const [mistakesResult,courtResult]=await Promise.all([
+    const [mistakesResult,courtResult,reportsResult]=await Promise.all([
       client.from("mistakes").select("*").order("title",{ascending:true}),
       client.from("sports_court_arguments")
         .select("id,mistake_id,side,argument_text,author_name,status,upvotes,created_at")
-        .order("created_at",{ascending:false})
+        .order("created_at",{ascending:false}),
+      client.from("sports_court_argument_reports")
+        .select("argument_id")
     ]);
 
     if(mistakesResult.error){
@@ -125,6 +130,12 @@
 
     mistakes=mistakesResult.data||[];
     courtArguments=courtResult.data||[];
+    courtReportCounts={};
+
+    (reportsResult.data||[]).forEach(report=>{
+      courtReportCounts[report.argument_id]=(courtReportCounts[report.argument_id]||0)+1;
+    });
+
     rebuildCourtArgumentMap();
     renderMistakes();
   }
@@ -136,6 +147,14 @@
         courtArgumentsByMistake[argument.mistake_id]=[];
       }
       courtArgumentsByMistake[argument.mistake_id].push(argument);
+    });
+
+    Object.values(courtArgumentsByMistake).forEach(rows=>{
+      rows.sort((a,b)=>{
+        const aPriority=(a.status==="pending"?100:0)+(courtReportCounts[a.id]||0);
+        const bPriority=(b.status==="pending"?100:0)+(courtReportCounts[b.id]||0);
+        return bPriority-aPriority;
+      });
     });
   }
 
@@ -225,7 +244,10 @@
             <span class="court-side-pill ${side}">${side}</span>
             <span class="court-status-pill ${escapeAttribute(status)}">${escapeHtml(status)}</span>
           </div>
-          <div class="court-argument-meta">👍 ${Number(argument.upvotes||0)} upvotes</div>
+          <div class="court-argument-meta">
+            👍 ${Number(argument.upvotes||0)} upvotes
+            ${courtReportCounts[argument.id] ? ` • 🚩 ${courtReportCounts[argument.id]} report${courtReportCounts[argument.id]===1?"":"s"}` : ""}
+          </div>
         </div>
 
         <div class="court-argument-meta">
@@ -237,9 +259,13 @@
 
         <div class="court-actions">
           <button class="court-edit-btn" onclick="toggleCourtArgumentEdit('${argument.id}')">Edit</button>
-          ${status==="hidden"
-            ? `<button class="court-restore-btn" onclick="setCourtArgumentStatus('${argument.id}','approved')">Restore Publicly</button>`
+          ${status!=="approved"
+            ? `<button class="court-restore-btn" onclick="setCourtArgumentStatus('${argument.id}','approved')">Approve Publicly</button>`
             : `<button class="court-hide-btn" onclick="setCourtArgumentStatus('${argument.id}','hidden')">Hide from Public</button>`
+          }
+          ${status!=="rejected"
+            ? `<button class="court-hide-btn" onclick="setCourtArgumentStatus('${argument.id}','rejected')">Reject</button>`
+            : ""
           }
           <button class="court-delete-btn" onclick="deleteCourtArgument('${argument.id}')">Delete Permanently</button>
         </div>
@@ -264,6 +290,50 @@
     box.style.display=box.style.display==="block"?"none":"block";
   }
 
+  async function runCourtAdminAction(payload){
+    const {data:sessionData}=await client.auth.getSession();
+    const accessToken=sessionData?.session?.access_token;
+
+    if(!accessToken){
+      alert("Your admin session has expired. Please log in again.");
+      window.location.href="admin-login.html";
+      return null;
+    }
+
+    try{
+      const response=await fetch(`${SUPABASE_URL}/functions/v1/manage-court-argument`,{
+        method:"POST",
+        headers:{
+          "Content-Type":"application/json",
+          "apikey":SUPABASE_ANON_KEY,
+          "Authorization":`Bearer ${accessToken}`
+        },
+        body:JSON.stringify(payload)
+      });
+
+      const raw=await response.text();
+      let result={};
+
+      try{
+        result=raw?JSON.parse(raw):{};
+      }catch{
+        result={success:false,error:"The moderation service returned an invalid response."};
+      }
+
+      if(!response.ok||!result.success){
+        console.error("Sports Court admin action failed:",result);
+        alert(result.error||"The Sports Court moderation action failed.");
+        return null;
+      }
+
+      return result;
+    }catch(error){
+      console.error(error);
+      alert("The Sports Court moderation service could not be reached.");
+      return null;
+    }
+  }
+
   async function saveCourtArgument(argumentId){
     const argument=courtArguments.find(a=>a.id===argumentId);
     if(!argument)return alert("Argument not found.");
@@ -276,15 +346,14 @@
     if(authorName.length>60)return alert("The name or nickname must remain under 60 characters.");
     if(!confirm("Save these changes to the Sports Court argument?"))return;
 
-    const {error}=await client.from("sports_court_arguments")
-      .update({argument_text:argumentText,author_name:authorName})
-      .eq("id",argumentId);
+    const result=await runCourtAdminAction({
+      action:"edit",
+      argument_id:argumentId,
+      argument_text:argumentText,
+      author_name:authorName
+    });
 
-    if(error){
-      console.error(error);
-      alert("The argument could not be updated. Check the admin policies for sports_court_arguments.");
-      return;
-    }
+    if(!result)return;
 
     argument.argument_text=argumentText;
     argument.author_name=authorName;
@@ -297,25 +366,28 @@
     const argument=courtArguments.find(a=>a.id===argumentId);
     if(!argument)return alert("Argument not found.");
 
-    const promptText=newStatus==="hidden"
-      ?"Hide this argument from the public Sports Court?"
-      :"Restore this argument to the public Sports Court?";
+    const promptText=
+      newStatus==="hidden" ? "Hide this argument from the public Sports Court?" :
+      newStatus==="rejected" ? "Reject this argument and keep it off the public Sports Court?" :
+      "Approve this argument for the public Sports Court?";
     if(!confirm(promptText))return;
 
-    const {error}=await client.from("sports_court_arguments")
-      .update({status:newStatus})
-      .eq("id",argumentId);
+    const result=await runCourtAdminAction({
+      action:"set_status",
+      argument_id:argumentId,
+      status:newStatus
+    });
 
-    if(error){
-      console.error(error);
-      alert("The argument status could not be changed. Check the admin policies for sports_court_arguments.");
-      return;
-    }
+    if(!result)return;
 
     argument.status=newStatus;
     rebuildCourtArgumentMap();
     renderMistakes();
-    alert(newStatus==="hidden"?"Argument hidden from the public site.":"Argument restored to the public site.");
+    alert(
+      newStatus==="hidden" ? "Argument hidden from the public site." :
+      newStatus==="rejected" ? "Argument rejected and kept off the public site." :
+      "Argument approved and now public."
+    );
   }
 
   async function deleteCourtArgument(argumentId){
@@ -324,13 +396,12 @@
 
     if(!confirm("Permanently delete this Sports Court argument?\n\n"+(argument.argument_text||"")+"\n\nThis cannot be undone."))return;
 
-    const {error}=await client.from("sports_court_arguments").delete().eq("id",argumentId);
+    const result=await runCourtAdminAction({
+      action:"delete",
+      argument_id:argumentId
+    });
 
-    if(error){
-      console.error(error);
-      alert("The argument could not be deleted. Check the admin policies for sports_court_arguments.");
-      return;
-    }
+    if(!result)return;
 
     courtArguments=courtArguments.filter(a=>a.id!==argumentId);
     rebuildCourtArgumentMap();
