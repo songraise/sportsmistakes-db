@@ -5,6 +5,9 @@
   <title>SportsMistakes | The Internet's Database of Sports Mistakes</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+  <link rel="preconnect" href="https://scwjlljurircxuufhqih.supabase.co" crossorigin>
+
   <!-- Google tag (gtag.js) -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-NXE4H7MQKC"></script>
   <script>
@@ -849,6 +852,33 @@
       border-radius:10px;
     }
 
+
+    .load-more-wrap {
+      display:flex;
+      justify-content:center;
+      margin:26px 0 4px;
+    }
+
+    .load-more-btn {
+      display:none;
+      min-width:220px;
+      padding:14px 22px;
+      border:1px solid rgba(255,255,255,.16);
+      border-radius:8px;
+      background:linear-gradient(135deg,var(--red),#c81010);
+      color:#fff;
+      font-size:14px;
+      font-weight:1000;
+      text-transform:uppercase;
+      letter-spacing:.5px;
+      cursor:pointer;
+    }
+
+    .load-more-btn:hover {
+      transform:translateY(-1px);
+      box-shadow:0 10px 24px rgba(226,36,36,.28);
+    }
+
     footer {
       margin-top:32px;
       padding:24px 0 12px;
@@ -1229,14 +1259,6 @@
       </div>
     </section>
 
-    <section class="stats-strip" id="siteStats">
-      <div class="stat-box"><div class="stat-icon">📖</div><div><span class="stat-number">...</span><span class="stat-label">Mistakes Documented</span></div></div>
-      <div class="stat-box"><div class="stat-icon">🏀</div><div><span class="stat-number">...</span><span class="stat-label">Sports Covered</span></div></div>
-      <div class="stat-box"><div class="stat-icon">👥</div><div><span class="stat-number">...</span><span class="stat-label">Fan Votes Cast</span></div></div>
-      <div class="stat-box"><div class="stat-icon">✎</div><div><span class="stat-number">...</span><span class="stat-label">Pending Reviews</span></div></div>
-      <div class="stat-box"><div class="stat-icon">👁</div><div><span class="stat-number">...</span><span class="stat-label">Page Views</span></div></div>
-    </section>
-
     <section class="featured-hero" id="featuredHero">
       <div class="featured-art"><div class="featured-placeholder">🏆</div></div>
       <div class="featured-info">
@@ -1284,6 +1306,9 @@
         <div id="stats">Loading mistakes...</div>
       </div>
       <div class="grid" id="mistakesGrid"></div>
+      <div class="load-more-wrap">
+        <button id="loadMoreBtn" class="load-more-btn" onclick="loadMoreMistakes()">Load More Mistakes</button>
+      </div>
     </section>
 
     <footer>
@@ -1310,9 +1335,15 @@
 
   <script>
     const client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    const INITIAL_CARD_LIMIT = 24;
+    const LOAD_MORE_AMOUNT = 24;
+
     let mistakes = [];
     let voteStatsByMistake = {};
     let currentSortMode = "default";
+    let visibleCardLimit = INITIAL_CARD_LIMIT;
+    let voteStatsLoaded = false;
 
     function applySearchFromUrl() {
       const params = new URLSearchParams(window.location.search);
@@ -1323,7 +1354,7 @@
       }
     }
 
-    async function fetchAllMistakes() {
+    async function fetchAllMistakesLightweight() {
       const pageSize = 500;
       let from = 0;
       let allRows = [];
@@ -1331,14 +1362,15 @@
       while (true) {
         const { data, error } = await client
           .from("mistakes")
-          .select("*")
-          .order("controversy_score", { ascending: false })
+          .select("id,title,sport,year,category,subcategory,teams_people,summary,why_it_matters,controversy_score,views,artwork_url")
+          .order("controversy_score", { ascending:false })
           .range(from, from + pageSize - 1);
 
         if (error) throw error;
 
         const rows = data || [];
         allRows = allRows.concat(rows);
+
         if (rows.length < pageSize) break;
         from += pageSize;
       }
@@ -1346,33 +1378,37 @@
       return allRows;
     }
 
-    async function loadVoteStats() {
-      const { data, error } = await client
-        .from("mistake_votes")
-        .select("mistake_id,vote");
+    async function loadVoteStatsInBackground() {
+      try {
+        const { data, error } = await client
+          .from("mistake_votes")
+          .select("mistake_id,vote");
 
-      if (error) {
-        console.error(error);
+        if (error) throw error;
+
         voteStatsByMistake = {};
-        return;
+
+        (data || []).forEach(v => {
+          if (!voteStatsByMistake[v.mistake_id]) {
+            voteStatsByMistake[v.mistake_id] = { yes:0, no:0, total:0 };
+          }
+
+          if (v.vote === "yes") voteStatsByMistake[v.mistake_id].yes++;
+          if (v.vote === "no") voteStatsByMistake[v.mistake_id].no++;
+          voteStatsByMistake[v.mistake_id].total++;
+        });
+
+        voteStatsLoaded = true;
+        renderDashboardLists();
+        renderMistakes();
+      } catch (error) {
+        console.error("Vote statistics could not be loaded:", error);
       }
-
-      voteStatsByMistake = {};
-
-      (data || []).forEach(v => {
-        if (!voteStatsByMistake[v.mistake_id]) {
-          voteStatsByMistake[v.mistake_id] = { yes: 0, no: 0, total: 0 };
-        }
-        if (v.vote === "yes") voteStatsByMistake[v.mistake_id].yes++;
-        if (v.vote === "no") voteStatsByMistake[v.mistake_id].no++;
-        voteStatsByMistake[v.mistake_id].total++;
-      });
     }
 
     async function loadMistakes() {
       try {
-        mistakes = await fetchAllMistakes();
-        await loadVoteStats();
+        mistakes = await fetchAllMistakesLightweight();
       } catch (error) {
         const msg = error?.message || JSON.stringify(error) || "Unknown error";
         document.getElementById("stats").innerText = "Error loading mistakes: " + msg;
@@ -1382,21 +1418,15 @@
 
       applySearchFromUrl();
       populateDropdowns();
-      renderSiteStats();
+
+      // Render the visible homepage immediately.
       renderFeaturedHero();
       renderDashboardLists();
       renderMistakes();
       renderLiveSearchResults();
-      await loadSiteStats();
-    }
 
-    async function loadSiteStats() {
-      const [votesResult, submissionsResult] = await Promise.all([
-        client.from("mistake_votes").select("id", { count: "exact", head: true }),
-        client.from("mistake_submissions").select("id", { count: "exact", head: true }).eq("status", "pending")
-      ]);
-
-      renderSiteStats(votesResult.count || 0, submissionsResult.count || 0);
+      // Votes are useful, but they must never delay the homepage.
+      window.setTimeout(loadVoteStatsInBackground, 300);
     }
 
     function populateDropdowns() {
@@ -1405,8 +1435,9 @@
       const yearSet = new Set();
 
       mistakes.forEach(m => {
-        if (m.league) leagueSet.add(m.league);
-        if (m.sport && ["NFL","NHL","NBA","MLB","Soccer","NCAA","F1","Boxing","UFC"].includes(m.sport)) leagueSet.add(m.sport);
+        if (m.sport && ["NFL","NHL","NBA","MLB","Soccer","NCAA","F1","Boxing","UFC"].includes(m.sport)) {
+          leagueSet.add(m.sport);
+        }
 
         if (m.year) yearSet.add(String(m.year));
 
@@ -1420,34 +1451,23 @@
       });
 
       fillSelect("leagueFilter", Array.from(leagueSet).sort(), "All Leagues");
-      fillSelect("teamFilter", Array.from(teamSet).sort().slice(0, 300), "All Teams");
+      fillSelect("teamFilter", Array.from(teamSet).sort().slice(0,300), "All Teams");
       fillSelect("yearFilter", Array.from(yearSet).sort((a,b) => Number(b)-Number(a)), "All Years");
     }
 
     function fillSelect(id, values, label) {
       const select = document.getElementById(id);
       if (!select) return;
-      select.innerHTML = `<option value="">${label}</option>` + values.map(v => `<option value="${escapeHtml(v)}">${escapeHtml(v)}</option>`).join("");
-    }
 
-    function renderSiteStats(voteCount = null, pendingCount = null) {
-      const totalViews = mistakes.reduce((sum, m) => sum + Number(m.views || 0), 0);
-      const sportsCovered = new Set(mistakes.map(m => m.sport).filter(Boolean)).size;
-      const votesDisplay = voteCount === null ? "..." : formatNumber(voteCount);
-      const pendingDisplay = pendingCount === null ? "..." : formatNumber(pendingCount);
-
-      document.getElementById("siteStats").innerHTML = `
-        <div class="stat-box"><div class="stat-icon">📖</div><div><span class="stat-number">${formatNumber(mistakes.length)}</span><span class="stat-label">Mistakes Documented</span></div></div>
-        <div class="stat-box"><div class="stat-icon">🏀</div><div><span class="stat-number">${sportsCovered || 0}</span><span class="stat-label">Sports Covered</span></div></div>
-        <div class="stat-box"><div class="stat-icon">👥</div><div><span class="stat-number">${votesDisplay}</span><span class="stat-label">Fan Votes Cast</span></div></div>
-        <div class="stat-box"><div class="stat-icon">✎</div><div><span class="stat-number">${pendingDisplay}</span><span class="stat-label">Pending Reviews</span></div></div>
-        <div class="stat-box"><div class="stat-icon">👁</div><div><span class="stat-number">${formatNumber(totalViews)}</span><span class="stat-label">Page Views</span></div></div>
-      `;
+      select.innerHTML =
+        `<option value="">${label}</option>` +
+        values.map(v => `<option value="${escapeHtml(v)}">${escapeHtml(v)}</option>`).join("");
     }
 
     function findFeaturedMistake() {
       const buckner = mistakes.find(m => normalize(m.title).includes("buckner"));
       if (buckner) return buckner;
+
       const dayNumber = Math.floor(Date.now() / 86400000);
       return mistakes[dayNumber % mistakes.length] || null;
     }
@@ -1460,7 +1480,7 @@
       const art = renderArt(featured, "featured");
       const meta = [
         featured.year || "",
-        featured.league || featured.sport || "",
+        featured.sport || "",
         featured.category || ""
       ].filter(Boolean).join(" • ");
 
@@ -1482,27 +1502,35 @@
     }
 
     function renderDashboardLists() {
-      const trending = [...mistakes]
-        .sort((a,b) => getVoteTotal(b.id) - getVoteTotal(a.id))
-        .filter(m => getVoteTotal(m.id) > 0)
+      const controversial = [...mistakes]
+        .sort((a,b) => Number(b.controversy_score || 0) - Number(a.controversy_score || 0))
         .slice(0,5);
 
-      const controversial = [...mistakes]
-        .sort((a,b) => (b.controversy_score || 0) - (a.controversy_score || 0))
-        .slice(0,5);
+      const trending = voteStatsLoaded
+        ? [...mistakes]
+            .sort((a,b) => getVoteTotal(b.id) - getVoteTotal(a.id))
+            .filter(m => getVoteTotal(m.id) > 0)
+            .slice(0,5)
+        : controversial;
 
       const viewed = [...mistakes]
-        .sort((a,b) => (b.views || 0) - (a.views || 0))
+        .sort((a,b) => Number(b.views || 0) - Number(a.views || 0))
         .slice(0,5);
 
+      // Without requesting extra date columns, use higher years as the lightweight recent proxy.
       const recent = [...mistakes]
-        .sort((a,b) => (getMistakeDateValue(b) || 0) - (getMistakeDateValue(a) || 0))
+        .sort((a,b) => Number(b.year || 0) - Number(a.year || 0))
         .slice(0,5);
 
-      renderList("trendingList", trending.length ? trending : controversial, m => `🔥 ${getVoteTotal(m.id) || "Hot"}`);
+      renderList("trendingList", trending, m =>
+        voteStatsLoaded && getVoteTotal(m.id) > 0
+          ? `🔥 ${getVoteTotal(m.id)} votes`
+          : `🔥 ${m.controversy_score || 0}/100`
+      );
+
       renderList("controversialList", controversial, m => `${m.controversy_score || 0}%`);
       renderList("mostViewedList", viewed, m => `👁 ${formatNumber(m.views || 0)}`);
-      renderList("recentList", recent, m => getRelativeAge(m));
+      renderList("recentList", recent, m => m.year ? String(m.year) : "Recently added");
     }
 
     function renderList(id, items, extraFn) {
@@ -1519,7 +1547,7 @@
           <div class="thumb">${renderArt(m, "thumb")}</div>
           <div>
             <div class="row-title">${escapeHtml(m.title || "Untitled Mistake")}</div>
-            <div class="row-meta">${escapeHtml([m.year, m.league || m.sport, m.category].filter(Boolean).join(", "))}</div>
+            <div class="row-meta">${escapeHtml([m.year, m.sport, m.category].filter(Boolean).join(", "))}</div>
             <div class="row-extra">${escapeHtml(extraFn(m))}</div>
           </div>
         </div>
@@ -1527,14 +1555,28 @@
     }
 
     function renderArt(m, size) {
-      // Artwork-ready: once the mistakes table has an artwork_url value, it appears automatically here.
-      const url = m.artwork_url || m.image_url || m.thumbnail_url || "";
-      if (url) return `<img src="${escapeHtml(url)}" alt="${escapeHtml(m.title || "Sports mistake artwork")}" />`;
-      if (size === "featured") return `<div class="featured-placeholder">${getSportIcon(m.sport)}</div>`;
-      return `${getSportIcon(m.sport)}`;
+      const url = m.artwork_url || "";
+
+      if (url) {
+        const featuredAttributes = size === "featured"
+          ? `fetchpriority="high" decoding="async"`
+          : `loading="lazy" decoding="async"`;
+
+        return `<img src="${escapeHtml(url)}" alt="${escapeHtml(m.title || "Sports mistake artwork")}" ${featuredAttributes} />`;
+      }
+
+      if (size === "featured") {
+        return `<div class="featured-placeholder">${getSportIcon(m.sport)}</div>`;
+      }
+
+      return getSportIcon(m.sport);
     }
 
     function renderFanVerdict(mistakeId) {
+      if (!voteStatsLoaded) {
+        return `<div class="fan-verdict empty">Fan Verdict: Loading in background</div>`;
+      }
+
       const stats = voteStatsByMistake[mistakeId];
 
       if (!stats || !stats.total) {
@@ -1542,6 +1584,7 @@
       }
 
       const yesPercent = Math.round((stats.yes / stats.total) * 100);
+
       return `
         <div class="fan-verdict">
           Fan Verdict: ${yesPercent}% say YES this was a mistake
@@ -1550,62 +1593,75 @@
       `;
     }
 
+    function filtersAreActive() {
+      return Boolean(
+        document.getElementById("searchInput").value.trim() ||
+        document.getElementById("sportFilter").value ||
+        document.getElementById("leagueFilter").value ||
+        document.getElementById("teamFilter").value ||
+        document.getElementById("yearFilter").value ||
+        document.getElementById("categoryFilter").value
+      );
+    }
+
     function getFilteredMistakes() {
-      const search = document.getElementById("searchInput").value.toLowerCase();
+      const search = normalize(document.getElementById("searchInput").value);
       const sport = document.getElementById("sportFilter").value;
       const league = document.getElementById("leagueFilter").value;
       const team = document.getElementById("teamFilter").value;
       const year = document.getElementById("yearFilter").value;
       const category = document.getElementById("categoryFilter").value;
 
-      let filtered = mistakes.filter(m => {
-        const text = `${m.title || ""} ${m.sport || ""} ${m.league || ""} ${m.category || ""} ${m.subcategory || ""} ${m.teams_people || ""} ${m.key_people || ""} ${m.summary || ""} ${m.why_it_matters || ""}`.toLowerCase();
+      const filtered = mistakes.filter(m => {
+        const text = normalize(
+          `${m.title || ""} ${m.sport || ""} ${m.category || ""} ${m.subcategory || ""} ` +
+          `${m.teams_people || ""} ${m.summary || ""} ${m.why_it_matters || ""}`
+        );
+
         const matchesSearch = !search || text.includes(search);
         const matchesSport = !sport || m.sport === sport;
-        const matchesLeague = !league || m.league === league || m.sport === league;
-        const matchesTeam = !team || String(m.teams_people || "").toLowerCase().includes(team.toLowerCase());
+        const matchesLeague = !league || m.sport === league;
+        const matchesTeam = !team || normalize(m.teams_people).includes(normalize(team));
         const matchesYear = !year || String(m.year || "") === year;
         const matchesCategory = !category || m.category === category;
-        return matchesSearch && matchesSport && matchesLeague && matchesTeam && matchesYear && matchesCategory;
+
+        return matchesSearch && matchesSport && matchesLeague &&
+          matchesTeam && matchesYear && matchesCategory;
       });
 
-      if (currentSortMode === "views") filtered.sort((a,b) => (b.views || 0) - (a.views || 0));
-      if (currentSortMode === "controversy") filtered.sort((a,b) => (b.controversy_score || 0) - (a.controversy_score || 0));
-      if (currentSortMode === "recent") filtered.sort((a,b) => (getMistakeDateValue(b) || 0) - (getMistakeDateValue(a) || 0));
-      if (currentSortMode === "votes") filtered.sort((a,b) => getVoteTotal(b.id) - getVoteTotal(a.id));
+      if (currentSortMode === "views") {
+        filtered.sort((a,b) => Number(b.views || 0) - Number(a.views || 0));
+      }
+
+      if (currentSortMode === "controversy") {
+        filtered.sort((a,b) => Number(b.controversy_score || 0) - Number(a.controversy_score || 0));
+      }
+
+      if (currentSortMode === "recent") {
+        filtered.sort((a,b) => Number(b.year || 0) - Number(a.year || 0));
+      }
+
+      if (currentSortMode === "votes") {
+        filtered.sort((a,b) => getVoteTotal(b.id) - getVoteTotal(a.id));
+      }
 
       return filtered;
     }
-
 
     function getSearchMatches() {
       const query = normalize(document.getElementById("searchInput").value).trim();
       if (!query) return [];
 
-      const sport = document.getElementById("sportFilter").value;
-      const league = document.getElementById("leagueFilter").value;
-      const team = document.getElementById("teamFilter").value;
-      const year = document.getElementById("yearFilter").value;
-      const category = document.getElementById("categoryFilter").value;
+      return getFilteredMistakes().sort((a,b) => {
+        const at = normalize(a.title);
+        const bt = normalize(b.title);
 
-      return mistakes
-        .filter(m => {
-          const text = normalize(`${m.title || ""} ${m.sport || ""} ${m.league || ""} ${m.category || ""} ${m.subcategory || ""} ${m.teams_people || ""} ${m.key_people || ""} ${m.summary || ""}`);
-          return text.includes(query)
-            && (!sport || m.sport === sport)
-            && (!league || m.league === league || m.sport === league)
-            && (!team || normalize(m.teams_people).includes(normalize(team)))
-            && (!year || String(m.year || "") === year)
-            && (!category || m.category === category);
-        })
-        .sort((a,b) => {
-          const at = normalize(a.title);
-          const bt = normalize(b.title);
-          const aExact = at === query ? 0 : at.startsWith(query) ? 1 : at.includes(query) ? 2 : 3;
-          const bExact = bt === query ? 0 : bt.startsWith(query) ? 1 : bt.includes(query) ? 2 : 3;
-          if (aExact !== bExact) return aExact - bExact;
-          return (b.controversy_score || 0) - (a.controversy_score || 0);
-        });
+        const aRank = at === query ? 0 : at.startsWith(query) ? 1 : at.includes(query) ? 2 : 3;
+        const bRank = bt === query ? 0 : bt.startsWith(query) ? 1 : bt.includes(query) ? 2 : 3;
+
+        if (aRank !== bRank) return aRank - bRank;
+        return Number(b.controversy_score || 0) - Number(a.controversy_score || 0);
+      });
     }
 
     function renderLiveSearchResults() {
@@ -1630,8 +1686,9 @@
         return;
       }
 
-      list.innerHTML = matches.slice(0, 6).map(m => {
-        const meta = [m.year, m.league || m.sport, m.category].filter(Boolean).join(" • ");
+      list.innerHTML = matches.slice(0,6).map(m => {
+        const meta = [m.year, m.sport, m.category].filter(Boolean).join(" • ");
+
         return `
           <div class="search-result-card" onclick="window.location.href='mistake.html?id=${m.id}'">
             <div class="search-result-art">${renderArt(m, "search")}</div>
@@ -1641,92 +1698,106 @@
               <div class="search-result-score">${escapeHtml(m.controversy_score || 0)}/100 controversy</div>
             </div>
             <div class="search-result-read">Read →</div>
-          </div>`;
+          </div>
+        `;
       }).join("");
     }
 
     function renderMistakes() {
       const grid = document.getElementById("mistakesGrid");
       const stats = document.getElementById("stats");
+      const loadMoreBtn = document.getElementById("loadMoreBtn");
       const filtered = getFilteredMistakes();
+      const visible = filtered.slice(0,visibleCardLimit);
 
-      stats.innerText = `${filtered.length} sports mistakes found`;
+      // Do not advertise the total database size during normal browsing.
+      stats.innerText = filtersAreActive()
+        ? `${filtered.length} matching sports mistake${filtered.length === 1 ? "" : "s"}`
+        : "Browse the complete sports history collection";
 
-      if (filtered.length === 0) {
+      if (!filtered.length) {
         grid.innerHTML = `<div class="empty">No mistakes found.</div>`;
+        loadMoreBtn.style.display = "none";
         return;
       }
 
-      grid.innerHTML = filtered.slice(0, 60).map(m => `
+      grid.innerHTML = visible.map(m => `
         <div class="card" onclick="window.location.href='mistake.html?id=${m.id}'">
           <div class="card-image">${renderArt(m, "card")}</div>
           <div class="card-body">
             <span class="badge">${escapeHtml(m.sport || "Sport")}</span>
             <span class="score">${escapeHtml(m.controversy_score || 0)}/100</span>
             <h2>${escapeHtml(m.title || "Untitled Mistake")}</h2>
-            <div class="meta">${escapeHtml([m.year, m.league || "", m.category || ""].filter(Boolean).join(" • "))}</div>
-            <div class="card-stats"><span>👁 ${formatNumber(m.views || 0)}</span><span>🔥 ${m.controversy_score || 0}/100</span></div>
+            <div class="meta">${escapeHtml([m.year, m.category].filter(Boolean).join(" • "))}</div>
+            <div class="card-stats">
+              <span>👁 ${formatNumber(m.views || 0)}</span>
+              <span>🔥 ${m.controversy_score || 0}/100</span>
+            </div>
             ${renderFanVerdict(m.id)}
             <div class="summary">${escapeHtml(m.summary || "No summary added yet.")}</div>
           </div>
         </div>
       `).join("");
+
+      loadMoreBtn.style.display = visible.length < filtered.length ? "inline-block" : "none";
+    }
+
+    function loadMoreMistakes() {
+      visibleCardLimit += LOAD_MORE_AMOUNT;
+      renderMistakes();
+    }
+
+    function resetVisibleLimit() {
+      visibleCardLimit = INITIAL_CARD_LIMIT;
     }
 
     function getVoteTotal(id) {
       return voteStatsByMistake[id]?.total || 0;
     }
 
-    function getMistakeDateValue(m) {
-      const rawDate = m.created_at || m.submitted_at || m.updated_at || null;
-      if (!rawDate) return null;
-      const time = new Date(rawDate).getTime();
-      return Number.isNaN(time) ? null : time;
-    }
-
-    function getRelativeAge(m) {
-      const t = getMistakeDateValue(m);
-      if (!t) return "Recently added";
-      const days = Math.max(0, Math.floor((Date.now() - t) / 86400000));
-      if (days === 0) return "Today";
-      if (days === 1) return "1 day ago";
-      return `${days} days ago`;
-    }
-
     function sortByViews() {
       currentSortMode = "views";
+      resetVisibleLimit();
       renderMistakes();
-      document.querySelector(".container").scrollIntoView({ behavior: "smooth" });
+      document.querySelector(".container").scrollIntoView({behavior:"smooth"});
     }
 
     function sortByControversy() {
       currentSortMode = "controversy";
+      resetVisibleLimit();
       renderMistakes();
-      document.querySelector(".container").scrollIntoView({ behavior: "smooth" });
+      document.querySelector(".container").scrollIntoView({behavior:"smooth"});
     }
 
     function sortByRecent() {
       currentSortMode = "recent";
+      resetVisibleLimit();
       renderMistakes();
-      document.querySelector(".container").scrollIntoView({ behavior: "smooth" });
+      document.querySelector(".container").scrollIntoView({behavior:"smooth"});
     }
 
     function sortByVotes() {
       currentSortMode = "votes";
+      resetVisibleLimit();
       renderMistakes();
-      document.querySelector(".container").scrollIntoView({ behavior: "smooth" });
+      document.querySelector(".container").scrollIntoView({behavior:"smooth"});
     }
 
     function quickSearch(term) {
       document.getElementById("searchInput").value = term;
       currentSortMode = "default";
+      resetVisibleLimit();
       renderMistakes();
       renderLiveSearchResults();
-      document.getElementById("searchResultsWrap").scrollIntoView({ behavior: "smooth", block: "nearest" });
+      document.getElementById("searchResultsWrap").scrollIntoView({
+        behavior:"smooth",
+        block:"nearest"
+      });
     }
 
     function getSportIcon(sport) {
-      const s = String(sport || "").toLowerCase();
+      const s = normalize(sport);
+
       if (s.includes("nfl") || s.includes("football")) return "🏈";
       if (s.includes("nhl") || s.includes("hockey")) return "🏒";
       if (s.includes("mlb") || s.includes("baseball")) return "⚾";
@@ -1747,6 +1818,7 @@
       if (s.includes("curling")) return "🥌";
       if (s.includes("cycling")) return "🚴";
       if (s.includes("running")) return "🏃";
+
       return "🏆";
     }
 
@@ -1763,23 +1835,49 @@
 
     function escapeHtml(value) {
       return String(value || "")
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;")
-        .replaceAll("'", "&#039;");
+        .replaceAll("&","&amp;")
+        .replaceAll("<","&lt;")
+        .replaceAll(">","&gt;")
+        .replaceAll('"',"&quot;")
+        .replaceAll("'","&#039;");
     }
 
     document.getElementById("searchInput").addEventListener("input", () => {
       currentSortMode = "default";
+      resetVisibleLimit();
       renderMistakes();
       renderLiveSearchResults();
     });
-    document.getElementById("sportFilter").addEventListener("change", () => { renderMistakes(); renderLiveSearchResults(); });
-    document.getElementById("leagueFilter").addEventListener("change", () => { renderMistakes(); renderLiveSearchResults(); });
-    document.getElementById("teamFilter").addEventListener("change", () => { renderMistakes(); renderLiveSearchResults(); });
-    document.getElementById("yearFilter").addEventListener("change", () => { renderMistakes(); renderLiveSearchResults(); });
-    document.getElementById("categoryFilter").addEventListener("change", () => { renderMistakes(); renderLiveSearchResults(); });
+
+    document.getElementById("sportFilter").addEventListener("change", () => {
+      resetVisibleLimit();
+      renderMistakes();
+      renderLiveSearchResults();
+    });
+
+    document.getElementById("leagueFilter").addEventListener("change", () => {
+      resetVisibleLimit();
+      renderMistakes();
+      renderLiveSearchResults();
+    });
+
+    document.getElementById("teamFilter").addEventListener("change", () => {
+      resetVisibleLimit();
+      renderMistakes();
+      renderLiveSearchResults();
+    });
+
+    document.getElementById("yearFilter").addEventListener("change", () => {
+      resetVisibleLimit();
+      renderMistakes();
+      renderLiveSearchResults();
+    });
+
+    document.getElementById("categoryFilter").addEventListener("change", () => {
+      resetVisibleLimit();
+      renderMistakes();
+      renderLiveSearchResults();
+    });
 
     loadMistakes().catch(err => {
       console.error(err);
@@ -1787,5 +1885,6 @@
       if (stats) stats.innerText = "Error loading page: " + (err?.message || err);
     });
   </script>
+
 </body>
 </html>
