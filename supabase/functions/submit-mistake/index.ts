@@ -221,29 +221,26 @@ function validatePayload(payload: ReturnType<typeof sanitizePayload>): string | 
 }
 
 function runLocalQualityChecks(payload: ReturnType<typeof sanitizePayload>): string | null {
-  const combined = [
-    payload.title,
-    payload.teams_people,
-    payload.key_people,
-    payload.description,
-    payload.why_it_matters,
-    payload.submitter_name,
-  ].filter(Boolean).join(" ");
-
-  const requiredMeaningfulFields = [
+  const fields = [
     ["title", payload.title],
+    ["teams / people", payload.teams_people],
+    ["key people", payload.key_people],
     ["description", payload.description],
+    ["why it matters", payload.why_it_matters],
+    ["submitter name", payload.submitter_name],
   ] as const;
 
-  for (const [label, value] of requiredMeaningfulFields) {
-    if (looksLikeKeyboardMash(value) || looksLikeSyntheticGibberish(value)) {
-      return `Please replace the random or unclear ${label} text with a meaningful description of the sports event.`;
-    }
-  }
+  const combined = fields
+    .map(([, value]) => value)
+    .filter(Boolean)
+    .join(" ");
 
-  for (const value of [payload.teams_people, payload.key_people, payload.why_it_matters]) {
-    if (value && (looksLikeKeyboardMash(value) || looksLikeSyntheticGibberish(value))) {
-      return "One or more fields contain random or unclear text. Please use real teams, people, and a meaningful explanation.";
+  // Reject only unmistakable junk locally.
+  for (const [label, value] of fields) {
+    if (!value) continue;
+
+    if (looksLikeObviousJunk(value)) {
+      return `Please replace the obvious test, repeated, or random text in the ${label} field.`;
     }
   }
 
@@ -255,23 +252,14 @@ function runLocalQualityChecks(payload: ReturnType<typeof sanitizePayload>): str
     return "This submission appears promotional or spam-like. Please describe only the sports event.";
   }
 
+  // Keep only basic completeness checks here.
+  // Proper names, uncommon sports terminology, and imperfect grammar are allowed.
   if (countWords(payload.title) < 3) {
-    return "Please use a specific title naming the play, decision, person, team, or event.";
+    return "Please use a more specific title naming the play, decision, person, team, or event.";
   }
 
-  if (countWords(payload.description) < 18) {
-    return "Please provide a fuller description of what happened and why it may have been a mistake.";
-  }
-
-  if (meaningfulSentenceRatio(payload.description) < 0.55) {
-    return "The description does not appear to contain enough meaningful, readable language. Please rewrite it clearly.";
-  }
-
-  const titleWords = meaningfulWords(payload.title);
-  const descriptionWords = meaningfulWords(payload.description);
-
-  if (titleWords.length >= 2 && intersectionSize(titleWords, descriptionWords) === 0) {
-    return "The title and description do not appear to describe the same event. Please revise them for consistency.";
+  if (countWords(payload.description) < 15) {
+    return "Please provide a fuller description of what happened.";
   }
 
   return null;
@@ -335,7 +323,7 @@ Approve only when all of these are true:
 1. It clearly concerns a real or plausibly real sports event, decision, play, transaction, rule, officiating call, athlete, team, league, tournament, or sports organization.
 2. The title, sport, people/teams, description, and why-it-matters fields are mutually consistent and describe the same event.
 3. The description is meaningful, coherent, and specific enough for an editor to understand what allegedly happened.
-4. Every free-text field uses normal, meaningful human language. Reject invented words, random pronounceable strings, keyboard mash, nonsense sentences, repeated filler, test data, placeholder text, keyword stuffing, promotion, solicitation, unrelated political/religious propaganda, or attempts to smuggle abusive content through a legitimate source URL.
+4. Every free-text field should be understandable in context. Do not treat proper names, athlete names, team names, stadium names, foreign names, uncommon sports terminology, abbreviations, or minor grammar mistakes as gibberish. Reject only genuinely meaningless text, keyboard mash, nonsense sentences, repeated filler, test data, placeholder text, keyword stuffing, promotion, solicitation, unrelated propaganda, or attempts to smuggle abusive content through a legitimate source URL.
 5. It does not make obviously impossible or fabricated claims. A disputed interpretation may still pass; obvious invention should not.
 6. A legitimate source URL does NOT excuse irrelevant, abusive, incoherent, or inconsistent text.
 
@@ -351,7 +339,7 @@ Use reason_code:
 
 A legitimate source URL is only supporting evidence; never use the URL itself as a reason to approve the text.
 
-Reject as gibberish when a normal editor could not clearly explain the event after reading the submitted title and description, even if some individual words look English.
+Reject as gibberish only when the submission is genuinely meaningless or cannot be understood as a sports event. A coherent description containing proper nouns, substitutions, scores, tactical terms, or imperfect grammar must pass the gibberish test.
 
 Be conservative about disputed sports interpretations, but be strict about language quality. When the event is coherent, readable, and sports-related, approve it for human review.`;
 
@@ -522,88 +510,36 @@ function intersectionSize(a: Set<string>, b: Set<string>): number {
   return count;
 }
 
-function looksLikeKeyboardMash(value: string): boolean {
-  const compact = value.toLowerCase().replace(/[^a-z0-9]/g, "");
-  if (compact.length < 6) return false;
+function looksLikeObviousJunk(value: string): boolean {
+  const raw = value.trim().toLowerCase();
+  if (!raw) return false;
 
-  if (/^(asdf|qwer|zxcv|hjkl|test|testing|lorem|ipsum|abc|xyz|abc123)+$/i.test(compact)) return true;
-  if (/([a-z0-9])\1{4,}/i.test(compact)) return true;
-  if (/(asdf|qwer|zxcv|hjkl|poiuy|lkjhg|mnbvc|qazwsx|wsxedc)/i.test(compact)) return true;
+  const compact = raw.replace(/[^a-z0-9]/g, "");
 
-  const letters = compact.replace(/[^a-z]/g, "");
-  if (letters.length >= 10) {
-    const vowels = (letters.match(/[aeiouy]/g) || []).length;
-    const vowelRatio = vowels / letters.length;
-    if (vowelRatio < 0.12 || vowelRatio > 0.78) return true;
+  if (/^(test|testing|asdf|qwer|qwerty|zxcv|hjkl|lorem|ipsum|abc|xyz|abc123)+$/i.test(compact)) {
+    return true;
+  }
+
+  if (/(asdf|qwer|qwerty|zxcv|hjkl|poiuy|lkjhg|mnbvc|qazwsx|wsxedc)/i.test(compact)) {
+    return true;
+  }
+
+  if (/([a-z0-9])\1{5,}/i.test(compact)) {
+    return true;
+  }
+
+  const tokens = raw.match(/[a-z0-9]+/g) || [];
+  if (tokens.length >= 4 && new Set(tokens).size === 1) {
+    return true;
+  }
+
+  const letters = (raw.match(/[a-z]/g) || []).length;
+  const visible = raw.replace(/\s/g, "").length;
+  if (visible >= 10 && letters / visible < 0.25) {
+    return true;
   }
 
   return false;
-}
-
-function looksLikeSyntheticGibberish(value: string): boolean {
-  const tokens = (value.toLowerCase().match(/[a-z][a-z'-]*/g) || [])
-    .map(token => token.replace(/['-]/g, ""))
-    .filter(Boolean);
-
-  if (tokens.length < 2) return false;
-
-  const suspicious = tokens.filter(token => {
-    if (token.length >= 18) return true;
-    if (/[^aeiouy]{6,}/.test(token)) return true;
-    if (/[aeiouy]{5,}/.test(token)) return true;
-    if (/(..)\1{2,}/.test(token)) return true;
-
-    const vowels = (token.match(/[aeiouy]/g) || []).length;
-    const ratio = token.length ? vowels / token.length : 0;
-    return token.length >= 7 && (ratio < 0.14 || ratio > 0.72);
-  }).length;
-
-  if (tokens.length >= 4 && suspicious / tokens.length >= 0.45) return true;
-
-  const normalized = tokens.join(" ");
-  const trigrams = new Map<string, number>();
-
-  for (let i = 0; i <= normalized.length - 3; i++) {
-    const tri = normalized.slice(i, i + 3);
-    trigrams.set(tri, (trigrams.get(tri) || 0) + 1);
-  }
-
-  const repeatedTrigrams = [...trigrams.values()].filter(count => count >= 4).length;
-  if (normalized.length >= 25 && repeatedTrigrams >= 3) return true;
-
-  return false;
-}
-
-function meaningfulSentenceRatio(value: string): number {
-  const tokens = value.toLowerCase().match(/[a-z][a-z'-]*/g) || [];
-  if (!tokens.length) return 0;
-
-  const commonWords = new Set([
-    "a","about","after","against","all","an","and","another","as","at","away",
-    "back","ball","because","before","but","by","call","called","came","coach",
-    "could","decision","did","during","error","event","fans","final","for","from",
-    "game","gave","had","has","have","he","her","his","in","into","is","it",
-    "its","league","left","made","match","mistake","not","of","off","official",
-    "on","one","or","out","player","play","referee","result","season","she",
-    "should","sport","team","than","that","the","their","them","then","there",
-    "they","this","through","time","to","tournament","was","were","when","which",
-    "who","why","with","won","would","year"
-  ]);
-
-  let plausible = 0;
-
-  for (const token of tokens) {
-    if (commonWords.has(token)) {
-      plausible++;
-      continue;
-    }
-
-    if (token.length >= 2 && token.length <= 16 && /[aeiouy]/.test(token) && !/[^aeiouy]{6,}/.test(token)) {
-      plausible++;
-    }
-  }
-
-  return plausible / tokens.length;
 }
 
 function hasExtremeRepetition(value: string): boolean {
