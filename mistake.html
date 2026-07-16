@@ -4,6 +4,8 @@
   <meta charset="UTF-8" />
   <title>SportsMistakes | Mistake Detail</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+  <link rel="preconnect" href="https://scwjlljurircxuufhqih.supabase.co" crossorigin>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
@@ -650,6 +652,20 @@
       font-size:30px;
     }
 
+    .related-art.has-image{
+      padding:0;
+      overflow:hidden;
+      background:#070b10;
+    }
+
+    .related-art img{
+      display:block;
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      object-position:center;
+    }
+
     .related-body{padding:15px}
 
     .related-topline{
@@ -796,12 +812,15 @@ async function loadMistake(){
   const content=document.getElementById("content");
   if(!id){content.innerHTML=`<div class="error">No mistake ID provided.</div>`;return}
 
-  const{data,error}=await client.from("mistakes").select("*").eq("id",id).single();
+  const{data,error}=await client
+    .from("mistakes")
+    .select("id,title,sport,league,year,category,subcategory,teams_people,summary,why_it_matters,controversy_score,source_1,source_2,views,artwork_url,ai_artwork_url")
+    .eq("id",id)
+    .single();
   if(error||!data){console.error(error);content.innerHTML=`<div class="error">Mistake not found.</div>`;return}
 
   currentMistake=data;
   const newViewCount=(data.views||0)+1;
-  await client.from("mistakes").update({views:newViewCount}).eq("id",id);
 
   const shareText=getShareText(data);
   const shareUrl=getShareUrl();
@@ -810,7 +829,7 @@ async function loadMistake(){
   const redditUrl=`https://www.reddit.com/submit?url=${encodeURIComponent(shareUrl)}&title=${encodeURIComponent(shareText)}`;
   const artworkUrl=data.artwork_url||data.ai_artwork_url||"";
   const artworkMarkup=artworkUrl
-    ? `<img class="main-artwork" src="${escapeAttr(artworkUrl)}" alt="${escapeAttr(data.title||"SportsMistakes artwork")}" loading="eager" decoding="async">`
+    ? `<img class="main-artwork" src="${escapeAttr(artworkUrl)}" alt="${escapeAttr(data.title||"SportsMistakes artwork")}" decoding="async">`
     : "SportsMistakes Artwork";
 
   content.className="detail-shell";
@@ -946,9 +965,19 @@ async function loadMistake(){
     </section>
   `;
 
-  await loadVotes();
-  await loadCourtArguments();
-  await loadRelatedMistakes();
+  await Promise.allSettled([
+    loadVotes(),
+    loadCourtArguments(),
+    loadRelatedMistakes()
+  ]);
+
+  client
+    .from("mistakes")
+    .update({views:newViewCount})
+    .eq("id",id)
+    .then(({error:viewError})=>{
+      if(viewError) console.error("View count update failed:",viewError);
+    });
 }
 
 function getShortDeck(m){
@@ -1037,15 +1066,23 @@ async function upvoteArgument(argumentId){
 async function loadRelatedMistakes(){
   const box=document.getElementById("relatedMistakes");
   if(!box||!currentMistake)return;
-  const{data,error}=await client.from("mistakes").select("*").neq("id",id).or(`sport.eq.${currentMistake.sport},category.eq.${currentMistake.category},subcategory.eq.${currentMistake.subcategory}`).order("controversy_score",{ascending:false}).limit(6);
+  const{data,error}=await client
+    .from("mistakes")
+    .select("id,title,sport,league,year,category,subcategory,controversy_score,views,artwork_url,ai_artwork_url")
+    .neq("id",id)
+    .or(`sport.eq.${currentMistake.sport},category.eq.${currentMistake.category},subcategory.eq.${currentMistake.subcategory}`)
+    .order("controversy_score",{ascending:false})
+    .limit(6);
   if(error){console.error(error);box.innerHTML="Could not load related mistakes.";return}
   if(!data||data.length===0){box.innerHTML="No related mistakes yet.";return}
   box.innerHTML=`<div class="related-grid">${data.map(m=>{
     const art=m.artwork_url||m.ai_artwork_url||"";
-    const artStyle=art?`style="background-image:url('${escapeAttr(art)}')"`:"";
     const meta=[m.year,m.league||"",m.category||""].filter(Boolean).join(" • ");
+    const relatedArt=art
+      ? `<div class="related-art has-image"><img src="${escapeAttr(art)}" alt="${escapeAttr(m.title||"Related sports mistake artwork")}" loading="lazy" decoding="async"></div>`
+      : `<div class="related-art">SportsMistakes</div>`;
     return `<div class="related-card" onclick="window.location.href='mistake.html?id=${m.id}'">
-      <div class="related-art" ${artStyle}>${art?"":"SportsMistakes"}</div>
+      ${relatedArt}
       <div class="related-body">
         <div class="related-topline">
           <span class="related-badge">${escapeHtml(m.sport||"Sport")}</span>
