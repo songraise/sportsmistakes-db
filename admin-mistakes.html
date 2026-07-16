@@ -26,6 +26,29 @@
     .mistake-title{font-size:20px;font-weight:bold;margin-bottom:6px}.meta{color:#9fb2c7;font-size:14px;margin-bottom:10px}.summary{color:#d8e4f2;line-height:1.45;font-size:15px}
     .edit-form{display:none;margin-top:15px;padding-top:15px;border-top:1px solid #203852}.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}.form-full{grid-column:1/-1}
     label{display:block;color:#d8e4f2;font-weight:bold;margin-bottom:6px;font-size:14px}textarea{width:100%;min-height:90px;resize:vertical}.form-grid input,.form-grid select{width:100%}.artwork-box{margin:14px 0;padding:14px;background:#07111f;border:1px solid #203852;border-radius:12px}.artwork-preview{width:100%;max-width:460px;max-height:300px;object-fit:cover;border-radius:10px;border:1px solid #304b69;display:block;margin-bottom:10px}.artwork-empty{color:#9fb2c7;font-style:italic;margin-bottom:8px}.artwork-status{color:#ffcc00;font-size:13px;white-space:pre-wrap;margin-top:8px}
+    .court-admin-box{margin:16px 0;padding:16px;background:#07111f;border:1px solid #304b69;border-radius:12px}
+    .court-admin-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+    .court-admin-head h3{margin:0;color:#ffcc00}
+    .court-count{color:#9fb2c7;font-size:13px;font-weight:bold}
+    .court-admin-list{display:grid;gap:12px}
+    .court-admin-empty{color:#9fb2c7;font-style:italic;padding:10px 0}
+    .court-argument-admin{background:#0d1b2e;border:1px solid #203852;border-radius:10px;padding:14px}
+    .court-argument-admin.hidden-argument{opacity:.72;border-color:#6b5b1e}
+    .court-argument-top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;margin-bottom:10px}
+    .court-side-pill,.court-status-pill{display:inline-block;padding:5px 8px;border-radius:999px;font-size:11px;font-weight:bold;text-transform:uppercase}
+    .court-side-pill.prosecution{background:#5b1717;color:#ff9b9b}
+    .court-side-pill.defense{background:#17395b;color:#9dcbff}
+    .court-status-pill.approved{background:#164e2d;color:#9cf0b8}
+    .court-status-pill.hidden{background:#5b4517;color:#ffe39a}
+    .court-argument-meta{color:#9fb2c7;font-size:12px;line-height:1.5}
+    .court-argument-text{color:#eef5ff;line-height:1.55;white-space:pre-wrap;margin:10px 0}
+    .court-edit-area{display:none;margin-top:12px}
+    .court-edit-area textarea{min-height:110px}
+    .court-edit-area input{width:100%;min-width:0}
+    .court-actions{display:flex;gap:8px;flex-wrap:wrap}
+    .court-edit-btn{background:#1e90ff}.court-hide-btn{background:#6b5b1e}.court-restore-btn{background:#166534}.court-delete-btn{background:#8b1e1e}
+    .court-save-btn{background:#166534}.court-cancel-btn{background:#444}
+    .court-section-status{color:#ffcc00;font-size:13px;white-space:pre-wrap;margin-top:8px}
     @media(max-width:760px){.form-grid{grid-template-columns:1fr}.top-nav{align-items:flex-start;flex-direction:column}.nav-links{gap:12px}.nav-links a{font-size:13px}}
   </style>
 </head>
@@ -46,7 +69,7 @@
 
 <div class="container">
   <h1>Admin Mistakes</h1>
-  <p class="sub">Search, edit, open, or delete existing SportsMistakes records. Use carefully — deleting a mistake cannot be undone.</p>
+  <p class="sub">Search and edit existing SportsMistakes records, regenerate artwork, and moderate every Sports Court argument attached to each mistake.</p>
 
   <div class="admin-box">
     <div class="search-row">
@@ -76,11 +99,44 @@
   }
 
   let mistakes=[];
+  let courtArguments=[];
+  let courtArgumentsByMistake={};
 
   async function loadMistakes(){
-    const {data,error}=await client.from("mistakes").select("*").order("title",{ascending:true});
-    if(error){console.error(error);document.getElementById("status").innerText="Could not load mistakes.";return}
-    mistakes=data||[];renderMistakes();
+    document.getElementById("status").innerText="Loading mistakes and Sports Court arguments...";
+
+    const [mistakesResult,courtResult]=await Promise.all([
+      client.from("mistakes").select("*").order("title",{ascending:true}),
+      client.from("sports_court_arguments")
+        .select("id,mistake_id,side,argument_text,author_name,status,upvotes,created_at")
+        .order("created_at",{ascending:false})
+    ]);
+
+    if(mistakesResult.error){
+      console.error(mistakesResult.error);
+      document.getElementById("status").innerText="Could not load mistakes.";
+      return;
+    }
+
+    if(courtResult.error){
+      console.error(courtResult.error);
+      document.getElementById("status").innerText="Mistakes loaded, but Sports Court arguments could not be loaded. Check admin table policies.";
+    }
+
+    mistakes=mistakesResult.data||[];
+    courtArguments=courtResult.data||[];
+    rebuildCourtArgumentMap();
+    renderMistakes();
+  }
+
+  function rebuildCourtArgumentMap(){
+    courtArgumentsByMistake={};
+    courtArguments.forEach(argument=>{
+      if(!courtArgumentsByMistake[argument.mistake_id]){
+        courtArgumentsByMistake[argument.mistake_id]=[];
+      }
+      courtArgumentsByMistake[argument.mistake_id].push(argument);
+    });
   }
 
   function renderMistakes(){
@@ -124,6 +180,7 @@
                 <div class="artwork-status" id="artwork-status-${m.id}"></div>
               </div>
             </div>
+            <div class="form-full">${renderCourtModerationSection(m.id)}</div>
             <div class="form-full"><label>Summary</label><textarea id="summary-${m.id}">${escapeHtml(m.summary||"")}</textarea></div>
             <div class="form-full"><label>Why It Matters</label><textarea id="why-${m.id}">${escapeHtml(m.why_it_matters||"")}</textarea></div>
             <div class="form-full"><label>Source 1</label><input id="source1-${m.id}" value="${escapeAttribute(m.source_1||"")}" /></div>
@@ -133,6 +190,152 @@
           <button class="cancel-btn" onclick="toggleEdit('${m.id}')">Cancel</button>
         </div>
       </div>`;
+  }
+
+  function renderCourtModerationSection(mistakeId){
+    const rows=courtArgumentsByMistake[mistakeId]||[];
+    const approvedCount=rows.filter(a=>(a.status||"approved")==="approved").length;
+    const hiddenCount=rows.filter(a=>a.status==="hidden").length;
+
+    return `
+      <div class="court-admin-box">
+        <div class="court-admin-head">
+          <h3>⚖️ Sports Court Moderation</h3>
+          <div class="court-count">${rows.length} total • ${approvedCount} public • ${hiddenCount} hidden</div>
+        </div>
+        <div class="court-admin-list">
+          ${rows.length
+            ? rows.map(renderCourtArgumentAdmin).join("")
+            : `<div class="court-admin-empty">No Sports Court arguments have been submitted for this mistake.</div>`
+          }
+        </div>
+      </div>
+    `;
+  }
+
+  function renderCourtArgumentAdmin(argument){
+    const status=argument.status||"approved";
+    const side=argument.side==="defense"?"defense":"prosecution";
+    const date=argument.created_at?new Date(argument.created_at).toLocaleString():"Unknown date";
+
+    return `
+      <div class="court-argument-admin ${status==="hidden"?"hidden-argument":""}" id="court-argument-${argument.id}">
+        <div class="court-argument-top">
+          <div>
+            <span class="court-side-pill ${side}">${side}</span>
+            <span class="court-status-pill ${escapeAttribute(status)}">${escapeHtml(status)}</span>
+          </div>
+          <div class="court-argument-meta">👍 ${Number(argument.upvotes||0)} upvotes</div>
+        </div>
+
+        <div class="court-argument-meta">
+          Submitted by: ${escapeHtml(argument.author_name||"Anonymous fan")}<br>
+          Created: ${escapeHtml(date)}
+        </div>
+
+        <div class="court-argument-text">${escapeHtml(argument.argument_text||"")}</div>
+
+        <div class="court-actions">
+          <button class="court-edit-btn" onclick="toggleCourtArgumentEdit('${argument.id}')">Edit</button>
+          ${status==="hidden"
+            ? `<button class="court-restore-btn" onclick="setCourtArgumentStatus('${argument.id}','approved')">Restore Publicly</button>`
+            : `<button class="court-hide-btn" onclick="setCourtArgumentStatus('${argument.id}','hidden')">Hide from Public</button>`
+          }
+          <button class="court-delete-btn" onclick="deleteCourtArgument('${argument.id}')">Delete Permanently</button>
+        </div>
+
+        <div class="court-edit-area" id="court-edit-${argument.id}">
+          <label>Argument</label>
+          <textarea id="court-text-${argument.id}">${escapeHtml(argument.argument_text||"")}</textarea>
+
+          <label>Name or nickname</label>
+          <input id="court-name-${argument.id}" value="${escapeAttribute(argument.author_name||"Anonymous fan")}" />
+
+          <button class="court-save-btn" onclick="saveCourtArgument('${argument.id}')">Save Argument</button>
+          <button class="court-cancel-btn" onclick="toggleCourtArgumentEdit('${argument.id}')">Cancel</button>
+        </div>
+      </div>
+    `;
+  }
+
+  function toggleCourtArgumentEdit(argumentId){
+    const box=document.getElementById("court-edit-"+argumentId);
+    if(!box)return;
+    box.style.display=box.style.display==="block"?"none":"block";
+  }
+
+  async function saveCourtArgument(argumentId){
+    const argument=courtArguments.find(a=>a.id===argumentId);
+    if(!argument)return alert("Argument not found.");
+
+    const argumentText=document.getElementById("court-text-"+argumentId).value.trim();
+    const authorName=document.getElementById("court-name-"+argumentId).value.trim()||"Anonymous fan";
+
+    if(argumentText.length<20)return alert("The argument must contain at least 20 characters.");
+    if(argumentText.length>800)return alert("The argument must remain under 800 characters.");
+    if(authorName.length>60)return alert("The name or nickname must remain under 60 characters.");
+    if(!confirm("Save these changes to the Sports Court argument?"))return;
+
+    const {error}=await client.from("sports_court_arguments")
+      .update({argument_text:argumentText,author_name:authorName})
+      .eq("id",argumentId);
+
+    if(error){
+      console.error(error);
+      alert("The argument could not be updated. Check the admin policies for sports_court_arguments.");
+      return;
+    }
+
+    argument.argument_text=argumentText;
+    argument.author_name=authorName;
+    rebuildCourtArgumentMap();
+    renderMistakes();
+    alert("Sports Court argument updated.");
+  }
+
+  async function setCourtArgumentStatus(argumentId,newStatus){
+    const argument=courtArguments.find(a=>a.id===argumentId);
+    if(!argument)return alert("Argument not found.");
+
+    const promptText=newStatus==="hidden"
+      ?"Hide this argument from the public Sports Court?"
+      :"Restore this argument to the public Sports Court?";
+    if(!confirm(promptText))return;
+
+    const {error}=await client.from("sports_court_arguments")
+      .update({status:newStatus})
+      .eq("id",argumentId);
+
+    if(error){
+      console.error(error);
+      alert("The argument status could not be changed. Check the admin policies for sports_court_arguments.");
+      return;
+    }
+
+    argument.status=newStatus;
+    rebuildCourtArgumentMap();
+    renderMistakes();
+    alert(newStatus==="hidden"?"Argument hidden from the public site.":"Argument restored to the public site.");
+  }
+
+  async function deleteCourtArgument(argumentId){
+    const argument=courtArguments.find(a=>a.id===argumentId);
+    if(!argument)return alert("Argument not found.");
+
+    if(!confirm("Permanently delete this Sports Court argument?\n\n"+(argument.argument_text||"")+"\n\nThis cannot be undone."))return;
+
+    const {error}=await client.from("sports_court_arguments").delete().eq("id",argumentId);
+
+    if(error){
+      console.error(error);
+      alert("The argument could not be deleted. Check the admin policies for sports_court_arguments.");
+      return;
+    }
+
+    courtArguments=courtArguments.filter(a=>a.id!==argumentId);
+    rebuildCourtArgumentMap();
+    renderMistakes();
+    alert("Sports Court argument permanently deleted.");
   }
 
   function toggleEdit(id){const form=document.getElementById("edit-"+id);if(!form)return;form.style.display=form.style.display==="block"?"none":"block";}
