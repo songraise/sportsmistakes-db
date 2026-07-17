@@ -1152,15 +1152,73 @@ async function submitCourtArgument(){
 }
 
 async function upvoteArgument(argumentId){
-  const key="sports_court_upvote_"+argumentId;
-  if(localStorage.getItem(key)){alert("You already upvoted this argument.");return}
-  const{data,error}=await client.from("sports_court_arguments").select("upvotes").eq("id",argumentId).single();
-  if(error||!data){console.error(error);alert("Could not upvote.");return}
-  const{error:updateError}=await client.from("sports_court_arguments").update({upvotes:(data.upvotes||0)+1}).eq("id",argumentId);
-  if(updateError){console.error(updateError);alert("Could not upvote.");return}
-  localStorage.setItem(key,"true");
-  await loadCourtArguments();
-}
+  const localVoteKey="sports_court_upvote_"+argumentId;
+
+  if(localStorage.getItem(localVoteKey)){
+    alert("You already upvoted this argument.");
+    return;
+  }
+
+  let voterId=localStorage.getItem("sportsmistakes_court_voter_id");
+
+  if(!voterId){
+    voterId=crypto.randomUUID();
+    localStorage.setItem("sportsmistakes_court_voter_id",voterId);
+  }
+
+  try{
+    const response=await fetch(
+      `${SUPABASE_URL}/functions/v1/upvote-court-argument`,
+      {
+        method:"POST",
+        headers:{
+          "Content-Type":"application/json",
+          "apikey":SUPABASE_ANON_KEY,
+          "Authorization":`Bearer ${SUPABASE_ANON_KEY}`
+        },
+        body:JSON.stringify({
+          argument_id:argumentId,
+          voter_id:voterId
+        })
+      }
+    );
+
+    const raw=await response.text();
+    let result={};
+
+    try{
+      result=raw?JSON.parse(raw):{};
+    }catch{
+      result={
+        success:false,
+        error:"The upvote service returned an invalid response."
+      };
+    }
+
+    if(response.status===409||result.code==="already_upvoted"){
+      localStorage.setItem(localVoteKey,"true");
+      alert("You already upvoted this argument.");
+      return;
+    }
+
+    if(!response.ok||!result.success){
+      console.error("Sports Court upvote failed:",result);
+      alert(
+        result.message||
+        result.error||
+        "Could not upvote."
+      );
+      return;
+    }
+
+    localStorage.setItem(localVoteKey,"true");
+    await loadCourtArguments();
+
+  }catch(error){
+    console.error("Sports Court upvote request failed:",error);
+    alert("The upvote service could not be reached.");
+  }
+
 
 async function reportCourtArgument(argumentId){
   const reportKey="sports_court_report_"+argumentId;
