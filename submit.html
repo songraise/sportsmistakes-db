@@ -5,6 +5,7 @@
   <title>Submit a Mistake | SportsMistakes</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 
   <style>
     :root{
@@ -51,7 +52,7 @@
     button:hover{transform:translateY(-1px);filter:brightness(1.06)}.ai-button{margin-top:0;background:#202a36;box-shadow:none;border:1px solid rgba(255,255,255,.15)}
     .completeness-row{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:10px;font-weight:900;color:#fff}.completeness-bar{height:12px;background:#1d2732;border-radius:999px;overflow:hidden}.completeness-fill{height:100%;width:0;background:linear-gradient(90deg,var(--red-dark),var(--red));transition:width .2s ease}.completeness-tip{margin-top:10px;color:#cbd5e1;font-size:13px;line-height:1.45}
     .checkbox-row{display:flex;gap:10px;align-items:flex-start;margin-top:20px;color:#d7dee8}.checkbox-row input{width:auto;margin-top:4px;accent-color:var(--red)}
-    .submit-button{width:100%;font-size:18px;padding:17px}.message{margin-top:18px;color:#fff;white-space:pre-wrap;font-weight:900;padding:0}.error{color:#ff8f8f}.warning{color:#ffb4b4;font-weight:bold}
+    .turnstile-wrap{margin-top:24px;padding:18px;border:1px solid rgba(255,255,255,.13);border-radius:12px;background:rgba(255,255,255,.035);display:flex;flex-direction:column;align-items:center;gap:10px}.turnstile-label{font-size:13px;font-weight:900;color:#cbd5e1;text-align:center}.submit-button{width:100%;font-size:18px;padding:17px}.message{margin-top:18px;color:#fff;white-space:pre-wrap;font-weight:900;padding:0}.error{color:#ff8f8f}.warning{color:#ffb4b4;font-weight:bold}
     footer{margin-top:30px;padding:24px 0 12px;display:flex;justify-content:space-between;gap:20px;color:#cbd5e1;font-size:14px;border-top:1px solid rgba(255,255,255,.12)}footer a{color:#cbd5e1;text-decoration:none;margin-right:22px}
     @media(max-width:800px){.submit-hero h1{font-size:39px}.rules{grid-template-columns:1fr}.rules .warning{grid-column:auto}.process-strip{grid-template-columns:1fr}.form-grid{grid-template-columns:1fr}.card{padding:24px}.top-nav{align-items:flex-start;flex-direction:column}.nav-links{gap:14px}.page-shell{padding:24px 14px 50px}footer{flex-direction:column}}
   </style>
@@ -257,6 +258,16 @@
     <div style="position:absolute;left:-10000px;top:auto;width:1px;height:1px;overflow:hidden;" aria-hidden="true">
       <label for="website">Leave this field empty</label>
       <input id="website" name="website" type="text" tabindex="-1" autocomplete="off" />
+    </div>
+
+    <div class="turnstile-wrap">
+      <div class="turnstile-label">Security verification</div>
+      <div
+        class="cf-turnstile"
+        data-sitekey="0x4AAAAAAD52oeyshClMmL6j"
+        data-theme="dark"
+        data-action="submit-mistake"
+      ></div>
     </div>
 
     <button id="submitButton" class="submit-button" onclick="submitMistake()">Submit Sports Mistake</button>
@@ -579,6 +590,7 @@
     const source_url = document.getElementById("source_url").value.trim();
     const completeness_score = calculateCompleteness();
     const rulesCheck = document.getElementById("rulesCheck").checked;
+    const turnstileToken = window.turnstile ? window.turnstile.getResponse() : "";
 
     if (!title || !description || !source_url) {
       message.innerText = "Please add a title, description, and source URL.";
@@ -602,6 +614,11 @@
 
     if (!rulesCheck) {
       message.innerText = "Please confirm that the submission follows the rules.";
+      return;
+    }
+
+    if (!turnstileToken) {
+      message.innerText = "Please complete the security verification before submitting.";
       return;
     }
 
@@ -665,6 +682,7 @@
           completeness_score,
           submitter_name,
           submitter_email,
+          turnstile_token: turnstileToken,
           website: document.getElementById("website").value
         })
       });
@@ -673,13 +691,16 @@
 
       if (!response.ok || !result.success) {
         message.innerText = result.error || "Submission failed. Please try again.";
+        if (window.turnstile) window.turnstile.reset();
         return;
       }
 
       message.innerText = result.message || "Submission received. Thank you! It will be reviewed before publishing.";
+      if (window.turnstile) window.turnstile.reset();
     } catch (error) {
       console.error(error);
       message.innerText = "The safety review could not be completed. Please try again.";
+      if (window.turnstile) window.turnstile.reset();
       return;
     } finally {
       submitButton.disabled = false;
