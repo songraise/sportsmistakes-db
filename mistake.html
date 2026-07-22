@@ -4,6 +4,17 @@
   <meta charset="UTF-8" />
   <title>SportsMistakes | Mistake Detail</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Explore this sports mistake, vote on whether it was truly a mistake, and join the Sports Court debate." />
+  <meta name="robots" content="index,follow,max-image-preview:large" />
+  <link id="canonicalLink" rel="canonical" href="https://sportsmistakes.com/mistake.html" />
+  <meta id="ogTitle" property="og:title" content="SportsMistakes | Mistake Detail" />
+  <meta id="ogDescription" property="og:description" content="Explore this sports mistake and join the debate on SportsMistakes." />
+  <meta id="ogUrl" property="og:url" content="https://sportsmistakes.com/mistake.html" />
+  <meta property="og:type" content="article" />
+  <meta property="og:site_name" content="SportsMistakes" />
+  <meta id="twitterTitle" name="twitter:title" content="SportsMistakes | Mistake Detail" />
+  <meta id="twitterDescription" name="twitter:description" content="Explore this sports mistake and join the debate on SportsMistakes." />
+  <meta name="twitter:card" content="summary_large_image" />
   <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
   <link rel="preconnect" href="https://scwjlljurircxuufhqih.supabase.co" crossorigin>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -816,6 +827,57 @@ const params=new URLSearchParams(window.location.search);
 const id=params.get("id");
 let currentMistake=null;
 
+
+function setMetaContent(selector,value){
+  const element=document.querySelector(selector);
+  if(element) element.setAttribute("content",value);
+}
+
+function updatePageSeo(mistake){
+  const canonicalUrl=`https://sportsmistakes.com/mistake.html?id=${encodeURIComponent(mistake.id)}`;
+  const title=`${mistake.title||"Sports Mistake"} | SportsMistakes`;
+  const description=(mistake.summary||`Explore ${mistake.title||"this sports mistake"} and decide whether it was truly a mistake.`)
+    .replace(/\s+/g," ")
+    .trim()
+    .slice(0,160);
+
+  document.title=title;
+
+  const canonical=document.getElementById("canonicalLink");
+  if(canonical) canonical.setAttribute("href",canonicalUrl);
+
+  const descriptionTag=document.querySelector('meta[name="description"]');
+  if(descriptionTag) descriptionTag.setAttribute("content",description);
+
+  setMetaContent('#ogTitle',title);
+  setMetaContent('#ogDescription',description);
+  setMetaContent('#ogUrl',canonicalUrl);
+  setMetaContent('#twitterTitle',title);
+  setMetaContent('#twitterDescription',description);
+
+  const existingSchema=document.getElementById("mistakeStructuredData");
+  if(existingSchema) existingSchema.remove();
+
+  const schema=document.createElement("script");
+  schema.id="mistakeStructuredData";
+  schema.type="application/ld+json";
+  schema.textContent=JSON.stringify({
+    "@context":"https://schema.org",
+    "@type":"Article",
+    "headline":mistake.title||"Sports Mistake",
+    "description":description,
+    "mainEntityOfPage":canonicalUrl,
+    "url":canonicalUrl,
+    "publisher":{
+      "@type":"Organization",
+      "name":"SportsMistakes",
+      "url":"https://sportsmistakes.com/"
+    },
+    ...(mistake.year?{"datePublished":`${mistake.year}-01-01`}:{})
+  });
+  document.head.appendChild(schema);
+}
+
 async function loadMistake(){
   const content=document.getElementById("content");
   if(!id){content.innerHTML=`<div class="error">No mistake ID provided.</div>`;return}
@@ -836,6 +898,7 @@ async function loadMistake(){
   }
 
   currentMistake=data;
+  updatePageSeo(data);
   const newViewCount=(data.views||0)+1;
 
   const shareText=getShareText(data);
