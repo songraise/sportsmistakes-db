@@ -7,11 +7,22 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 :root{--bg:#07111f;--panel:#0d1b2e;--line:#203852;--blue:#1e90ff;--yellow:#ffcc00;--muted:#b7c7d9;--green:#166534;--red:#8b1e1e}
-*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:var(--bg);color:white}.top-nav{display:flex;justify-content:space-between;align-items:center;background:var(--panel);border-bottom:1px solid var(--line);padding:14px 20px}.brand{font-size:20px;font-weight:bold}.brand span{color:var(--yellow)}.links{display:flex;gap:15px;align-items:center;flex-wrap:wrap}.links a{color:#74b9ff;text-decoration:none;font-weight:bold}.logout{background:#444;color:white;border:0;border-radius:8px;padding:9px 12px;font-weight:bold;cursor:pointer}.wrap{max-width:1280px;margin:32px auto 70px;padding:0 20px}.intro{color:var(--muted);line-height:1.55}.toolbar{display:grid;grid-template-columns:1fr auto auto;gap:10px;margin:22px 0}.toolbar input,.toolbar select{width:100%;background:var(--panel);color:white;border:1px solid var(--line);border-radius:10px;padding:12px}.btn{border:0;border-radius:9px;padding:11px 14px;font-weight:bold;color:white;background:var(--blue);cursor:pointer}.btn:disabled{opacity:.5;cursor:not-allowed}.btn.green{background:var(--green)}.btn.red{background:var(--red)}.status{white-space:pre-wrap;color:var(--yellow);margin:12px 0}.layout{display:grid;grid-template-columns:340px 1fr;gap:18px}.list,.studio{background:var(--panel);border:1px solid var(--line);border-radius:16px}.list{max-height:900px;overflow:auto}.item{padding:14px;border-bottom:1px solid var(--line);cursor:pointer}.item:hover,.item.active{background:#132843}.item-title{font-weight:bold}.item-meta{color:#9fb2c7;font-size:12px;margin-top:5px}.empty{padding:28px;color:var(--muted)}.studio{padding:20px}.hero{display:grid;grid-template-columns:130px 1fr;gap:16px;align-items:start}.art{width:130px;height:130px;border-radius:12px;object-fit:cover;background:#07111f;border:1px solid var(--line)}h1{margin:0 0 8px;font-size:34px}h2{margin:0 0 8px}.meta{color:#9fb2c7}.summary{color:var(--muted);line-height:1.55}.actions{display:flex;gap:10px;flex-wrap:wrap;margin:18px 0}.tabs{display:flex;gap:8px;flex-wrap:wrap;border-bottom:1px solid var(--line);padding-bottom:10px}.tab{background:#132843;border:1px solid var(--line);color:white;border-radius:8px;padding:9px 11px;cursor:pointer}.tab.active{background:var(--blue)}.asset{display:none;margin-top:16px}.asset.active{display:block}.field{margin:0 0 15px}.field label{display:flex;justify-content:space-between;font-weight:bold;margin-bottom:7px}.field textarea,.field input{width:100%;background:#07111f;color:white;border:1px solid var(--line);border-radius:10px;padding:12px;line-height:1.5}.field textarea{min-height:140px;resize:vertical}.copy{font-size:12px;padding:6px 9px}.badge{display:inline-block;padding:5px 8px;border-radius:999px;background:#132843;color:#9fd3ff;font-size:12px}.counter{color:#9fb2c7;font-weight:normal;font-size:12px}.hidden{display:none}@media(max-width:850px){.layout{grid-template-columns:1fr}.list{max-height:330px}.toolbar{grid-template-columns:1fr}.hero{grid-template-columns:1fr}.art{width:100%;height:220px}}
+*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:var(--bg);color:white}.top-nav{display:flex;justify-content:space-between;align-items:center;background:var(--panel);border-bottom:1px solid var(--line);padding:14px 20px}.brand{font-size:20px;font-weight:bold}.brand span{color:var(--yellow)}.links{display:flex;gap:15px;align-items:center;flex-wrap:wrap}.links a{color:#74b9ff;text-decoration:none;font-weight:bold}.logout{background:#444;color:white;border:0;border-radius:8px;padding:9px 12px;font-weight:bold;cursor:pointer}.wrap{max-width:1280px;margin:32px auto 70px;padding:0 20px}.intro{color:var(--muted);line-height:1.55}.toolbar{display:grid;grid-template-columns:1fr auto auto;gap:10px;margin:22px 0}.toolbar input,.toolbar select{width:100%;background:var(--panel);color:white;border:1px solid var(--line);border-radius:10px;padding:12px}.btn{border:0;border-radius:9px;padding:11px 14px;font-weight:bold;color:white;background:var(--blue);cursor:pointer}.btn:disabled{opacity:.5;cursor:not-allowed}.btn.green{background:var(--green)}.btn.red{background:var(--red)}.status{white-space:pre-wrap;color:var(--yellow);margin:12px 0}.layout{display:grid;grid-template-columns:340px 1fr;gap:18px}.list,.studio{background:var(--panel);border:1px solid var(--line);border-radius:16px}.list{max-height:900px;overflow:auto}.item{padding:14px;border-bottom:1px solid var(--line);cursor:pointer}.item:hover,.item.active{background:#132843}.item-title{font-weight:bold}.item-meta{color:#9fb2c7;font-size:12px;margin-top:5px}.empty{padding:28px;color:var(--muted)}.studio{padding:20px}.hero{display:grid;grid-template-columns:130px 1fr;gap:16px;align-items:start}.art{width:130px;height:130px;border-radius:12px;object-fit:cover;background:#07111f;border:1px solid var(--line)}h1{margin:0 0 8px;font-size:34px}h2{margin:0 0 8px}.meta{color:#9fb2c7}.summary{color:var(--muted);line-height:1.55}.actions{display:flex;gap:10px;flex-wrap:wrap;margin:18px 0}.tabs{display:flex;gap:8px;flex-wrap:wrap;border-bottom:1px solid var(--line);padding-bottom:10px}.tab{background:#132843;border:1px solid var(--line);color:white;border-radius:8px;padding:9px 11px;cursor:pointer}.tab.active{background:var(--blue)}.asset{display:none;margin-top:16px}.asset.active{display:block}.field{margin:0 0 15px}.field label{display:flex;justify-content:space-between;font-weight:bold;margin-bottom:7px}.field textarea,.field input{width:100%;background:#07111f;color:white;border:1px solid var(--line);border-radius:10px;padding:12px;line-height:1.5}.field textarea{min-height:140px;resize:vertical}.copy{font-size:12px;padding:6px 9px}.badge{display:inline-block;padding:5px 8px;border-radius:999px;background:#132843;color:#9fd3ff;font-size:12px}.counter{color:#9fb2c7;font-weight:normal;font-size:12px}.hidden{display:none}
+.video-panel{display:grid;gap:16px}
+.video-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.video-card{background:#07111f;border:1px solid var(--line);border-radius:12px;padding:16px}
+.video-card h3{margin:0 0 8px}
+.video-card p{margin:0 0 14px;color:var(--muted);line-height:1.5}
+.video-preview{width:100%;max-width:360px;aspect-ratio:9/16;background:#000;border:1px solid var(--line);border-radius:12px}
+.audio-preview{width:100%;margin-top:10px}
+.video-actions{display:flex;gap:10px;flex-wrap:wrap}
+.video-status{display:inline-block;padding:6px 9px;border-radius:999px;background:#132843;color:#9fd3ff;font-size:12px;margin-bottom:10px}
+.download-link{display:inline-block;text-decoration:none}
+@media(max-width:850px){.video-grid{grid-template-columns:1fr}}@media(max-width:850px){.layout{grid-template-columns:1fr}.list{max-height:330px}.toolbar{grid-template-columns:1fr}.hero{grid-template-columns:1fr}.art{width:100%;height:220px}}
 </style>
 </head>
 <body>
-<nav class="top-nav"><div class="brand" onclick="window.location.href='admin-dashboard.html'" style="cursor:pointer">Sports<span>Mistakes</span> Admin</div><div class="links"><a href="admin-dashboard.html">Dashboard</a><a href="index.html">Public Site</a><a href="admin-submissions.html">Submissions</a><a href="admin-ai-review.html">AI Review</a><a href="admin-bulk-artwork.html">Bulk Artwork</a><a href="admin-content-studio.html">Content Studio</a><a href="admin-reports.html">Reports</a><a href="admin-mistakes.html">Mistakes</a><button class="logout" onclick="logout()">Log Out</button></div></nav>
+<nav class="top-nav"><div class="brand">Sports<span>Mistakes</span> Content Studio</div><div class="links"><a href="admin-dashboard.html">Dashboard</a><a href="admin-ai-review.html">AI Review</a><a href="admin-bulk-artwork.html">Artwork</a><a href="index.html">Public Site</a><button class="logout" onclick="logout()">Log Out</button></div></nav>
 <div class="wrap">
 <h1>Content AI Studio</h1>
 <p class="intro">Select a published mistake, generate a complete marketing package, review every item, copy it to the appropriate platform, and mark the package approved or published.</p>
@@ -24,12 +35,12 @@
 </div>
 <script>
 const SUPABASE_URL="https://scwjlljurircxuufhqih.supabase.co";
-const SUPABASE_ANON_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNjd2psbGp1cmlyY3h1dWZocWloIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyNjUyMjcsImV4cCI6MjA5Njg0MTIyN30.WF0HRRb9mAkuOySjabTd8CZXVZRqF0MhMl0N2mafnns";
+const SUPABASE_ANON_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJIUzI1NiIsInJlZiI6InNjd2psbGp1cmlyY3h1dWZocWloIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyNjUyMjcsImV4cCI6MjA5Njg0MTIyN30.WF0HRRb9mAkuOySjabTd8CZXVZRqF0MhMl0N2mafnns";
 const ADMIN_EMAIL="jason.susnick@gmail.com";
 const client=supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
 let mistakes=[], assetsByMistake={}, current=null;
 
-async function requireAdmin(){const {data,error}=await client.auth.getSession();if(error)console.error(error);const s=data?.session;if(!s){location.href="admin-login.html?redirect=admin-content-studio.html";return false}const email=(s.user?.email||"").toLowerCase();if(email!==ADMIN_EMAIL.toLowerCase()){document.body.innerHTML=`<div style="max-width:600px;margin:80px auto;background:#0d1b2e;color:white;border:1px solid #203852;border-radius:16px;padding:24px;font-family:Arial,sans-serif;"><h1>Admin Access Denied</h1><p>You are signed in as <strong>${esc(email||"unknown")}</strong>.</p><p>This Content Studio is restricted.</p><a href="admin-login.html" style="color:#74b9ff;">Log in as admin</a></div>`;return false}return true}
+async function requireAdmin(){const {data}=await client.auth.getSession();const s=data?.session;if(!s){location.href="admin-login.html?redirect=admin-content-studio.html";return false}if((s.user?.email||"").toLowerCase()!==ADMIN_EMAIL.toLowerCase()){document.body.innerHTML='<div style="padding:50px;color:white">Admin access denied.</div>';return false}return true}
 async function logout(){await client.auth.signOut();location.href="admin-login.html"}
 function esc(v){return String(v??"").replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]))}
 function pick(o,names){for(const n of names)if(o&&o[n]!=null&&o[n]!=="")return o[n];return ""}
@@ -59,15 +70,55 @@ function renderList(){
 function selectMistake(id){current=mistakes.find(m=>m.id===id);renderList();renderStudio()}
 function renderStudio(){
  const m=current,a=assetsByMistake[m.id]||{};const art=artworkOf(m);const fields={
- short_script:a.short_script||'',youtube_caption:a.youtube_caption||'',tiktok_caption:a.tiktok_caption||'',instagram_caption:a.instagram_caption||'',x_post:a.x_post||'',reddit_title:a.reddit_title||'',reddit_body:a.reddit_body||'',newsletter_subject:a.newsletter_subject||'',newsletter_body:a.newsletter_body||''};
+ short_script:a.short_script||'',youtube_caption:a.youtube_caption||'',tiktok_caption:a.tiktok_caption||'',instagram_caption:a.instagram_caption||'',x_post:a.x_post||'',reddit_title:a.reddit_title||'',reddit_body:a.reddit_body||'',newsletter_subject:a.newsletter_subject||'',newsletter_body:a.newsletter_body||'',
+ narration_url:a.narration_url||a.video_narration_url||'',
+ video_url:a.video_url||a.short_video_url||'',
+ video_status:a.video_status||'not generated'};
  document.getElementById('studio').innerHTML=`
  <div class="hero">${art?`<img class="art" src="${esc(art)}" alt="">`:'<div class="art"></div>'}<div><h2>${esc(titleOf(m))}</h2><div class="meta">${esc(sportOf(m))} ${esc(yearOf(m))} · <span class="badge">${esc(a.status||'not generated')}</span></div><p class="summary">${esc(pick(m,['summary','description','story','why_it_matters']))}</p></div></div>
  <div class="actions"><button class="btn" id="generateBtn" onclick="generatePackage()">${a.id?'Regenerate Package':'Generate Content Package'}</button>${a.id?'<button class="btn green" onclick="saveEdits()">Save Edits</button><button class="btn green" onclick="setStatus(\'approved\')">Approve Package</button><button class="btn red" onclick="setStatus(\'published\')">Mark Published</button>':''}</div>
- <div class="tabs">${[['short','30-sec Short'],['social','Social'],['reddit','Reddit'],['newsletter','Newsletter']].map((x,i)=>`<button class="tab ${i===0?'active':''}" onclick="showTab('${x[0]}',this)">${x[1]}</button>`).join('')}</div>
+ <div class="tabs">${[['short','30-sec Short'],['social','Social'],['reddit','Reddit'],['newsletter','Newsletter'],['video','VIDEO']].map((x,i)=>`<button class="tab ${i===0?'active':''}" onclick="showTab('${x[0]}',this)">${x[1]}</button>`).join('')}</div>
  <div class="asset active" id="tab-short">${area('short_script','30-second documentary script',fields.short_script)}</div>
  <div class="asset" id="tab-social">${area('youtube_caption','YouTube Shorts caption',fields.youtube_caption)}${area('tiktok_caption','TikTok caption',fields.tiktok_caption)}${area('instagram_caption','Instagram caption',fields.instagram_caption)}${area('x_post','X post',fields.x_post,280)}</div>
  <div class="asset" id="tab-reddit">${input('reddit_title','Reddit title',fields.reddit_title)}${area('reddit_body','Reddit discussion body',fields.reddit_body)}</div>
- <div class="asset" id="tab-newsletter">${input('newsletter_subject','Newsletter subject',fields.newsletter_subject)}${area('newsletter_body','Newsletter feature',fields.newsletter_body)}</div>`;
+ <div class="asset" id="tab-newsletter">${input('newsletter_subject','Newsletter subject',fields.newsletter_subject)}${area('newsletter_body','Newsletter feature',fields.newsletter_body)}</div>
+ <div class="asset" id="tab-video">
+   <div class="video-panel">
+     <div>
+       <span class="video-status">Video status: ${esc(fields.video_status)}</span>
+       <h3 style="margin:0 0 8px">TikTok / YouTube Short</h3>
+       <p class="summary">Create narration from the approved 30-second script, assemble a vertical 1080 × 1920 video using the SportsMistakes artwork, preview it, and download the finished MP4.</p>
+     </div>
+     <div class="video-grid">
+       <div class="video-card">
+         <h3>1. Narration</h3>
+         <p>Generate a documentary-style voiceover from the script in the 30-sec Short tab.</p>
+         <div class="video-actions">
+           <button class="btn" id="narrationBtn" onclick="generateNarration()">${fields.narration_url?'Regenerate Narration':'Generate Narration'}</button>
+         </div>
+         ${fields.narration_url?`<audio class="audio-preview" controls src="${esc(fields.narration_url)}"></audio>`:'<div class="meta" style="margin-top:12px">No narration generated yet.</div>'}
+       </div>
+       <div class="video-card">
+         <h3>2. Assemble Video</h3>
+         <p>Combine the artwork, narration, animated zoom, title card, subtitles, and SportsMistakes ending card.</p>
+         <div class="video-actions">
+           <button class="btn green" id="videoBtn" onclick="assembleVideo()" ${fields.narration_url?'':'disabled'}>${fields.video_url?'Rebuild Video':'Assemble Video'}</button>
+         </div>
+         ${fields.narration_url?'':'<div class="meta" style="margin-top:12px">Generate narration first.</div>'}
+       </div>
+     </div>
+     <div class="video-card">
+       <h3>3. Preview and Download</h3>
+       ${fields.video_url?`
+         <video class="video-preview" controls playsinline src="${esc(fields.video_url)}"></video>
+         <div class="video-actions" style="margin-top:14px">
+           <a class="btn green download-link" href="${esc(fields.video_url)}" download>Download Finished MP4</a>
+           <button class="btn" onclick="copyVideoUrl()">Copy Video URL</button>
+         </div>`:
+         '<div class="meta">The finished vertical video will appear here after assembly.</div>'}
+     </div>
+   </div>
+ </div>`;
 }
 function area(id,label,value,max=''){return `<div class="field"><label>${label}<span><span class="counter" id="count-${id}"></span> <button class="btn copy" onclick="copyField('${id}')">Copy</button></span></label><textarea id="${id}" ${max?`maxlength="${max}"`:''} oninput="updateCount('${id}')">${esc(value)}</textarea></div>`}
 function input(id,label,value){return `<div class="field"><label>${label}<button class="btn copy" onclick="copyField('${id}')">Copy</button></label><input id="${id}" value="${esc(value)}"></div>`}
@@ -76,9 +127,61 @@ function updateCount(id){const el=document.getElementById(id),out=document.getEl
 async function copyField(id){const el=document.getElementById(id);await navigator.clipboard.writeText(el.value);document.getElementById('status').textContent='Copied to clipboard.'}
 function collect(){return {short_script:val('short_script'),youtube_caption:val('youtube_caption'),tiktok_caption:val('tiktok_caption'),instagram_caption:val('instagram_caption'),x_post:val('x_post'),reddit_title:val('reddit_title'),reddit_body:val('reddit_body'),newsletter_subject:val('newsletter_subject'),newsletter_body:val('newsletter_body')}}
 function val(id){return document.getElementById(id)?.value||''}
-async function generatePackage(){const b=document.getElementById('generateBtn');b.disabled=true;document.getElementById('status').textContent='Generating the complete content package…';try{const {data,error}=await client.functions.invoke('generate-content-assets',{body:{mistake_id:current.id}});if(error||data?.error||!data?.asset){console.error('Content generation failed',error||data);document.getElementById('status').textContent='Generation failed: '+(data?.error||error?.message||'The Edge Function returned no content asset.');return}assetsByMistake[current.id]=data.asset;document.getElementById('status').textContent='Content package generated. Review and edit before approving.';renderStudio();renderList()}catch(err){console.error(err);document.getElementById('status').textContent='Generation failed: '+String(err?.message||err)}finally{b.disabled=false}}
+async function generatePackage(){const b=document.getElementById('generateBtn');b.disabled=true;document.getElementById('status').textContent='Generating the complete content package…';const {data,error}=await client.functions.invoke('generate-content-assets',{body:{mistake_id:current.id}});b.disabled=false;if(error){document.getElementById('status').textContent='Generation failed: '+error.message;return}assetsByMistake[current.id]=data.asset;document.getElementById('status').textContent='Content package generated. Review and edit before approving.';renderStudio();renderList()}
 async function saveEdits(showMessage=true){const a=assetsByMistake[current.id];if(!a){document.getElementById('status').textContent='Generate a package before saving.';return false}const asset={...collect(),short_title:a.short_title||'',hook:a.hook||'',hashtags:a.hashtags||[]};const {data,error}=await client.functions.invoke('generate-content-assets',{body:{action:'save',mistake_id:current.id,asset}});if(error||data?.error){document.getElementById('status').textContent='Save failed: '+(data?.error||error?.message||'Unknown error');return false}assetsByMistake[current.id]=data.asset;if(showMessage)document.getElementById('status').textContent='Edits saved.';return true}
 async function setStatus(status){const saved=await saveEdits(false);if(!saved)return;const asset={...collect(),short_title:assetsByMistake[current.id]?.short_title||'',hook:assetsByMistake[current.id]?.hook||'',hashtags:assetsByMistake[current.id]?.hashtags||[]};const {data,error}=await client.functions.invoke('generate-content-assets',{body:{action:'status',mistake_id:current.id,status,asset}});if(error||data?.error){document.getElementById('status').textContent='Status update failed: '+(data?.error||error?.message||'Unknown error');return}assetsByMistake[current.id]=data.asset;document.getElementById('status').textContent='Package marked '+status+'.';renderStudio();renderList()}
+
+async function generateNarration(){
+ const a=assetsByMistake[current.id];
+ if(!a){document.getElementById('status').textContent='Generate the content package first.';return}
+ const script=val('short_script')||a.short_script||'';
+ if(!script.trim()){document.getElementById('status').textContent='The 30-second script is empty.';return}
+ const b=document.getElementById('narrationBtn');
+ b.disabled=true;
+ document.getElementById('status').textContent='Generating narration…';
+ const {data,error}=await client.functions.invoke('generate-video-assets',{
+  body:{action:'narration',mistake_id:current.id,script}
+ });
+ b.disabled=false;
+ if(error||data?.error){
+  document.getElementById('status').textContent='Narration failed: '+(data?.error||error?.message||'Unknown error');
+  return;
+ }
+ assetsByMistake[current.id]=data.asset||{...a,narration_url:data.narration_url,video_status:'narration_ready'};
+ document.getElementById('status').textContent='Narration generated. You can now assemble the video.';
+ renderStudio();
+}
+
+async function assembleVideo(){
+ const a=assetsByMistake[current.id];
+ if(!a?.narration_url&&!a?.video_narration_url){
+  document.getElementById('status').textContent='Generate narration first.';
+  return;
+ }
+ const b=document.getElementById('videoBtn');
+ b.disabled=true;
+ document.getElementById('status').textContent='Assembling the vertical video. This may take a few minutes…';
+ const {data,error}=await client.functions.invoke('generate-video-assets',{
+  body:{action:'render',mistake_id:current.id}
+ });
+ b.disabled=false;
+ if(error||data?.error){
+  document.getElementById('status').textContent='Video assembly failed: '+(data?.error||error?.message||'Unknown error');
+  return;
+ }
+ assetsByMistake[current.id]=data.asset||{...a,video_url:data.video_url,video_status:'ready'};
+ document.getElementById('status').textContent='Video complete. Preview it and download the MP4.';
+ renderStudio();
+}
+
+async function copyVideoUrl(){
+ const a=assetsByMistake[current.id]||{};
+ const url=a.video_url||a.short_video_url||'';
+ if(!url){document.getElementById('status').textContent='No video URL is available.';return}
+ await navigator.clipboard.writeText(url);
+ document.getElementById('status').textContent='Video URL copied.';
+}
+
 document.getElementById('search').addEventListener('input',renderList);document.getElementById('filter').addEventListener('change',renderList);
 requireAdmin().then(ok=>{if(ok)loadMistakes()});
 </script>
