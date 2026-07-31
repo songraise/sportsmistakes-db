@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Admin Dashboard | SportsMistakes</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    body{margin:0;font-family:Arial,sans-serif;background:#07111f;color:#fff}
+    .top-nav{display:flex;justify-content:space-between;align-items:center;background:#0d1b2e;border-bottom:1px solid #203852;padding:14px 20px}
+    .nav-brand{font-weight:bold;font-size:20px;color:#fff;cursor:pointer}
+    .nav-brand span{color:#ffcc00}
+    .nav-links{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+    .nav-links a{color:#74b9ff;text-decoration:none;font-weight:bold}
+    .nav-links a:hover{color:#ffcc00}
+    .container{max-width:1150px;margin:36px auto 70px;padding:0 20px}
+    h1{font-size:38px;margin:0 0 8px}
+    .sub{color:#b7c7d9;line-height:1.5;margin-bottom:24px}
+    .status{color:#ffcc00;margin:12px 0 22px;white-space:pre-wrap}
+    .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:16px}
+    .card{background:#0d1b2e;border:1px solid #203852;border-radius:16px;padding:20px;cursor:pointer;transition:.15s}
+    .card:hover{border-color:#1e90ff;transform:translateY(-2px)}
+    .icon{font-size:30px;margin-bottom:10px}
+    .title{font-size:21px;font-weight:bold;margin-bottom:8px}
+    .desc{color:#b7c7d9;line-height:1.45;font-size:14px;min-height:42px}
+    .count{font-size:34px;font-weight:bold;color:#ffcc00;margin:14px 0 4px}
+    .label{font-size:13px;color:#9fb2c7}
+    .button{display:inline-block;margin-top:14px;background:#1e90ff;color:white;text-decoration:none;border-radius:8px;padding:10px 13px;font-weight:bold}
+    .danger{background:#8b1e1e}.green{background:#166534}.gold{background:#6b5b1e}.purple{background:#5b21b6}.orange{background:#b45309}
+    .logout{background:#444;color:white;border:none;border-radius:8px;padding:9px 12px;font-weight:bold;cursor:pointer}
+    @media(max-width:760px){.top-nav{align-items:flex-start;flex-direction:column}.nav-links{gap:12px}.nav-links a{font-size:14px}h1{font-size:32px}}
+
+    .live-shell{background:linear-gradient(145deg,#0d1b2e,#10233b);border:1px solid #294867;border-radius:20px;padding:22px;margin:0 0 26px;box-shadow:0 16px 50px rgba(0,0,0,.22)}
+    .live-head{display:flex;justify-content:space-between;align-items:flex-start;gap:18px;flex-wrap:wrap;margin-bottom:18px}
+    .live-title{display:flex;align-items:center;gap:10px}.live-title h2{margin:0}
+    .live-dot{width:11px;height:11px;border-radius:50%;background:#ff4242;box-shadow:0 0 0 5px rgba(255,66,66,.14);animation:pulse 1.8s infinite}
+    @keyframes pulse{50%{box-shadow:0 0 0 10px rgba(255,66,66,0)}}
+    .period-controls{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+    .period-btn,.refresh-btn{border:1px solid #315476;background:#0a1728;color:#bcd0e5;border-radius:9px;padding:8px 11px;font-weight:bold;cursor:pointer}
+    .period-btn.active{background:#1e90ff;border-color:#1e90ff;color:#fff}.refresh-btn{background:#173456;color:#fff}
+    .live-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
+    .metric,.ranking,.activity-box{background:rgba(5,15,28,.65);border:1px solid #294867;border-radius:15px;padding:17px}
+    .metric-label{color:#9fb2c7;font-size:13px;text-transform:uppercase;letter-spacing:.08em}
+    .metric-value{font-size:36px;line-height:1.05;font-weight:800;color:#ffcc00;margin:10px 0 5px}
+    .metric-note,.updated{font-size:12px;color:#8298ae}
+    .live-lower{display:grid;grid-template-columns:1.35fr .65fr;gap:14px;margin-top:14px}
+    .ranking-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+    .rank-row{display:grid;grid-template-columns:38px 1fr auto;align-items:center;gap:10px;padding:12px 0;border-top:1px solid #1d354d;text-decoration:none;color:#fff}
+    .rank-row:first-of-type{border-top:none}.rank-number{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;background:#173456;color:#ffcc00;font-weight:bold}
+    .rank-title{font-weight:bold;line-height:1.3}.rank-sport{display:block;font-size:12px;color:#9fb2c7;margin-top:3px}.rank-votes{font-size:17px;font-weight:bold;color:#ffcc00;white-space:nowrap}
+    .activity-line{display:flex;justify-content:space-between;gap:12px;border-top:1px solid #1d354d;padding:12px 0}.activity-line:first-of-type{border-top:none}
+    .empty{color:#9fb2c7;padding:18px 0;line-height:1.5}
+    @media(max-width:900px){.live-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.live-lower{grid-template-columns:1fr}}
+    @media(max-width:520px){.live-grid{grid-template-columns:1fr}.metric-value{font-size:32px}}
+
+  </style>
+</head>
+<body>
+<nav class="top-nav">
+  <div class="nav-brand" onclick="window.location.href='admin-dashboard.html'">Sports<span>Mistakes</span> Admin</div>
+  <div class="nav-links">
+    <a href="admin-dashboard.html">Dashboard</a>
+    <a href="index.html">Public Site</a>
+    <a href="admin-submissions.html">Submissions</a>
+    <a href="admin-ai-review.html">AI Review</a>
+    <a href="admin-bulk-artwork.html">Bulk Artwork</a>
+    <a href="admin-content-studio.html">Content Studio</a>
+    <a href="admin-reports.html">Reports</a>
+    <a href="admin-mistakes.html">Mistakes</a>
+    <button class="logout" onclick="logout()">Log Out</button>
+  </div>
+</nav>
+
+<div class="container">
+  <h1>Admin Dashboard</h1>
+  <p class="sub">Your command center for reviewing submissions, AI moderation, artwork generation, fixing reports, finding duplicates, importing new records, and managing the SportsMistakes database.</p>
+  <div id="status" class="status">Checking admin access...</div>
+
+
+  <section class="live-shell">
+    <div class="live-head">
+      <div>
+        <div class="live-title"><span class="live-dot"></span><h2>LIVE PLATFORM PULSE</h2></div>
+        <div class="updated" id="periodLabel">Today, since midnight</div>
+      </div>
+      <div class="period-controls">
+        <button class="period-btn active" onclick="changePeriod(1,this)">Today</button>
+        <button class="period-btn" onclick="changePeriod(7,this)">7 Days</button>
+        <button class="period-btn" onclick="changePeriod(30,this)">30 Days</button>
+        <button class="refresh-btn" onclick="loadLiveDashboard()">↻ Refresh</button>
+      </div>
+    </div>
+    <div class="live-grid">
+      <div class="metric"><div class="metric-label">Visitors</div><div class="metric-value" id="visitorCount">—</div><div class="metric-note">Unique browser sessions</div></div>
+      <div class="metric"><div class="metric-label">Votes</div><div class="metric-value" id="voteCount">—</div><div class="metric-note" id="voteSourceNote">Loading vote table…</div></div>
+      <div class="metric"><div class="metric-label">Mistakes Viewed</div><div class="metric-value" id="viewCount">—</div><div class="metric-note">Tracked mistake-page views</div></div>
+      <div class="metric"><div class="metric-label">Votes / Visitor</div><div class="metric-value" id="voteRate">—</div><div class="metric-note">Voting engagement rate</div></div>
+    </div>
+    <div class="live-lower">
+      <div class="ranking">
+        <div class="ranking-head"><h2>🔥 Most Voted</h2><span class="updated" id="rankingPeriod">Today</span></div>
+        <div id="topVotes"><div class="empty">Loading votes…</div></div>
+      </div>
+      <div class="activity-box">
+        <h2 style="margin:0 0 12px">Activity</h2>
+        <div class="activity-line"><span>Shares</span><strong id="shareCount">—</strong></div>
+        <div class="activity-line"><span>All page views</span><strong id="allPageViews">—</strong></div>
+        <div class="activity-line"><span>Last refreshed</span><strong id="lastUpdated">—</strong></div>
+        <div class="updated" id="analyticsNotice" style="margin-top:12px"></div>
+      </div>
+    </div>
+  </section>
+
+  <div class="grid">
+    <div class="card" onclick="window.location.href='admin-dashboard.html'">
+      <div class="icon">📊</div><div class="title">Dashboard</div>
+      <div class="desc">Overview of the platform and admin workload.</div>
+      <div class="count" id="mistakeCount">—</div><div class="label">Total mistakes</div>
+      <span class="button">Refresh Dashboard</span>
+    </div>
+
+    <div class="card" onclick="window.location.href='admin-submissions.html'">
+      <div class="icon">📥</div><div class="title">Submissions</div>
+      <div class="desc">Review user-submitted mistakes waiting for approval.</div>
+      <div class="count" id="submissionCount">—</div><div class="label">Pending submissions</div>
+      <span class="button">Review Submissions</span>
+    </div>
+
+    <div class="card" onclick="window.location.href='admin-ai-review.html'">
+      <div class="icon">🤖</div><div class="title">AI Review</div>
+      <div class="desc">Use AI fields to detect duplicates, spam, safety issues, and approval recommendations.</div>
+      <div class="count" id="aiReviewCount">—</div><div class="label">Not AI reviewed</div>
+      <span class="button purple">Open AI Review</span>
+    </div>
+
+    <div class="card" onclick="window.location.href='admin-bulk-artwork.html'">
+      <div class="icon">🖼️</div><div class="title">Bulk Artwork</div>
+      <div class="desc">Generate artwork for existing published mistakes in safe batches.</div>
+      <div class="count" id="missingArtworkCount">—</div><div class="label">Missing artwork</div>
+      <span class="button orange">Generate Artwork</span>
+    </div>
+
+
+    <div class="card" onclick="window.location.href='admin-content-studio.html'">
+      <div class="icon">🎬</div><div class="title">Content AI Studio</div>
+      <div class="desc">Turn every published mistake into scripts, social posts, Reddit copy, and a newsletter feature.</div>
+      <div class="count" id="contentReadyCount">—</div><div class="label">Content packages created</div>
+      <span class="button green">Open Content Studio</span>
+    </div>
+
+    <div class="card" onclick="window.location.href='admin-reports.html'">
+      <div class="icon">⚠️</div><div class="title">Reports</div>
+      <div class="desc">Review user reports about wrong facts, duplicates, typos, or broken links.</div>
+      <div class="count" id="reportCount">—</div><div class="label">Open reports</div>
+      <span class="button gold">Review Reports</span>
+    </div>
+
+    <div class="card" onclick="window.location.href='duplicate-finder.html'">
+      <div class="icon">🔎</div><div class="title">Duplicate Finder</div>
+      <div class="desc">Scan the database for possible duplicates, related entries, and false positives.</div>
+      <div class="count">Scan</div><div class="label">Manual review tool</div>
+      <span class="button">Find Duplicates</span>
+    </div>
+
+    <div class="card" onclick="window.location.href='smart-bulk-import.html'">
+      <div class="icon">📦</div><div class="title">Smart Bulk Import</div>
+      <div class="desc">Paste new batches, preview duplicate flags, and import only clean records.</div>
+      <div class="count">Import</div><div class="label">Protected admin importer</div>
+      <span class="button green">Open Importer</span>
+    </div>
+
+    <div class="card" onclick="window.location.href='admin-mistakes.html'">
+      <div class="icon">🛠️</div><div class="title">Manage Mistakes</div>
+      <div class="desc">Search, edit, open, or delete existing SportsMistakes records.</div>
+      <div class="count" id="manageCount">—</div><div class="label">Records available</div>
+      <span class="button danger">Manage Database</span>
+    </div>
+  </div>
+</div>
+
+<script>
+const SUPABASE_URL="https://scwjlljurircxuufhqih.supabase.co";
+const SUPABASE_ANON_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNjd2psbGp1cmlyY3h1dWZocWloIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyNjUyMjcsImV4cCI6MjA5Njg0MTIyN30.WF0HRRb9mAkuOySjabTd8CZXVZRqF0MhMl0N2mafnns";
+const client=supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
+const SPORTS_MISTAKES_ADMIN_EMAIL="jason.susnick@gmail.com";
+let selectedDays=1;
+
+async function requireSportsMistakesAdminInline(){
+  const {data,error}=await client.auth.getSession();
+  const session=data&&data.session;
+  if(error){console.error(error);}
+  if(!session){
+    window.location.href="admin-login.html?redirect=admin-dashboard.html";
+    return false;
+  }
+  const email=(session.user&&session.user.email?session.user.email:"").toLowerCase();
+  if(email!==SPORTS_MISTAKES_ADMIN_EMAIL.toLowerCase()){
+    document.body.innerHTML=`<div style="max-width:600px;margin:80px auto;background:#0d1b2e;color:white;border:1px solid #203852;border-radius:16px;padding:24px;font-family:Arial,sans-serif;"><h1>Admin Access Denied</h1><p>You are signed in as <strong>${email||"unknown"}</strong>.</p><p>This admin dashboard is restricted.</p><a href="admin-login.html" style="color:#74b9ff;">Log in as admin</a></div>`;
+    return false;
+  }
+  return true;
+}
+
+
+function periodStart(days){
+  const now=new Date();
+  return days===1
+    ? new Date(now.getFullYear(),now.getMonth(),now.getDate()).toISOString()
+    : new Date(Date.now()-days*86400000).toISOString();
+}
+function changePeriod(days,button){
+  selectedDays=days;
+  document.querySelectorAll(".period-btn").forEach(b=>b.classList.remove("active"));
+  button.classList.add("active");
+  document.getElementById("periodLabel").innerText=days===1?"Today, since midnight":`Last ${days} days`;
+  document.getElementById("rankingPeriod").innerText=days===1?"Today":`${days} Days`;
+  loadLiveDashboard();
+}
+function escapeHtml(v){return String(v??"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;")}
+function sportIcon(v){
+  const s=String(v||"").toLowerCase();
+  if(s.includes("baseball")||s.includes("mlb"))return"⚾";
+  if(s.includes("hockey")||s.includes("nhl"))return"🏒";
+  if(s.includes("basketball")||s.includes("nba"))return"🏀";
+  if(s.includes("football")||s.includes("nfl"))return"🏈";
+  if(s.includes("soccer"))return"⚽";
+  if(s.includes("golf"))return"⛳";
+  if(s.includes("boxing"))return"🥊";
+  if(s.includes("tennis"))return"🎾";
+  return"🏆";
+}
+async function fetchAnalytics(startIso){
+  const {data,error}=await client.from("analytics_events").select("event_type,mistake_id,session_id").gte("created_at",startIso).limit(50000);
+  if(error)throw error;
+  const rows=data||[];
+  return{
+    visitors:new Set(rows.filter(r=>r.event_type==="page_view").map(r=>r.session_id)).size,
+    pageViews:rows.filter(r=>r.event_type==="page_view").length,
+    mistakeViews:rows.filter(r=>r.event_type==="page_view"&&r.mistake_id).length,
+    shares:rows.filter(r=>r.event_type==="share").length
+  };
+}
+async function fetchVotes(startIso){
+  let lastError;
+  for(const tableName of ["mistake_votes","votes"]){
+    const {data,error}=await client.from(tableName).select("*").gte("created_at",startIso).limit(50000);
+    if(!error)return{tableName,rows:data||[]};
+    lastError=error;
+  }
+  throw lastError||new Error("Vote table not found");
+}
+function voteMistakeId(row){return row.mistake_id??row.mistakeId??row.mistake??row.poll_id??null}
+async function renderTopVotes(rows){
+  const totals=new Map();
+  rows.forEach(row=>{const id=voteMistakeId(row);if(id!==null&&id!==undefined&&String(id)!=="")totals.set(String(id),(totals.get(String(id))||0)+1)});
+  const leaders=[...totals.entries()].sort((a,b)=>b[1]-a[1]).slice(0,5);
+  const box=document.getElementById("topVotes");
+  if(!leaders.length){box.innerHTML='<div class="empty">No votes recorded in this period.</div>';return}
+  const {data,error}=await client.from("mistakes").select("id,title,sport,league").in("id",leaders.map(x=>x[0]));
+  if(error)throw error;
+  const map=new Map((data||[]).map(m=>[String(m.id),m]));
+  box.innerHTML=leaders.map(([id,count],i)=>{
+    const m=map.get(id)||{},sport=m.sport||m.league||"Sports",title=m.title||`Mistake ${id}`;
+    return `<a class="rank-row" href="mistake.html?id=${encodeURIComponent(id)}" target="_blank"><span class="rank-number">${i+1}</span><span><span class="rank-title">${sportIcon(sport)} ${escapeHtml(title)}</span><span class="rank-sport">${escapeHtml(sport)}</span></span><span class="rank-votes">${count.toLocaleString()} vote${count===1?"":"s"}</span></a>`;
+  }).join("");
+}
+async function loadLiveDashboard(){
+  const start=periodStart(selectedDays),notice=document.getElementById("analyticsNotice");
+  notice.innerText="";
+  ["visitorCount","voteCount","viewCount","voteRate","shareCount","allPageViews"].forEach(id=>document.getElementById(id).innerText="…");
+  const [a,v]=await Promise.allSettled([fetchAnalytics(start),fetchVotes(start)]);
+  const analytics=a.status==="fulfilled"?a.value:{visitors:0,pageViews:0,mistakeViews:0,shares:0};
+  const votes=v.status==="fulfilled"?v.value:{tableName:"",rows:[]};
+  if(a.status==="rejected")notice.innerText="Install the analytics SQL and public tracking file to begin collecting visitors and views.";
+  document.getElementById("visitorCount").innerText=a.status==="fulfilled"?analytics.visitors.toLocaleString():"Not set up";
+  document.getElementById("voteCount").innerText=votes.rows.length.toLocaleString();
+  document.getElementById("viewCount").innerText=a.status==="fulfilled"?analytics.mistakeViews.toLocaleString():"Not set up";
+  document.getElementById("voteRate").innerText=a.status==="fulfilled"&&analytics.visitors?votes.rows.length/analytics.visitors<10?(votes.rows.length/analytics.visitors).toFixed(2):"0.00":"—";
+  document.getElementById("shareCount").innerText=a.status==="fulfilled"?analytics.shares.toLocaleString():"—";
+  document.getElementById("allPageViews").innerText=a.status==="fulfilled"?analytics.pageViews.toLocaleString():"—";
+  document.getElementById("voteSourceNote").innerText=v.status==="fulfilled"?`From ${votes.tableName}`:"Vote table not detected";
+  document.getElementById("lastUpdated").innerText=new Date().toLocaleTimeString([],{hour:"numeric",minute:"2-digit"});
+  try{await renderTopVotes(votes.rows)}catch(e){console.error(e);document.getElementById("topVotes").innerHTML='<div class="empty">Votes found, but titles could not be loaded.</div>'}
+}
+
+async function loadDashboardCounts(){
+  const status=document.getElementById("status");
+  status.innerText="Loading dashboard...";
+
+  const [mistakesResult,submissionsResult,aiReviewResult,reportsResult,missingArtworkResult,contentReadyResult]=await Promise.all([
+    client.from("mistakes").select("id",{count:"exact",head:true}),
+    client.from("mistake_submissions").select("id",{count:"exact",head:true}).eq("status","pending"),
+    client.from("mistake_submissions").select("id",{count:"exact",head:true}).eq("status","pending").eq("ai_status","not_reviewed"),
+    client.from("mistake_reports").select("id",{count:"exact",head:true}).eq("status","open"),
+    client.from("mistakes").select("id",{count:"exact",head:true}).is("artwork_url", null),
+    client.from("content_assets").select("id",{count:"exact",head:true})
+  ]);
+
+  if(mistakesResult.error) console.error(mistakesResult.error);
+  if(submissionsResult.error) console.error(submissionsResult.error);
+  if(aiReviewResult.error) console.error(aiReviewResult.error);
+  if(reportsResult.error) console.error(reportsResult.error);
+  if(missingArtworkResult.error) console.error(missingArtworkResult.error);
+  if(contentReadyResult.error) console.warn("Content assets table may not be installed yet:",contentReadyResult.error);
+
+  const mistakeCount=mistakesResult.count ?? 0;
+  document.getElementById("mistakeCount").innerText=mistakeCount;
+  document.getElementById("manageCount").innerText=mistakeCount;
+  document.getElementById("submissionCount").innerText=submissionsResult.count ?? 0;
+  document.getElementById("aiReviewCount").innerText=aiReviewResult.count ?? 0;
+  document.getElementById("reportCount").innerText=reportsResult.count ?? 0;
+  document.getElementById("missingArtworkCount").innerText=missingArtworkResult.count ?? 0;
+  document.getElementById("contentReadyCount").innerText=contentReadyResult.count ?? 0;
+
+  status.innerText="Admin access confirmed.";
+}
+
+async function logout(){
+  await client.auth.signOut();
+  window.location.href="admin-login.html";
+}
+
+requireSportsMistakesAdminInline().then(async ok=>{
+  if(!ok)return;
+  await Promise.all([loadDashboardCounts(),loadLiveDashboard()]);
+  setInterval(loadLiveDashboard,60000);
+});
+</script>
+</body>
+</html>
