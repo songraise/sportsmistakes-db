@@ -39,8 +39,7 @@
     }
 
     *{box-sizing:border-box}
-<script src="sportsmistakes-analytics.js" defer></script>
-    body{
+body{
       margin:0;
       font-family:Arial,sans-serif;
       background:
@@ -961,9 +960,9 @@ async function loadMistake(){
         <div class="share-row">
           <span class="share-label">Share this mistake:</span>
           <div class="share-buttons">
-            <a class="share-x" href="${xUrl}" target="_blank">X</a>
-            <a class="share-facebook" href="${facebookUrl}" target="_blank">f</a>
-            <a class="share-reddit" href="${redditUrl}" target="_blank">r</a>
+            <a class="share-x" href="${xUrl}" target="_blank" rel="noopener" onclick="trackShareClick('x')">X</a>
+            <a class="share-facebook" href="${facebookUrl}" target="_blank" rel="noopener" onclick="trackShareClick('facebook')">f</a>
+            <a class="share-reddit" href="${redditUrl}" target="_blank" rel="noopener" onclick="trackShareClick('reddit')">r</a>
             <button class="share-copy" onclick="copyShareLink()">🔗</button>
           </div>
         </div>
@@ -1069,10 +1068,27 @@ function getShareUrl(){return window.location.origin+window.location.pathname+"?
 
 function getShareText(m){return `Was "${m.title||"this sports mistake"}" actually a sports mistake? Vote on SportsMistakes. Controversy score: ${m.controversy_score||0}/100.`}
 
+function trackShareClick(platform){
+  try{
+    if(typeof window.trackSportsMistakesShare==="function"){
+      window.trackSportsMistakesShare(platform,id);
+    }
+  }catch(error){
+    console.warn("Share tracking failed:",error);
+  }
+}
+
 async function copyShareLink(){
   const msg=document.getElementById("shareMessage"),text=`${getShareText(currentMistake)} ${getShareUrl()}`;
-  try{await navigator.clipboard.writeText(text);msg.innerText="Share link copied."}
-  catch(err){console.error(err);msg.innerText="Copy failed. You can copy the URL from your browser."}
+  try{
+    await navigator.clipboard.writeText(text);
+    trackShareClick("copy");
+    msg.innerText="Share link copied.";
+  }
+  catch(err){
+    console.error(err);
+    msg.innerText="Copy failed. You can copy the URL from your browser.";
+  }
 }
 
 async function loadVotes(){
@@ -1408,5 +1424,6 @@ function escapeAttr(value){return String(value||"").replaceAll("&","&amp;").repl
 
 loadMistake();
 </script>
+<script src="sportsmistakes-analytics.js" defer></script>
 </body>
 </html>
