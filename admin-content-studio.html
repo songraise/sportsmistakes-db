@@ -19,6 +19,14 @@
 .video-status{display:inline-block;padding:6px 9px;border-radius:999px;background:#132843;color:#9fd3ff;font-size:12px;margin-bottom:10px}
 .download-link{display:inline-block;text-decoration:none}
 @media(max-width:850px){.video-grid{grid-template-columns:1fr}}@media(max-width:850px){.layout{grid-template-columns:1fr}.list{max-height:330px}.toolbar{grid-template-columns:1fr}.hero{grid-template-columns:1fr}.art{width:100%;height:220px}}
+
+.variant-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.variant-card{background:#07111f;border:1px solid var(--line);border-radius:12px;padding:16px}
+.variant-card h3{margin:0 0 6px}.variant-tag{display:inline-block;border-radius:999px;padding:5px 8px;background:#132843;color:#9fd3ff;font-size:12px;font-weight:bold}
+.plan-list{margin-top:10px;display:grid;gap:7px}.plan-shot{background:#0d1b2e;border:1px solid #203852;border-radius:8px;padding:9px;font-size:12px;color:#b7c7d9}.plan-shot strong{color:#fff}
+.video-two{display:grid;grid-template-columns:1fr 1fr;gap:14px}.video-two video{width:100%;max-width:360px;aspect-ratio:9/16;background:#000;border:1px solid var(--line);border-radius:12px}
+@media(max-width:900px){.variant-grid,.video-two{grid-template-columns:1fr}}
+
 </style>
 </head>
 <body>
@@ -73,7 +81,17 @@ function renderStudio(){
  short_script:a.short_script||'',youtube_caption:a.youtube_caption||'',tiktok_caption:a.tiktok_caption||'',instagram_caption:a.instagram_caption||'',x_post:a.x_post||'',reddit_title:a.reddit_title||'',reddit_body:a.reddit_body||'',newsletter_subject:a.newsletter_subject||'',newsletter_body:a.newsletter_body||'',
  narration_url:a.narration_url||a.video_narration_url||'',
  video_url:a.video_url||a.short_video_url||'',
- video_status:a.video_status||'not generated'};
+ video_status:a.video_status||'not generated',
+ social_video_script:a.social_video_script||'',
+ story_video_script:a.story_video_script||'',
+ social_video_plan:a.social_video_plan||null,
+ story_video_plan:a.story_video_plan||null,
+ social_narration_url:a.social_narration_url||'',
+ story_narration_url:a.story_narration_url||'',
+ social_video_url:a.social_video_url||'',
+ story_video_url:a.story_video_url||a.video_url||'',
+ social_video_status:a.social_video_status||'not generated',
+ story_video_status:a.story_video_status||'not generated'};
  document.getElementById('studio').innerHTML=`
  <div class="hero">${art?`<img class="art" src="${esc(art)}" alt="">`:'<div class="art"></div>'}<div><h2>${esc(titleOf(m))}</h2><div class="meta">${esc(sportOf(m))} ${esc(yearOf(m))} · <span class="badge">${esc(a.status||'not generated')}</span></div><p class="summary">${esc(pick(m,['summary','description','story','why_it_matters']))}</p></div></div>
  <div class="actions"><button class="btn" id="generateBtn" onclick="generatePackage()">${a.id?'Regenerate Package':'Generate Content Package'}</button>${a.id?'<button class="btn green" onclick="saveEdits()">Save Edits</button><button class="btn green" onclick="setStatus(\'approved\')">Approve Package</button><button class="btn red" onclick="setStatus(\'published\')">Mark Published</button>':''}</div>
@@ -84,41 +102,69 @@ function renderStudio(){
  <div class="asset" id="tab-newsletter">${input('newsletter_subject','Newsletter subject',fields.newsletter_subject)}${area('newsletter_body','Newsletter feature',fields.newsletter_body)}</div>
  <div class="asset" id="tab-video">
    <div class="video-panel">
-     <div>
-       <span class="video-status">Video status: ${esc(fields.video_status)}</span>
-       <h3 style="margin:0 0 8px">TikTok / YouTube Short</h3>
-       <p class="summary">Create narration from the approved 30-second script, assemble a vertical 1080 × 1920 video using the SportsMistakes artwork, preview it, and download the finished MP4.</p>
-     </div>
-     <div class="video-grid">
-       <div class="video-card">
-         <h3>1. Narration</h3>
-         <p>Generate a documentary-style voiceover from the script in the 30-sec Short tab.</p>
-         <div class="video-actions">
-           <button class="btn" id="narrationBtn" onclick="generateNarration()">${fields.narration_url?'Regenerate Narration':'Generate Narration'}</button>
-         </div>
-         ${fields.narration_url?`<audio class="audio-preview" controls src="${esc(fields.narration_url)}"></audio>`:'<div class="meta" style="margin-top:12px">No narration generated yet.</div>'}
-       </div>
-       <div class="video-card">
-         <h3>2. Assemble Video</h3>
-         <p>Combine the artwork, narration, animated zoom, title card, subtitles, and SportsMistakes ending card.</p>
-         <div class="video-actions">
-           <button class="btn green" id="videoBtn" onclick="assembleVideo()" ${fields.narration_url?'':'disabled'}>${fields.video_url?'Rebuild Video':'Assemble Video'}</button>
-         </div>
-         ${fields.narration_url?'':'<div class="meta" style="margin-top:12px">Generate narration first.</div>'}
-       </div>
-     </div>
      <div class="video-card">
-       <h3>3. Preview and Download</h3>
-       ${fields.video_url?`
-         <video class="video-preview" controls playsinline src="${esc(fields.video_url)}"></video>
-         <div class="video-actions" style="margin-top:14px">
-           <a class="btn green download-link" href="${esc(fields.video_url)}" download>Download Finished MP4</a>
-           <button class="btn" onclick="copyVideoUrl()">Copy Video URL</button>
-         </div>`:
-         '<div class="meta">The finished vertical video will appear here after assembly.</div>'}
+       <span class="video-status">AI DIRECTOR · TWO AUTOMATED VERSIONS</span>
+       <h3>1. Create scripts + six-shot director plans</h3>
+       <p>AI analyzes the approved painting and creates both a fast 15-second social cut and a 30-second story cut. Each script is divided into six narration beats with matching camera crops, pans, zooms, and short on-screen captions.</p>
+       <div class="video-actions">
+         <button class="btn" id="prepareVideoBtn" onclick="prepareVideoVariants()">${fields.social_video_script&&fields.story_video_script?'Regenerate Both Plans':'Prepare Both Video Versions'}</button>
+         ${(fields.social_video_script||fields.story_video_script)?'<button class="btn green" onclick="saveVideoScripts()">Save Script Edits</button>':''}
+       </div>
+     </div>
+
+     <div class="variant-grid">
+       <div class="variant-card">
+         <span class="variant-tag">VERSION A · ~15 SEC</span>
+         <h3 style="margin-top:10px">Social Short</h3>
+         <p>TikTok · Instagram Reels · Facebook Reels · YouTube Shorts</p>
+         ${area('social_video_script','15-second live-call script',fields.social_video_script)}
+         ${renderPlanHtml(fields.social_video_plan)}
+         ${fields.social_narration_url?`<audio class="audio-preview" controls src="${esc(fields.social_narration_url)}"></audio>`:''}
+         <div class="video-actions" style="margin-top:12px">
+           <button class="btn" onclick="generateVariantNarration('social')" ${fields.social_video_script?'':'disabled'}>${fields.social_narration_url?'Regenerate Narration':'Generate Narration'}</button>
+           <button class="btn green" onclick="renderVariant('social')" ${fields.social_narration_url?'':'disabled'}>${fields.social_video_url?'Rebuild Video':'Render 6-Shot Video'}</button>
+         </div>
+       </div>
+
+       <div class="variant-card">
+         <span class="variant-tag">VERSION B · ~30 SEC</span>
+         <h3 style="margin-top:10px">Story Version</h3>
+         <p>YouTube Shorts · Reels · Facebook · SportsMistakes website</p>
+         ${area('story_video_script','30-second live-call story',fields.story_video_script)}
+         ${renderPlanHtml(fields.story_video_plan)}
+         ${fields.story_narration_url?`<audio class="audio-preview" controls src="${esc(fields.story_narration_url)}"></audio>`:''}
+         <div class="video-actions" style="margin-top:12px">
+           <button class="btn" onclick="generateVariantNarration('story')" ${fields.story_video_script?'':'disabled'}>${fields.story_narration_url?'Regenerate Narration':'Generate Narration'}</button>
+           <button class="btn green" onclick="renderVariant('story')" ${fields.story_narration_url?'':'disabled'}>${fields.story_video_url?'Rebuild Video':'Render 6-Shot Video'}</button>
+         </div>
+       </div>
+     </div>
+
+     <div class="video-card">
+       <h3>2. One-click automation</h3>
+       <p>This runs the complete pipeline in order: prepare both scripts/plans if needed → Social narration → Social render → Story narration → Story render.</p>
+       <div class="video-actions">
+         <button class="btn green" id="bothVideosBtn" onclick="generateBothVideos()">Generate BOTH Finished Videos</button>
+       </div>
+     </div>
+
+     <div class="video-two">
+       <div class="video-card">
+         <h3>Social Short Preview</h3>
+         ${fields.social_video_url?`<video controls playsinline src="${esc(fields.social_video_url)}"></video><div class="video-actions" style="margin-top:12px"><a class="btn green download-link" href="${esc(fields.social_video_url)}" download>Download Social MP4</a><button class="btn" onclick="copyVariantUrl('social')">Copy URL</button></div>`:'<div class="meta">Not rendered yet.</div>'}
+       </div>
+       <div class="video-card">
+         <h3>Story Version Preview</h3>
+         ${fields.story_video_url?`<video controls playsinline src="${esc(fields.story_video_url)}"></video><div class="video-actions" style="margin-top:12px"><a class="btn green download-link" href="${esc(fields.story_video_url)}" download>Download Story MP4</a><button class="btn" onclick="copyVariantUrl('story')">Copy URL</button></div>`:'<div class="meta">Not rendered yet.</div>'}
+       </div>
      </div>
    </div>
+ </div>
  </div>`;
+}
+function renderPlanHtml(plan){
+ if(!plan?.shots?.length)return '<div class="meta" style="margin-top:10px">Director plan not generated yet.</div>';
+ return `<div class="plan-list">${plan.shots.map((s,i)=>`<div class="plan-shot"><strong>Shot ${i+1} · ${esc(s.beat||'beat')}</strong> — ${esc(s.caption||'no caption')}<br>Camera: (${Number(s.start_x??.5).toFixed(2)}, ${Number(s.start_y??.5).toFixed(2)}) → (${Number(s.end_x??.5).toFixed(2)}, ${Number(s.end_y??.5).toFixed(2)}) · zoom ${Number(s.start_zoom??1).toFixed(2)} → ${Number(s.end_zoom??1).toFixed(2)}</div>`).join('')}</div>`;
 }
 function area(id,label,value,max=''){return `<div class="field"><label>${label}<span><span class="counter" id="count-${id}"></span> <button class="btn copy" onclick="copyField('${id}')">Copy</button></span></label><textarea id="${id}" ${max?`maxlength="${max}"`:''} oninput="updateCount('${id}')">${esc(value)}</textarea></div>`}
 function input(id,label,value){return `<div class="field"><label>${label}<button class="btn copy" onclick="copyField('${id}')">Copy</button></label><input id="${id}" value="${esc(value)}"></div>`}
@@ -131,55 +177,107 @@ async function generatePackage(){const b=document.getElementById('generateBtn');
 async function saveEdits(showMessage=true){const a=assetsByMistake[current.id];if(!a){document.getElementById('status').textContent='Generate a package before saving.';return false}const asset={...collect(),short_title:a.short_title||'',hook:a.hook||'',hashtags:a.hashtags||[]};const {data,error}=await client.functions.invoke('generate-content-assets',{body:{action:'save',mistake_id:current.id,asset}});if(error||data?.error){document.getElementById('status').textContent='Save failed: '+(data?.error||error?.message||'Unknown error');return false}assetsByMistake[current.id]=data.asset;if(showMessage)document.getElementById('status').textContent='Edits saved.';return true}
 async function setStatus(status){const saved=await saveEdits(false);if(!saved)return;const asset={...collect(),short_title:assetsByMistake[current.id]?.short_title||'',hook:assetsByMistake[current.id]?.hook||'',hashtags:assetsByMistake[current.id]?.hashtags||[]};const {data,error}=await client.functions.invoke('generate-content-assets',{body:{action:'status',mistake_id:current.id,status,asset}});if(error||data?.error){document.getElementById('status').textContent='Status update failed: '+(data?.error||error?.message||'Unknown error');return}assetsByMistake[current.id]=data.asset;document.getElementById('status').textContent='Package marked '+status+'.';renderStudio();renderList()}
 
-async function generateNarration(){
- const a=assetsByMistake[current.id];
- if(!a){document.getElementById('status').textContent='Generate the content package first.';return}
- const script=val('short_script')||a.short_script||'';
- if(!script.trim()){document.getElementById('status').textContent='The 30-second script is empty.';return}
- const b=document.getElementById('narrationBtn');
- b.disabled=true;
- document.getElementById('status').textContent='Generating narration…';
- const {data,error}=await client.functions.invoke('generate-video-assets',{
-  body:{action:'narration',mistake_id:current.id,script}
- });
- b.disabled=false;
- if(error||data?.error){
-  document.getElementById('status').textContent='Narration failed: '+(data?.error||error?.message||'Unknown error');
-  return;
- }
- assetsByMistake[current.id]=data.asset||{...a,narration_url:data.narration_url,video_status:'narration_ready'};
- document.getElementById('status').textContent='Narration generated. You can now assemble the video.';
- renderStudio();
+async function invokeVideo(body){
+ const {data,error}=await client.functions.invoke('generate-video-assets',{body});
+ if(error||data?.error)throw new Error(data?.error||error?.message||'Unknown video error');
+ if(data?.asset)assetsByMistake[current.id]=data.asset;
+ return data;
 }
 
-async function assembleVideo(){
- const a=assetsByMistake[current.id];
- if(!a?.narration_url&&!a?.video_narration_url){
-  document.getElementById('status').textContent='Generate narration first.';
-  return;
- }
- const b=document.getElementById('videoBtn');
- b.disabled=true;
- document.getElementById('status').textContent='Assembling the vertical video. This may take a few minutes…';
- const {data,error}=await client.functions.invoke('generate-video-assets',{
-  body:{action:'render',mistake_id:current.id}
- });
- b.disabled=false;
- if(error||data?.error){
-  document.getElementById('status').textContent='Video assembly failed: '+(data?.error||error?.message||'Unknown error');
-  return;
- }
- assetsByMistake[current.id]=data.asset||{...a,video_url:data.video_url,video_status:'ready'};
- document.getElementById('status').textContent='Video complete. Preview it and download the MP4.';
- renderStudio();
+async function prepareVideoVariants(){
+ const b=document.getElementById('prepareVideoBtn');
+ if(b)b.disabled=true;
+ document.getElementById('status').textContent='AI is analyzing the painting and directing both video versions…';
+ try{
+  await invokeVideo({action:'prepare-variants',mistake_id:current.id});
+  document.getElementById('status').textContent='Both scripts and six-shot director plans are ready.';
+  renderStudio();
+ }catch(error){
+  document.getElementById('status').textContent='Video planning failed: '+error.message;
+ }finally{if(b)b.disabled=false}
 }
 
-async function copyVideoUrl(){
+async function saveVideoScripts(){
+ try{
+  await invokeVideo({
+   action:'save-variants',
+   mistake_id:current.id,
+   social_script:val('social_video_script'),
+   story_script:val('story_video_script')
+  });
+  document.getElementById('status').textContent='Video script edits saved.';
+ }catch(error){
+  document.getElementById('status').textContent='Video script save failed: '+error.message;
+ }
+}
+
+async function generateVariantNarration(variant){
+ const script=val(variant+'_video_script')||assetsByMistake[current.id]?.[variant+'_video_script']||'';
+ if(!script.trim()){document.getElementById('status').textContent='Generate the director package first.';return false}
+ document.getElementById('status').textContent=`Generating ${variant} narration…`;
+ try{
+  await invokeVideo({action:'narration',mistake_id:current.id,variant,script});
+  document.getElementById('status').textContent=`${variant==='social'?'Social':'Story'} narration ready.`;
+  renderStudio();
+  return true;
+ }catch(error){
+  document.getElementById('status').textContent='Narration failed: '+error.message;
+  return false;
+ }
+}
+
+async function renderVariant(variant){
  const a=assetsByMistake[current.id]||{};
- const url=a.video_url||a.short_video_url||'';
+ const narration=a[variant+'_narration_url'];
+ if(!narration){document.getElementById('status').textContent=`Generate ${variant} narration first.`;return false}
+ document.getElementById('status').textContent=`Rendering ${variant} six-shot video. This may take a few minutes…`;
+ try{
+  await invokeVideo({action:'render',mistake_id:current.id,variant});
+  document.getElementById('status').textContent=`${variant==='social'?'Social Short':'Story Version'} video complete.`;
+  renderStudio();
+  return true;
+ }catch(error){
+  document.getElementById('status').textContent='Video render failed: '+error.message;
+  return false;
+ }
+}
+
+async function generateBothVideos(){
+ const b=document.getElementById('bothVideosBtn');
+ if(b)b.disabled=true;
+ try{
+  let a=assetsByMistake[current.id]||{};
+  if(!a.social_video_script||!a.story_video_script||!a.social_video_plan||!a.story_video_plan){
+   document.getElementById('status').textContent='Step 1/5: AI directing both versions…';
+   await invokeVideo({action:'prepare-variants',mistake_id:current.id});
+   renderStudio();
+  }
+
+  document.getElementById('status').textContent='Step 2/5: Generating Social narration…';
+  await invokeVideo({action:'narration',mistake_id:current.id,variant:'social',script:assetsByMistake[current.id].social_video_script});
+
+  document.getElementById('status').textContent='Step 3/5: Rendering Social six-shot video…';
+  await invokeVideo({action:'render',mistake_id:current.id,variant:'social'});
+
+  document.getElementById('status').textContent='Step 4/5: Generating Story narration…';
+  await invokeVideo({action:'narration',mistake_id:current.id,variant:'story',script:assetsByMistake[current.id].story_video_script});
+
+  document.getElementById('status').textContent='Step 5/5: Rendering Story six-shot video…';
+  await invokeVideo({action:'render',mistake_id:current.id,variant:'story'});
+
+  document.getElementById('status').textContent='Both finished videos are ready.';
+  renderStudio();
+ }catch(error){
+  document.getElementById('status').textContent='Automated video pipeline stopped: '+error.message;
+ }finally{if(b)b.disabled=false}
+}
+
+async function copyVariantUrl(variant){
+ const a=assetsByMistake[current.id]||{};
+ const url=a[variant+'_video_url']||(variant==='story'?a.video_url:'');
  if(!url){document.getElementById('status').textContent='No video URL is available.';return}
  await navigator.clipboard.writeText(url);
- document.getElementById('status').textContent='Video URL copied.';
+ document.getElementById('status').textContent=`${variant==='social'?'Social':'Story'} video URL copied.`;
 }
 
 document.getElementById('search').addEventListener('input',renderList);document.getElementById('filter').addEventListener('change',renderList);
