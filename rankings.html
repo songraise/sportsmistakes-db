@@ -21,7 +21,7 @@
     }
 
     * { box-sizing:border-box; }
-<script src="sportsmistakes-analytics.js" defer></script>
+
     body {
       margin:0;
       font-family:Arial, Helvetica, sans-serif;
@@ -444,7 +444,148 @@
       .row-score { grid-column:3; }
       footer { flex-direction:column; }
     }
-  </style>
+  
+
+    /* =========================================================
+       SPORTSMISTAKES UNIFIED PUBLIC DESIGN SYSTEM
+       Matches the Submit page: Arial/Helvetica, dark charcoal,
+       red primary accent, consistent navigation and spacing.
+       ========================================================= */
+    html, body {
+      font-family:Arial, Helvetica, sans-serif !important;
+    }
+
+    body {
+      background:
+        radial-gradient(circle at 50% -10%, rgba(226,36,36,.18), transparent 30%),
+        linear-gradient(180deg,#05080c 0%,#091017 45%,#05080c 100%) !important;
+      color:#f8fafc;
+    }
+
+    body::before {
+      background:linear-gradient(rgba(0,0,0,.45),rgba(0,0,0,.72)) !important;
+    }
+
+    .top-nav {
+      position:sticky !important;
+      top:0 !important;
+      z-index:20 !important;
+      min-height:76px !important;
+      height:auto !important;
+      display:flex !important;
+      justify-content:space-between !important;
+      align-items:center !important;
+      gap:18px !important;
+      padding:18px 26px !important;
+      background:rgba(5,8,12,.96) !important;
+      border-bottom:1px solid rgba(255,255,255,.08) !important;
+      backdrop-filter:blur(10px) !important;
+    }
+
+    .brand-wrap {
+      display:flex !important;
+      align-items:center !important;
+      cursor:pointer !important;
+    }
+
+    .nav-brand {
+      font-family:Arial, Helvetica, sans-serif !important;
+      font-weight:1000 !important;
+      font-size:30px !important;
+      line-height:.82 !important;
+      letter-spacing:-1px !important;
+      text-transform:uppercase !important;
+      color:#fff !important;
+    }
+
+    .nav-brand span { color:#e22424 !important; }
+
+    .brand-tag { display:none !important; }
+
+    .nav-links {
+      display:flex !important;
+      align-items:center !important;
+      gap:28px !important;
+      flex-wrap:wrap !important;
+    }
+
+    .nav-links a {
+      margin:0 !important;
+      color:#f4f4f5 !important;
+      text-decoration:none !important;
+      font-family:Arial, Helvetica, sans-serif !important;
+      font-weight:900 !important;
+      font-size:14px !important;
+      letter-spacing:.8px !important;
+      text-transform:uppercase !important;
+    }
+
+    .nav-links a:hover,
+    .nav-links a.active { color:#e22424 !important; }
+
+    h1,h2,h3,h4,h5,h6,
+    button,input,select,textarea {
+      font-family:Arial, Helvetica, sans-serif !important;
+    }
+
+    footer {
+      color:#cbd5e1 !important;
+      border-top-color:rgba(255,255,255,.12) !important;
+      font-family:Arial, Helvetica, sans-serif !important;
+    }
+
+    footer a { color:#cbd5e1 !important; }
+    footer a:hover { color:#e22424 !important; }
+
+    @media(max-width:760px){
+      .top-nav{
+        align-items:flex-start !important;
+        flex-direction:column !important;
+      }
+      .nav-links{gap:14px !important;}
+    }
+
+    /* Submit-page-style rankings hero */
+    .page-shell { width:min(1180px,calc(100% - 36px)) !important; padding:34px 0 64px !important; }
+    .hero {
+      position:relative !important;
+      overflow:visible !important;
+      border:0 !important;
+      border-radius:0 !important;
+      box-shadow:none !important;
+      background:transparent !important;
+      text-align:center !important;
+      padding:18px 12px 30px !important;
+    }
+    .hero::after { display:none !important; }
+    .hero .eyebrow {
+      display:inline-flex !important;
+      color:#e22424 !important;
+      font-size:13px !important;
+      font-weight:1000 !important;
+      letter-spacing:1.3px !important;
+      text-transform:uppercase !important;
+      margin-bottom:14px !important;
+    }
+    .hero h1 {
+      max-width:900px !important;
+      margin:0 auto !important;
+      font-size:clamp(39px,5vw,54px) !important;
+      line-height:1.02 !important;
+      letter-spacing:-1.8px !important;
+      font-weight:900 !important;
+      text-shadow:0 5px 18px rgba(0,0,0,.7) !important;
+    }
+    .hero p {
+      max-width:760px !important;
+      margin:16px auto 0 !important;
+      color:#d7dee8 !important;
+      font-size:19px !important;
+      line-height:1.55 !important;
+    }
+
+</style>
+  <script src="sportsmistakes-analytics.js" defer></script>
 </head>
 
 <body>
@@ -458,7 +599,7 @@
       <a class="active" href="rankings.html">Rankings</a>
       <a href="collections.html">Collections</a>
       <a href="hall-of-fame.html">Hall of Fame</a>
-      <a href="submit.html">Submit</a>
+      <a href="submit.html">Add a Mistake</a>
     </div>
   </nav>
 
