@@ -1142,6 +1142,44 @@ function renderArguments(list,side){
   `).join("");
 }
 
+
+function obviousCourtJunkReason(value){
+  const text=String(value||"").trim().toLowerCase();
+  const words=text
+    .replace(/https?:\/\/\S+/g," ")
+    .replace(/[^a-z0-9'\s-]/g," ")
+    .split(/\s+/)
+    .filter(Boolean);
+
+  const profanity=new Set([
+    "fuck","fucking","fucked","fucker","motherfucker","motherfucking",
+    "shit","shitty","bullshit","bitch","bitches","asshole","assholes",
+    "dick","dicks","cunt","cunts","bastard","bastards"
+  ]);
+
+  const profanityCount=words.filter(word=>profanity.has(word)).length;
+  const profanityRatio=profanityCount/Math.max(words.length,1);
+
+  if(profanityCount>=5||(profanityCount>=3&&profanityRatio>=0.50)){
+    return "Please make a constructive sports argument rather than submitting profanity.";
+  }
+
+  const unique=new Set(words);
+  if(words.length>=5&&unique.size<=2){
+    return "Please make a clear sports argument rather than repeating the same words.";
+  }
+
+  if(/(.)\1{6,}/i.test(text)||words.some(word=>word.length>=24&&!word.includes("-"))){
+    return "That looks like gibberish. Please make a clear point about the sports event.";
+  }
+
+  if(words.filter(word=>/[a-z]/i.test(word)).length<4){
+    return "Please make a clear point about the play, decision, call, strategy, or historical context.";
+  }
+
+  return "";
+}
+
 async function submitCourtArgument(){
   const msg=document.getElementById("courtMessage");
   const side=document.getElementById("courtSide").value;
@@ -1161,6 +1199,12 @@ async function submitCourtArgument(){
 
   if(name.length>60){
     msg.innerText="Please keep the name or nickname under 60 characters.";
+    return;
+  }
+
+  const immediateBlock=obviousCourtJunkReason(text+" "+(name==="Anonymous fan"?"":name));
+  if(immediateBlock){
+    msg.innerText=immediateBlock;
     return;
   }
 
