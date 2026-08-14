@@ -307,6 +307,9 @@
       line-height:1.55 !important;
     }
 
+
+    /* SEO: make database cards real crawlable links without changing their appearance */
+    .card { color:inherit; text-decoration:none; }
 </style>
 </head>
 
@@ -474,7 +477,7 @@
       const artwork=m.artwork_url||m.ai_artwork_url||m.image_url||m.thumbnail_url||"";
       const art=artwork?`<img src="${escapeHtml(artwork)}" alt="${escapeHtml(m.title||"Sports mistake artwork")}" />`:getSportIcon(m.sport);
       return `
-        <article class="card" onclick="window.location.href='mistake.html?id=${m.id}'">
+        <a class="card" href="mistake.html?id=${encodeURIComponent(m.id)}">
           <div class="card-image">
             <div class="card-rank">${index+1}</div>
             ${art}
@@ -490,7 +493,7 @@
             <div class="summary">${escapeHtml(m.summary||"No summary added yet.")}</div>
             <span class="read-link">Read Story →</span>
           </div>
-        </article>`;
+        </a>`;
     }).join("");
   }
 
