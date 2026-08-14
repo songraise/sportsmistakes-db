@@ -51,6 +51,16 @@
     .court-edit-btn{background:#1e90ff}.court-hide-btn{background:#6b5b1e}.court-restore-btn{background:#166534}.court-delete-btn{background:#8b1e1e}
     .court-save-btn{background:#166534}.court-cancel-btn{background:#444}
     .court-section-status{color:#ffcc00;font-size:13px;white-space:pre-wrap;margin-top:8px}
+    .pending-court-box{background:#101926;border:1px solid #6b5b1e;border-radius:16px;padding:18px 20px;margin-bottom:18px}
+    .pending-court-head{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-bottom:12px}
+    .pending-court-head h2{margin:0;color:#ffe08a;font-size:20px}
+    .pending-court-count{background:#4b3d12;color:#ffe08a;border-radius:999px;padding:6px 10px;font-size:12px;font-weight:bold}
+    .pending-court-list{display:grid;gap:10px}
+    .pending-court-item{background:#0d1b2e;border:1px solid #4b3d12;border-radius:10px;padding:13px}
+    .pending-court-title{font-weight:bold;color:#fff;margin-bottom:5px}
+    .pending-court-text{color:#eef5ff;line-height:1.45;margin:8px 0}
+    .pending-court-meta{font-size:12px;color:#9fb2c7}
+    .pending-empty{color:#9fb2c7;font-style:italic}
     @media(max-width:760px){.form-grid{grid-template-columns:1fr}.top-nav{align-items:flex-start;flex-direction:column}.nav-links{gap:12px}.nav-links a{font-size:13px}}
   </style>
 </head>
@@ -72,6 +82,16 @@
 <div class="container">
   <h1>Admin Mistakes</h1>
   <p class="sub">Search and edit existing SportsMistakes records, regenerate artwork, and moderate every Sports Court argument attached to each mistake.</p>
+
+  <section class="pending-court-box" aria-label="Pending Sports Court review">
+    <div class="pending-court-head">
+      <h2>⚖️ Pending Sports Court Review</h2>
+      <div class="pending-court-count" id="pendingCourtCount">Loading...</div>
+    </div>
+    <div class="pending-court-list" id="pendingCourtList">
+      <div class="pending-empty">Loading pending arguments...</div>
+    </div>
+  </section>
 
   <div class="admin-box">
     <div class="search-row">
@@ -137,6 +157,7 @@
     });
 
     rebuildCourtArgumentMap();
+    renderPendingCourtQueue();
     renderMistakes();
   }
 
@@ -156,6 +177,44 @@
         return bPriority-aPriority;
       });
     });
+  }
+
+  function renderPendingCourtQueue(){
+    const list=document.getElementById("pendingCourtList");
+    const count=document.getElementById("pendingCourtCount");
+    if(!list||!count)return;
+
+    const pending=courtArguments
+      .filter(argument=>argument.status==="pending")
+      .sort((a,b)=>new Date(b.created_at||0)-new Date(a.created_at||0));
+
+    count.textContent=`${pending.length} pending`;
+
+    if(!pending.length){
+      list.innerHTML=`<div class="pending-empty">No Sports Court arguments are waiting for review.</div>`;
+      return;
+    }
+
+    list.innerHTML=pending.map(argument=>{
+      const mistake=mistakes.find(m=>m.id===argument.mistake_id);
+      const title=mistake?.title||"Unknown mistake";
+      const side=argument.side==="defense"?"Defense":"Prosecution";
+      const date=argument.created_at?new Date(argument.created_at).toLocaleString():"Unknown date";
+
+      return `
+        <div class="pending-court-item">
+          <div class="pending-court-title">${escapeHtml(title)}</div>
+          <div class="pending-court-meta">${escapeHtml(side)} • ${escapeHtml(argument.author_name||"Anonymous fan")} • ${escapeHtml(date)}</div>
+          <div class="pending-court-text">${escapeHtml(argument.argument_text||"")}</div>
+          <div class="court-actions">
+            <button class="court-restore-btn" onclick="setCourtArgumentStatus('${argument.id}','approved')">Approve Publicly</button>
+            <button class="court-hide-btn" onclick="setCourtArgumentStatus('${argument.id}','rejected')">Reject</button>
+            <button class="court-delete-btn" onclick="deleteCourtArgument('${argument.id}')">Delete Permanently</button>
+            ${mistake ? `<button class="open-btn" onclick="window.open('mistake.html?id=${mistake.id}','_blank')">Open Mistake</button>` : ""}
+          </div>
+        </div>
+      `;
+    }).join("");
   }
 
   function renderMistakes(){
@@ -214,13 +273,15 @@
   function renderCourtModerationSection(mistakeId){
     const rows=courtArgumentsByMistake[mistakeId]||[];
     const approvedCount=rows.filter(a=>(a.status||"approved")==="approved").length;
+    const pendingCount=rows.filter(a=>a.status==="pending").length;
     const hiddenCount=rows.filter(a=>a.status==="hidden").length;
+    const rejectedCount=rows.filter(a=>a.status==="rejected").length;
 
     return `
       <div class="court-admin-box">
         <div class="court-admin-head">
           <h3>⚖️ Sports Court Moderation</h3>
-          <div class="court-count">${rows.length} total • ${approvedCount} public • ${hiddenCount} hidden</div>
+          <div class="court-count">${rows.length} total • ${pendingCount} pending • ${approvedCount} public • ${hiddenCount} hidden • ${rejectedCount} rejected</div>
         </div>
         <div class="court-admin-list">
           ${rows.length
@@ -358,6 +419,7 @@
     argument.argument_text=argumentText;
     argument.author_name=authorName;
     rebuildCourtArgumentMap();
+    renderPendingCourtQueue();
     renderMistakes();
     alert("Sports Court argument updated.");
   }
@@ -382,6 +444,7 @@
 
     argument.status=newStatus;
     rebuildCourtArgumentMap();
+    renderPendingCourtQueue();
     renderMistakes();
     alert(
       newStatus==="hidden" ? "Argument hidden from the public site." :
@@ -405,6 +468,7 @@
 
     courtArguments=courtArguments.filter(a=>a.id!==argumentId);
     rebuildCourtArgumentMap();
+    renderPendingCourtQueue();
     renderMistakes();
     alert("Sports Court argument permanently deleted.");
   }
