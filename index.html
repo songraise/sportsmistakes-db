@@ -1310,6 +1310,10 @@
 
     /* Homepage already uses the unified system. */
 
+
+    /* SEO: mistake cards are real crawlable links, visually unchanged */
+    .list-row,.search-result-card,.card{color:inherit;text-decoration:none;}
+
 </style>
 </head>
 
@@ -1800,14 +1804,14 @@
       }
 
       box.innerHTML = items.map(m => `
-        <div class="list-row" onclick="window.location.href='mistake.html?id=${m.id}'">
+        <a class="list-row" href="mistake.html?id=${encodeURIComponent(m.id)}">
           <div class="thumb">${renderArt(m, "thumb")}</div>
           <div>
             <div class="row-title">${escapeHtml(m.title || "Untitled Mistake")}</div>
             <div class="row-meta">${escapeHtml([m.year, m.sport, m.category].filter(Boolean).join(", "))}</div>
             <div class="row-extra">${escapeHtml(extraFn(m))}</div>
           </div>
-        </div>
+        </a>
       `).join("");
     }
 
@@ -1947,7 +1951,7 @@
         const meta = [m.year, m.sport, m.category].filter(Boolean).join(" • ");
 
         return `
-          <div class="search-result-card" onclick="window.location.href='mistake.html?id=${m.id}'">
+          <a class="search-result-card" href="mistake.html?id=${encodeURIComponent(m.id)}">
             <div class="search-result-art">${renderArt(m, "search")}</div>
             <div>
               <div class="search-result-title">${escapeHtml(m.title || "Untitled Mistake")}</div>
@@ -1955,7 +1959,7 @@
               <div class="search-result-score">${escapeHtml(m.controversy_score || 0)}/100 controversy</div>
             </div>
             <div class="search-result-read">Read →</div>
-          </div>
+          </a>
         `;
       }).join("");
     }
@@ -1979,7 +1983,7 @@
       }
 
       grid.innerHTML = visible.map(m => `
-        <div class="card" onclick="window.location.href='mistake.html?id=${m.id}'">
+        <a class="card" href="mistake.html?id=${encodeURIComponent(m.id)}">
           <div class="card-image">${renderArt(m, "card")}</div>
           <div class="card-body">
             <span class="badge">${escapeHtml(m.sport || "Sport")}</span>
@@ -1993,7 +1997,7 @@
             ${renderFanVerdict(m.id)}
             <div class="summary">${escapeHtml(m.summary || "No summary added yet.")}</div>
           </div>
-        </div>
+        </a>
       `).join("");
 
       loadMoreBtn.style.display = visible.length < filtered.length ? "inline-block" : "none";
