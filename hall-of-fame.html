@@ -162,6 +162,10 @@
     }
     .hero-rule { background:#e22424 !important; height:2px !important; opacity:.8; }
 
+
+    /* SEO: make database cards real crawlable links without changing their appearance */
+    .podium-card { color:inherit; text-decoration:none; }
+    .row { color:inherit; text-decoration:none; }
 </style>
 </head>
 <body>
@@ -196,7 +200,53 @@ async function fetchAllMistakes(){const pageSize=500;let from=0,all=[];while(tru
 async function loadMistakes(){try{mistakes=await fetchAllMistakes();renderHall()}catch(error){console.error(error);document.getElementById("message").innerText="Could not load Hall of Fame."}}
 function setHall(type,button){currentHall=type;document.querySelectorAll(".tabs button").forEach(btn=>btn.classList.remove("active"));button.classList.add("active");renderHall()}
 function getHallMistakes(){let filtered=[...mistakes];if(currentHall==="referee")filtered=mistakes.filter(m=>m.category==="Referee Mistake");else if(currentHall==="coaching")filtered=mistakes.filter(m=>m.category==="Coaching Mistake");else if(currentHall==="player")filtered=mistakes.filter(m=>m.category==="Player Mistake");else if(currentHall==="frontoffice")filtered=mistakes.filter(m=>m.category==="Front Office Mistake"||m.category==="Ownership Mistake"||String(m.subcategory||"").toLowerCase().includes("draft")||String(m.subcategory||"").toLowerCase().includes("trade"));if(currentHall==="mostviewed")return filtered.filter(m=>(m.views||0)>0).sort((a,b)=>(b.views||0)-(a.views||0)).slice(0,25);return filtered.sort((a,b)=>{const scoreDiff=(b.controversy_score||0)-(a.controversy_score||0);return scoreDiff!==0?scoreDiff:(b.views||0)-(a.views||0)}).slice(0,25)}
-function renderHall(){const info=hallInfo[currentHall]||hallInfo.overall,items=getHallMistakes();document.getElementById("boardTitle").innerText=info.title;document.getElementById("boardDesc").innerText=info.desc;const podium=document.getElementById("podium"),list=document.getElementById("hallList"),message=document.getElementById("message");if(!items.length){podium.innerHTML="";list.innerHTML="";message.style.display="block";message.innerText="No entries found for this Hall of Fame yet.";return}message.style.display="none";podium.innerHTML=items.slice(0,3).map((m,index)=>`<article class="podium-card ${index===0?"first":""}" onclick="window.location.href='mistake.html?id=${m.id}'"><div class="podium-art">${renderArt(m)}<div class="rank-medal">${rankLabel(index+1)}</div></div><div class="podium-body"><div class="podium-top"><span class="sport-badge">${escapeHtml(m.sport||"Sport")}</span><span class="score">${escapeHtml(m.controversy_score||0)}/100</span></div><h2>${escapeHtml(m.title||"Untitled Mistake")}</h2><div class="meta">${escapeHtml([m.year,m.league||m.sport,m.category].filter(Boolean).join(" • "))}</div><div class="views">👁 ${formatNumber(m.views||0)} views</div><div class="read-link">Read the Story →</div></div></article>`).join("");list.innerHTML=items.slice(3).map((m,index)=>`<article class="row" onclick="window.location.href='mistake.html?id=${m.id}'"><div class="rank">#${index+4}</div><div class="row-art">${renderArt(m)}</div><div><h3>${escapeHtml(m.title||"Untitled Mistake")}</h3><div class="meta">${escapeHtml([m.sport,m.year,m.category,m.subcategory].filter(Boolean).join(" • "))}${m.views?` • 👁 ${formatNumber(m.views)}`:""}</div></div><div class="row-score">${escapeHtml(m.controversy_score||0)}/100</div></article>`).join("")}
+function renderHall(){
+  const info=hallInfo[currentHall]||hallInfo.overall,items=getHallMistakes();
+  document.getElementById("boardTitle").innerText=info.title;
+  document.getElementById("boardDesc").innerText=info.desc;
+  const podium=document.getElementById("podium"),list=document.getElementById("hallList"),message=document.getElementById("message");
+
+  if(!items.length){
+    podium.innerHTML="";
+    list.innerHTML="";
+    message.style.display="block";
+    message.innerText="No entries found for this Hall of Fame yet.";
+    return;
+  }
+
+  message.style.display="none";
+
+  podium.innerHTML=items.slice(0,3).map((m,index)=>`
+    <a class="podium-card ${index===0?"first":""}" href="mistake.html?id=${encodeURIComponent(m.id)}">
+      <div class="podium-art">
+        ${renderArt(m)}
+        <div class="rank-medal">${rankLabel(index+1)}</div>
+      </div>
+      <div class="podium-body">
+        <div class="podium-top">
+          <span class="sport-badge">${escapeHtml(m.sport||"Sport")}</span>
+          <span class="score">${escapeHtml(m.controversy_score||0)}/100</span>
+        </div>
+        <h2>${escapeHtml(m.title||"Untitled Mistake")}</h2>
+        <div class="meta">${escapeHtml([m.year,m.league||m.sport,m.category].filter(Boolean).join(" • "))}</div>
+        <div class="views">👁 ${formatNumber(m.views||0)} views</div>
+        <div class="read-link">Read the Story →</div>
+      </div>
+    </a>
+  `).join("");
+
+  list.innerHTML=items.slice(3).map((m,index)=>`
+    <a class="row" href="mistake.html?id=${encodeURIComponent(m.id)}">
+      <div class="rank">#${index+4}</div>
+      <div class="row-art">${renderArt(m)}</div>
+      <div>
+        <h3>${escapeHtml(m.title||"Untitled Mistake")}</h3>
+        <div class="meta">${escapeHtml([m.sport,m.year,m.category,m.subcategory].filter(Boolean).join(" • "))}${m.views?` • 👁 ${formatNumber(m.views)}`:""}</div>
+      </div>
+      <div class="row-score">${escapeHtml(m.controversy_score||0)}/100</div>
+    </a>
+  `).join("");
+}
 function renderArt(m){const url=m.artwork_url||m.ai_artwork_url||m.image_url||m.thumbnail_url||"";return url?`<img src="${escapeHtml(url)}" alt="${escapeHtml(m.title||"Sports mistake artwork")}" />`:getSportIcon(m.sport)}
 function rankLabel(rank){if(rank===1)return"🥇 #1";if(rank===2)return"🥈 #2";if(rank===3)return"🥉 #3";return"#"+rank}
 function getSportIcon(sport){const s=String(sport||"").toLowerCase();if(s.includes("nfl")||s.includes("football"))return"🏈";if(s.includes("nhl")||s.includes("hockey"))return"🏒";if(s.includes("mlb")||s.includes("baseball"))return"⚾";if(s.includes("nba")||s.includes("basketball"))return"🏀";if(s.includes("soccer"))return"⚽";if(s.includes("formula")||s.includes("f1"))return"🏎️";if(s.includes("boxing"))return"🥊";if(s.includes("ufc")||s.includes("mma"))return"🥋";if(s.includes("tennis"))return"🎾";if(s.includes("golf"))return"⛳";if(s.includes("olympic"))return"🥇";if(s.includes("ncaa"))return"🏟️";if(s.includes("sailing"))return"⛵";if(s.includes("cricket"))return"🏏";if(s.includes("track")||s.includes("field"))return"🏃";if(s.includes("rugby"))return"🏉";if(s.includes("lacrosse"))return"🥍";if(s.includes("curling"))return"🥌";if(s.includes("cycling"))return"🚴";return"🏆"}
