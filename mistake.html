@@ -12,8 +12,11 @@
   <meta id="ogUrl" property="og:url" content="https://sportsmistakes.com/mistake.html" />
   <meta property="og:type" content="article" />
   <meta property="og:site_name" content="SportsMistakes" />
+  <meta id="ogImage" property="og:image" content="" />
+  <meta id="ogImageAlt" property="og:image:alt" content="SportsMistakes artwork" />
   <meta id="twitterTitle" name="twitter:title" content="SportsMistakes | Mistake Detail" />
   <meta id="twitterDescription" name="twitter:description" content="Explore this sports mistake and join the debate on SportsMistakes." />
+  <meta id="twitterImage" name="twitter:image" content="" />
   <meta name="twitter:card" content="summary_large_image" />
   <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
   <link rel="preconnect" href="https://scwjlljurircxuufhqih.supabase.co" crossorigin>
@@ -907,6 +910,9 @@ body{
       border-color:rgba(255,255,255,.14) !important;
     }
 
+
+    /* SEO: make database cards real crawlable links without changing their appearance */
+    .related-card { color:inherit; text-decoration:none; }
 </style>
   <link rel="stylesheet" href="styles.css" />
 </head>
@@ -945,11 +951,19 @@ function setMetaContent(selector,value){
 
 function updatePageSeo(mistake){
   const canonicalUrl=`https://sportsmistakes.com/mistake.html?id=${encodeURIComponent(mistake.id)}`;
-  const title=`${mistake.title||"Sports Mistake"} | SportsMistakes`;
-  const description=(mistake.summary||`Explore ${mistake.title||"this sports mistake"} and decide whether it was truly a mistake.`)
-    .replace(/\s+/g," ")
-    .trim()
-    .slice(0,160);
+  const titleParts=[
+    mistake.title||"Sports Mistake",
+    mistake.year||"",
+    "SportsMistakes"
+  ].filter(Boolean);
+
+  // Keep the title descriptive without keyword stuffing.
+  const title=titleParts.join(" | ").slice(0,68);
+
+  const context=[mistake.sport,mistake.year].filter(Boolean).join(" ");
+  const summary=String(mistake.summary||"").replace(/\s+/g," ").trim();
+  const fallback=`Explore ${mistake.title||"this sports mistake"}${context?` (${context})`:""}, why it mattered, its controversy score, sources, and the fan debate on SportsMistakes.`;
+  const description=(summary || fallback).slice(0,158);
 
   document.title=title;
 
@@ -965,6 +979,13 @@ function updatePageSeo(mistake){
   setMetaContent('#twitterTitle',title);
   setMetaContent('#twitterDescription',description);
 
+  const artwork=mistake.artwork_url||mistake.ai_artwork_url||mistake.image_url||mistake.thumbnail_url||"";
+  if(artwork){
+    setMetaContent('#ogImage',artwork);
+    setMetaContent('#ogImageAlt',`${mistake.title||"Sports mistake"} artwork`);
+    setMetaContent('#twitterImage',artwork);
+  }
+
   const existingSchema=document.getElementById("mistakeStructuredData");
   if(existingSchema) existingSchema.remove();
 
@@ -976,14 +997,23 @@ function updatePageSeo(mistake){
     "@type":"Article",
     "headline":mistake.title||"Sports Mistake",
     "description":description,
-    "mainEntityOfPage":canonicalUrl,
+    "mainEntityOfPage":{
+      "@type":"WebPage",
+      "@id":canonicalUrl
+    },
     "url":canonicalUrl,
+    ...(artwork?{"image":[artwork]}:{}),
+    "about":[
+      mistake.sport,
+      mistake.category,
+      mistake.subcategory,
+      mistake.teams_people
+    ].filter(Boolean).map(name=>({"@type":"Thing","name":String(name)})),
     "publisher":{
       "@type":"Organization",
       "name":"SportsMistakes",
       "url":"https://sportsmistakes.com/"
-    },
-    ...(mistake.year?{"datePublished":`${mistake.year}-01-01`}:{})
+    }
   });
   document.head.appendChild(schema);
 }
@@ -1534,7 +1564,7 @@ async function loadRelatedMistakes(){
     const relatedArt=art
       ? `<div class="related-art has-image"><img src="${escapeAttr(art)}" alt="${escapeAttr(m.title||"Related sports mistake artwork")}" loading="lazy" decoding="async"></div>`
       : `<div class="related-art">SportsMistakes</div>`;
-    return `<div class="related-card" onclick="window.location.href='mistake.html?id=${m.id}'">
+    return `<a class="related-card" href="mistake.html?id=${encodeURIComponent(m.id)}">
       ${relatedArt}
       <div class="related-body">
         <div class="related-topline">
@@ -1546,7 +1576,7 @@ async function loadRelatedMistakes(){
         <div class="related-stats"><span>👁 ${formatNumber(m.views||0)}</span><span>🔥 ${escapeHtml(m.controversy_score||0)}/100</span></div>
         <div class="related-read">Read Story →</div>
       </div>
-    </div>`
+    </a>`
   }).join("")}</div>`;
 }
 
