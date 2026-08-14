@@ -232,6 +232,36 @@
       margin-bottom:2px;
     }
 
+    .hero-participate {
+      margin:-10px auto 18px;
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      gap:10px;
+      flex-wrap:wrap;
+      color:#cbd5e1;
+      font-size:15px;
+      font-weight:700;
+    }
+
+    .hero-participate a {
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      color:#ff4b4b;
+      text-decoration:none;
+      font-weight:1000;
+      text-transform:uppercase;
+      letter-spacing:.35px;
+    }
+
+    .hero-participate a:hover {
+      color:#fff;
+      text-decoration:underline;
+      text-decoration-color:var(--red);
+      text-underline-offset:4px;
+    }
+
     .tagline {
       font-size:52px;
       line-height:1.02;
@@ -1168,7 +1198,7 @@
       <a href="rankings.html">Rankings</a>
       <a href="collections.html">Collections</a>
       <a href="hall-of-fame.html">Hall of Fame</a>
-      <a href="submit.html">Submit</a>
+      <a href="submit.html">Add a Mistake</a>
     </div>
   </nav>
 
@@ -1177,7 +1207,15 @@
 
     <section class="search-hero">
       <h1 class="tagline">The Internet's Database of <span class="red">Sports Mistakes</span></h1>
-      <div class="tagline-sub"><strong>Discover. Debate. Preserve.</strong>The biggest mistakes in sports history.</div>
+      <div class="tagline-sub">
+        <strong>Discover. Debate. Add to the Record.</strong>
+        A crowdsourced database of the biggest mistakes in sports history.
+      </div>
+
+      <div class="hero-participate">
+        <span>Think we missed one?</span>
+        <a href="submit.html">Add a Sports Mistake <span aria-hidden="true">›</span></a>
+      </div>
 
       <div class="search-row">
         <div class="search-icon">⌕</div>
