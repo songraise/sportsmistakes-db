@@ -332,7 +332,7 @@
 
     .studio-note.fail{
       color:#991b1b;
-      font-weight:bold;
+      font-weight:normal;
       background:#fee2e2;
       border:1px solid #fecaca;
       padding:10px;
@@ -371,7 +371,10 @@
 <body>
 
 <nav class="top-nav">
-  <div class="nav-brand" onclick="window.location.href='admin-dashboard.html'">
+  <div
+    class="nav-brand"
+    onclick="window.location.href='admin-dashboard.html'"
+  >
     Sports<span>Mistakes</span> Admin
   </div>
 
@@ -383,7 +386,13 @@
     <a href="admin-bulk-artwork.html">Bulk Artwork</a>
     <a href="admin-reports.html">Reports</a>
     <a href="admin-mistakes.html">Mistakes</a>
-    <button class="logout" onclick="logout()">Log Out</button>
+
+    <button
+      class="logout"
+      onclick="logout()"
+    >
+      Log Out
+    </button>
   </div>
 </nav>
 
@@ -391,23 +400,33 @@
 
   <div class="hero">
     <h1>AI Editorial Studio</h1>
+
     <div class="sub">
       Review submissions, generate artwork, approve publishing,
       send contributor emails, and turn sports mistakes into finished illustrated entries.
     </div>
   </div>
 
-  <div class="stats" id="stats"></div>
+  <div
+    class="stats"
+    id="stats"
+  ></div>
 
   <div class="filters">
 
-    <select id="statusFilter" onchange="renderSubmissions()">
+    <select
+      id="statusFilter"
+      onchange="renderSubmissions()"
+    >
       <option value="all">All AI Statuses</option>
       <option value="not_reviewed">Not Reviewed</option>
       <option value="reviewed">Reviewed</option>
     </select>
 
-    <select id="recommendationFilter" onchange="renderSubmissions()">
+    <select
+      id="recommendationFilter"
+      onchange="renderSubmissions()"
+    >
       <option value="all">All Recommendations</option>
       <option value="APPROVE">Approve</option>
       <option value="REVIEW">Needs Review</option>
@@ -415,7 +434,9 @@
       <option value="REJECT">Reject</option>
     </select>
 
-    <button onclick="loadSubmissions()">Refresh</button>
+    <button onclick="loadSubmissions()">
+      Refresh
+    </button>
 
     <button
       class="purple"
@@ -427,17 +448,33 @@
 
   </div>
 
-  <div id="progressWrap" class="progress-wrap">
-    <strong id="progressText">AI review running...</strong>
+  <div
+    id="progressWrap"
+    class="progress-wrap"
+  >
+    <strong id="progressText">
+      AI review running...
+    </strong>
 
     <div class="progress-bar">
-      <div id="progressFill" class="progress-fill"></div>
+      <div
+        id="progressFill"
+        class="progress-fill"
+      ></div>
     </div>
   </div>
 
-  <div id="message" class="message">Loading...</div>
+  <div
+    id="message"
+    class="message"
+  >
+    Loading...
+  </div>
 
-  <div id="list" class="list"></div>
+  <div
+    id="list"
+    class="list"
+  ></div>
 
 </div>
 
@@ -460,6 +497,11 @@ let duplicateMap = {};
 let runningReviewIds = new Set();
 let generatingArtworkIds = new Set();
 
+
+// ================================================================
+// LOGIN
+// ================================================================
+
 async function requireLogin() {
 
   const { data } =
@@ -476,6 +518,7 @@ async function requireLogin() {
   return true;
 }
 
+
 async function logout() {
 
   await client.auth.signOut();
@@ -483,6 +526,11 @@ async function logout() {
   window.location.href =
   "admin-login.html";
 }
+
+
+// ================================================================
+// LOAD SUBMISSIONS
+// ================================================================
 
 async function loadSubmissions() {
 
@@ -496,14 +544,19 @@ async function loadSubmissions() {
     .innerText =
     "Loading submissions...";
 
-  const { data, error } =
+  const {
+    data,
+    error
+  } =
   await client
     .from("mistake_submissions")
     .select("*")
     .eq("status", "pending")
     .order(
       "created_at",
-      { ascending: false }
+      {
+        ascending:false
+      }
     );
 
   if (error) {
@@ -527,6 +580,11 @@ async function loadSubmissions() {
   renderSubmissions();
 }
 
+
+// ================================================================
+// DUPLICATES
+// ================================================================
+
 async function loadDuplicateDetails() {
 
   duplicateMap = {};
@@ -543,9 +601,14 @@ async function loadDuplicateDetails() {
     )
   ];
 
-  if (!ids.length) return;
+  if (!ids.length) {
+    return;
+  }
 
-  const { data, error } =
+  const {
+    data,
+    error
+  } =
   await client
     .from("mistakes")
     .select("*")
@@ -567,6 +630,11 @@ async function loadDuplicateDetails() {
       duplicateMap[m.id] = m
     );
 }
+
+
+// ================================================================
+// STATS
+// ================================================================
 
 function renderStats() {
 
@@ -607,32 +675,38 @@ function renderStats() {
   document
     .getElementById("stats")
     .innerHTML = `
-      <div class="stat">
-        <strong>${total}</strong>
-        Pending
-      </div>
 
-      <div class="stat">
-        <strong>${notReviewed}</strong>
-        Not Reviewed
-      </div>
+    <div class="stat">
+      <strong>${total}</strong>
+      Pending
+    </div>
 
-      <div class="stat">
-        <strong>${approve}</strong>
-        Approve
-      </div>
+    <div class="stat">
+      <strong>${notReviewed}</strong>
+      Not Reviewed
+    </div>
 
-      <div class="stat">
-        <strong>${duplicate}</strong>
-        Duplicates
-      </div>
+    <div class="stat">
+      <strong>${approve}</strong>
+      Approve
+    </div>
 
-      <div class="stat">
-        <strong>${reject}</strong>
-        Reject
-      </div>
-    `;
+    <div class="stat">
+      <strong>${duplicate}</strong>
+      Duplicates
+    </div>
+
+    <div class="stat">
+      <strong>${reject}</strong>
+      Reject
+    </div>
+  `;
 }
+
+
+// ================================================================
+// RENDER
+// ================================================================
 
 function renderSubmissions() {
 
@@ -725,7 +799,26 @@ function renderSubmissions() {
       s.ai_artwork_status ===
       "generated";
 
+      const safetyConfidence =
+      s.ai_artwork_safety_confidence != null
+      &&
+      Number.isFinite(
+        Number(
+          s.ai_artwork_safety_confidence
+        )
+      )
+      ?
+      Math.round(
+        Number(
+          s.ai_artwork_safety_confidence
+        ) *
+        100
+      )
+      :
+      null;
+
       return `
+
       <div class="card">
 
         <div>
@@ -742,31 +835,58 @@ function renderSubmissions() {
             ${s.ai_confidence ?? "—"}%
           </span>
 
-          ${statusPill("Source", s.ai_source_safety_status)}
+          ${statusPill(
+            "Source",
+            s.ai_source_safety_status
+          )}
 
-          ${statusPill("Fact", s.ai_fact_check_status)}
+          ${statusPill(
+            "Fact",
+            s.ai_fact_check_status
+          )}
 
           ${
             s.ai_auto_publish_eligible
             ?
-            `<span class="pill approve">AUTO-PUBLISH ELIGIBLE</span>`
+            `
+            <span class="pill approve">
+              AUTO-PUBLISH ELIGIBLE
+            </span>
+            `
             :
-            `<span class="pill none">NO AUTO-PUBLISH</span>`
+            `
+            <span class="pill none">
+              NO AUTO-PUBLISH
+            </span>
+            `
           }
 
           ${
             artworkPassed
             ?
-            `<span class="pill pass">ARTWORK: PASS</span>`
+            `
+            <span class="pill pass">
+              ARTWORK: PASS
+            </span>
+            `
             :
             artworkFailed
             ?
-            `<span class="pill block">ARTWORK: FAILED</span>`
+            `
+            <span class="pill block">
+              ARTWORK: FAILED
+            </span>
+            `
             :
-            `<span class="pill none">ARTWORK: NOT CHECKED</span>`
+            `
+            <span class="pill none">
+              ARTWORK: NOT CHECKED
+            </span>
+            `
           }
 
         </div>
+
 
         <div class="grid">
 
@@ -777,68 +897,105 @@ function renderSubmissions() {
             </div>
 
             <h2>
-              ${escapeHtml(s.title || "Untitled")}
+              ${escapeHtml(
+                s.title ||
+                "Untitled"
+              )}
             </h2>
 
             <div class="value">
-              ${escapeHtml(s.sport || "")}
+
+              ${escapeHtml(
+                s.sport ||
+                ""
+              )}
+
               ${
                 s.year
                 ?
-                "• " + escapeHtml(s.year)
+                " • " +
+                escapeHtml(
+                  s.year
+                )
                 :
                 ""
               }
+
               ${
                 s.category
                 ?
-                "• " + escapeHtml(s.category)
+                " • " +
+                escapeHtml(
+                  s.category
+                )
                 :
                 ""
               }
+
             </div>
+
 
             <div class="label">
               Teams / People
             </div>
 
             <div class="value">
-              ${escapeHtml(s.teams_people || "Not provided")}
+              ${escapeHtml(
+                s.teams_people ||
+                "Not provided"
+              )}
             </div>
+
 
             <div class="label">
               Summary
             </div>
 
             <div class="value">
-              ${escapeHtml(s.summary || "No summary")}
+              ${escapeHtml(
+                s.summary ||
+                "No summary"
+              )}
             </div>
+
 
             <div class="label">
               Why It Matters
             </div>
 
             <div class="value">
-              ${escapeHtml(s.why_it_matters || "Not provided")}
+              ${escapeHtml(
+                s.why_it_matters ||
+                "Not provided"
+              )}
             </div>
+
 
             <div class="label">
               Source 1
             </div>
 
             <div class="value">
-              ${escapeHtml(s.source_1 || "No source")}
+              ${escapeHtml(
+                s.source_1 ||
+                "No source"
+              )}
             </div>
+
 
             <div class="label">
               Source 2
             </div>
 
             <div class="value">
-              ${escapeHtml(s.source_2 || "No second source")}
+              ${escapeHtml(
+                s.source_2 ||
+                "No second source"
+              )}
             </div>
 
           </div>
+
 
           <div class="box">
 
@@ -850,26 +1007,43 @@ function renderSubmissions() {
               existing
               ?
               `
+
               <h2>
-                ${escapeHtml(existing.title || "Untitled")}
+                ${escapeHtml(
+                  existing.title ||
+                  "Untitled"
+                )}
               </h2>
 
               <div class="value">
-                ${escapeHtml(existing.sport || "")}
+
+                ${escapeHtml(
+                  existing.sport ||
+                  ""
+                )}
+
                 ${
                   existing.year
                   ?
-                  "• " + escapeHtml(existing.year)
+                  " • " +
+                  escapeHtml(
+                    existing.year
+                  )
                   :
                   ""
                 }
+
                 ${
                   existing.category
                   ?
-                  "• " + escapeHtml(existing.category)
+                  " • " +
+                  escapeHtml(
+                    existing.category
+                  )
                   :
                   ""
                 }
+
               </div>
 
               <div class="label">
@@ -877,7 +1051,10 @@ function renderSubmissions() {
               </div>
 
               <div class="value">
-                ${escapeHtml(existing.teams_people || "Not provided")}
+                ${escapeHtml(
+                  existing.teams_people ||
+                  "Not provided"
+                )}
               </div>
 
               <div class="label">
@@ -885,7 +1062,10 @@ function renderSubmissions() {
               </div>
 
               <div class="value">
-                ${escapeHtml(existing.summary || "No summary")}
+                ${escapeHtml(
+                  existing.summary ||
+                  "No summary"
+                )}
               </div>
 
               <button
@@ -894,16 +1074,22 @@ function renderSubmissions() {
               >
                 Open Existing Mistake
               </button>
+
               `
               :
               `
+
               <h2>
-                ${escapeHtml(s.ai_duplicate_title || "None detected")}
+                ${escapeHtml(
+                  s.ai_duplicate_title ||
+                  "None detected"
+                )}
               </h2>
 
               <div class="value">
                 No full duplicate record loaded.
               </div>
+
               `
             }
 
@@ -911,7 +1097,9 @@ function renderSubmissions() {
 
         </div>
 
+
         <div class="mini-grid">
+
 
           <div class="box">
 
@@ -921,9 +1109,13 @@ function renderSubmissions() {
 
             <div class="value">
               <strong>
-                ${escapeHtml(s.ai_recommendation || "Not reviewed")}
+                ${escapeHtml(
+                  s.ai_recommendation ||
+                  "Not reviewed"
+                )}
               </strong>
             </div>
+
 
             <div class="label">
               Duplicate Score
@@ -933,6 +1125,7 @@ function renderSubmissions() {
               ${s.ai_duplicate_score ?? "—"}%
             </div>
 
+
             <div class="label">
               Spam Score
             </div>
@@ -941,15 +1134,20 @@ function renderSubmissions() {
               ${s.ai_spam_score ?? "—"}%
             </div>
 
+
             <div class="label">
               Safety Flags
             </div>
 
             <div class="value">
-              ${escapeHtml(s.ai_safety_flags || "None")}
+              ${escapeHtml(
+                s.ai_safety_flags ||
+                "None"
+              )}
             </div>
 
           </div>
+
 
           <div class="box">
 
@@ -959,7 +1157,10 @@ function renderSubmissions() {
 
             <div class="value">
               <strong>
-                ${escapeHtml(s.ai_source_safety_status || "Not checked")}
+                ${escapeHtml(
+                  s.ai_source_safety_status ||
+                  "Not checked"
+                )}
               </strong>
             </div>
 
@@ -968,10 +1169,14 @@ function renderSubmissions() {
             </div>
 
             <div class="value">
-              ${escapeHtml(s.ai_source_safety_notes || "Not checked yet")}
+              ${escapeHtml(
+                s.ai_source_safety_notes ||
+                "Not checked yet"
+              )}
             </div>
 
           </div>
+
 
           <div class="box">
 
@@ -981,7 +1186,10 @@ function renderSubmissions() {
 
             <div class="value">
               <strong>
-                ${escapeHtml(s.ai_fact_check_status || "Not checked")}
+                ${escapeHtml(
+                  s.ai_fact_check_status ||
+                  "Not checked"
+                )}
               </strong>
             </div>
 
@@ -990,10 +1198,14 @@ function renderSubmissions() {
             </div>
 
             <div class="value">
-              ${escapeHtml(s.ai_fact_check_notes || "Not checked yet")}
+              ${escapeHtml(
+                s.ai_fact_check_notes ||
+                "Not checked yet"
+              )}
             </div>
 
           </div>
+
 
           <div class="box">
 
@@ -1010,7 +1222,13 @@ function renderSubmissions() {
             </div>
 
             <div class="value">
-              ${s.ai_auto_publish_eligible ? "YES" : "NO"}
+              ${
+                s.ai_auto_publish_eligible
+                ?
+                "YES"
+                :
+                "NO"
+              }
             </div>
 
             <div class="label">
@@ -1018,10 +1236,14 @@ function renderSubmissions() {
             </div>
 
             <div class="value">
-              ${escapeHtml(s.ai_auto_publish_reason || "Human approval required.")}
+              ${escapeHtml(
+                s.ai_auto_publish_reason ||
+                "Human approval required."
+              )}
             </div>
 
           </div>
+
 
           <div class="box bluebox">
 
@@ -1031,23 +1253,35 @@ function renderSubmissions() {
 
             <div class="value">
               <strong>
-                ${escapeHtml(s.ai_generated_title || "Not generated yet")}
+                ${escapeHtml(
+                  s.ai_generated_title ||
+                  "Not generated yet"
+                )}
               </strong>
             </div>
 
             <div class="value">
-              ${escapeHtml(s.ai_generated_summary || "")}
+              ${escapeHtml(
+                s.ai_generated_summary ||
+                ""
+              )}
             </div>
 
             <div class="value">
-              ${escapeHtml(s.ai_generated_why_it_matters || "")}
+              ${escapeHtml(
+                s.ai_generated_why_it_matters ||
+                ""
+              )}
             </div>
 
             <div class="value">
+
               ${
                 s.ai_generated_sport
                 ?
-                escapeHtml(s.ai_generated_sport)
+                escapeHtml(
+                  s.ai_generated_sport
+                )
                 :
                 ""
               }
@@ -1056,7 +1290,9 @@ function renderSubmissions() {
                 s.ai_generated_category
                 ?
                 " • " +
-                escapeHtml(s.ai_generated_category)
+                escapeHtml(
+                  s.ai_generated_category
+                )
                 :
                 ""
               }
@@ -1065,14 +1301,18 @@ function renderSubmissions() {
                 s.ai_generated_controversy_score
                 ?
                 " • Score " +
-                escapeHtml(s.ai_generated_controversy_score) +
+                escapeHtml(
+                  s.ai_generated_controversy_score
+                ) +
                 "/100"
                 :
                 ""
               }
+
             </div>
 
           </div>
+
 
           <div class="box bluebox">
 
@@ -1080,81 +1320,240 @@ function renderSubmissions() {
               AI Artwork Preview
             </div>
 
+
             ${
               artworkPassed
               ?
-              `<span class="pill pass">✅ ARTWORK CHECK PASSED</span>`
+              `
+              <span class="pill pass">
+                ✅ ARTWORK CHECK PASSED
+              </span>
+              `
               :
               artworkFailed
               ?
-              `<span class="pill block">⚠️ ARTWORK CHECK FAILED</span>`
+              `
+              <span class="pill block">
+                ⚠️ ARTWORK CHECK FAILED
+              </span>
+              `
               :
-              `<span class="pill none">ARTWORK NOT CHECKED</span>`
+              `
+              <span class="pill none">
+                ARTWORK NOT CHECKED
+              </span>
+              `
             }
+
 
             ${
               s.ai_artwork_url
               ?
               `
+
               <img
                 class="artwork-preview"
-                src="${escapeHtml(s.ai_artwork_url)}"
+                src="${escapeHtml(
+                  s.ai_artwork_url
+                )}"
                 alt="Generated artwork preview"
               >
 
               <a
                 class="artwork-link"
-                href="${escapeHtml(s.ai_artwork_url)}"
+                href="${escapeHtml(
+                  s.ai_artwork_url
+                )}"
                 target="_blank"
               >
                 👁 View full artwork
               </a>
 
+
               ${
                 artworkFailed
                 ?
                 `
+
                 <div class="studio-note fail">
-                  ⚠️ This artwork failed the automatic visual safety check.
-                  Do not publish it. Regenerate the artwork before approval.
+
+                  <strong>
+                    ⚠️ This artwork failed the automatic visual safety check.
+                  </strong>
+
+
+                  ${
+                    s.ai_artwork_safety_flags
+                    ?
+                    `
+
+                    <br><br>
+
+                    <strong>
+                      Detected:
+                    </strong>
+
+                    <br>
+
+                    ${escapeHtml(
+                      s.ai_artwork_safety_flags
+                    )}
+
+                    `
+                    :
+                    ""
+                  }
+
+
+                  ${
+                    s.ai_artwork_safety_notes
+                    ?
+                    `
+
+                    <br><br>
+
+                    <strong>
+                      Inspector notes:
+                    </strong>
+
+                    <br>
+
+                    ${escapeHtml(
+                      s.ai_artwork_safety_notes
+                    )}
+
+                    `
+                    :
+                    ""
+                  }
+
+
+                  ${
+                    safetyConfidence !== null
+                    ?
+                    `
+
+                    <br><br>
+
+                    <strong>
+                      Inspector confidence:
+                    </strong>
+
+                    ${safetyConfidence}%
+
+                    `
+                    :
+                    ""
+                  }
+
+
+                  <br><br>
+
+                  Do not publish this artwork until it has been reviewed
+                  or regenerated.
+
                 </div>
+
                 `
                 :
                 artworkPassed
                 ?
                 `
+
                 <div class="studio-note pass-note">
-                  ✅ Automated artwork check passed.
+
+                  <strong>
+                    ✅ Automated artwork check passed.
+                  </strong>
+
+
+                  ${
+                    s.ai_artwork_safety_notes
+                    ?
+                    `
+
+                    <br><br>
+
+                    ${escapeHtml(
+                      s.ai_artwork_safety_notes
+                    )}
+
+                    `
+                    :
+                    ""
+                  }
+
+
+                  ${
+                    safetyConfidence !== null
+                    ?
+                    `
+
+                    <br><br>
+
+                    <strong>
+                      Inspector confidence:
+                    </strong>
+
+                    ${safetyConfidence}%
+
+                    `
+                    :
+                    ""
+                  }
+
+
+                  <br><br>
+
                   Please still visually confirm there are no jersey numbers,
                   logos, names, readable text, branding, or other identifying marks.
+
                 </div>
+
                 `
                 :
                 `
+
                 <div class="studio-note">
-                  <strong>Review this artwork before publishing.</strong>
+
+                  <strong>
+                    Review this artwork before publishing.
+                  </strong>
+
                   Confirm there are no jersey numbers, logos, names,
                   readable text, branding, or other identifying marks.
+
                 </div>
+
                 `
               }
 
               `
               :
               `
+
               <div class="artwork-placeholder">
-                No artwork generated yet.<br><br>
+
+                No artwork generated yet.
+
+                <br><br>
+
                 Generate a preview before publishing.
+
               </div>
 
               <div class="studio-note">
+
                 The contributor will not be emailed and the mistake will not go live
                 until you click Approve & Publish.
+
               </div>
+
               `
             }
 
           </div>
+
 
           <div class="box">
 
@@ -1163,28 +1562,43 @@ function renderSubmissions() {
             </div>
 
             <div class="value">
-              ${escapeHtml(s.ai_generated_tags || "No tags generated")}
+              ${escapeHtml(
+                s.ai_generated_tags ||
+                "No tags generated"
+              )}
             </div>
+
 
             <div class="label">
               Related Mistake IDs
             </div>
 
             <div class="value">
-              ${escapeHtml(s.ai_related_mistake_ids || "None")}
+              ${escapeHtml(
+                s.ai_related_mistake_ids ||
+                "None"
+              )}
             </div>
 
           </div>
 
         </div>
 
+
         <div class="actions">
 
           <button
             class="purple"
             onclick="reviewOne('${s.id}')"
-            ${isRunning ? "disabled" : ""}
+            ${
+              isRunning
+              ?
+              "disabled"
+              :
+              ""
+            }
           >
+
             ${
               isRunning
               ?
@@ -1192,14 +1606,23 @@ function renderSubmissions() {
               :
               "🤖 Review with AI"
             }
+
           </button>
+
 
           <button
             class="green"
             data-generate-artwork-id="${s.id}"
             onclick="generateArtworkPreview('${s.id}')"
-            ${isGeneratingArtwork ? "disabled" : ""}
+            ${
+              isGeneratingArtwork
+              ?
+              "disabled"
+              :
+              ""
+            }
           >
+
             ${
               isGeneratingArtwork
               ?
@@ -1213,13 +1636,22 @@ function renderSubmissions() {
                 "🖼 Generate Artwork Preview"
               )
             }
+
           </button>
+
 
           <button
             class="secondary"
             onclick="approveSubmission('${s.id}')"
-            ${artworkFailed ? "disabled" : ""}
+            ${
+              artworkFailed
+              ?
+              "disabled"
+              :
+              ""
+            }
           >
+
             ${
               artworkFailed
               ?
@@ -1227,7 +1659,9 @@ function renderSubmissions() {
               :
               "✅ Approve & Publish"
             }
+
           </button>
+
 
           <button
             class="gold"
@@ -1236,12 +1670,14 @@ function renderSubmissions() {
             🟡 Needs Review
           </button>
 
+
           <button
             class="danger"
             onclick="rejectDuplicate('${s.id}')"
           >
             🟣 Reject Duplicate
           </button>
+
 
           <button
             class="danger"
@@ -1250,6 +1686,7 @@ function renderSubmissions() {
             🚫 Reject Spam
           </button>
 
+
           <button onclick="openOriginalAdmin()">
             Open Submissions Admin
           </button>
@@ -1257,56 +1694,148 @@ function renderSubmissions() {
         </div>
 
       </div>
+
       `;
     }
   ).join("");
 }
 
+
+// ================================================================
+// STATUS PILLS
+// ================================================================
+
 function recommendationPill(rec) {
 
-  if (rec === "APPROVE") {
-    return `<span class="pill approve">AI: APPROVE</span>`;
+  if (
+    rec ===
+    "APPROVE"
+  ) {
+
+    return `
+      <span class="pill approve">
+        AI: APPROVE
+      </span>
+    `;
   }
 
-  if (rec === "REVIEW") {
-    return `<span class="pill review">AI: REVIEW</span>`;
+  if (
+    rec ===
+    "REVIEW"
+  ) {
+
+    return `
+      <span class="pill review">
+        AI: REVIEW
+      </span>
+    `;
   }
 
-  if (rec === "DUPLICATE") {
-    return `<span class="pill duplicate">AI: DUPLICATE</span>`;
+  if (
+    rec ===
+    "DUPLICATE"
+  ) {
+
+    return `
+      <span class="pill duplicate">
+        AI: DUPLICATE
+      </span>
+    `;
   }
 
-  if (rec === "REJECT") {
-    return `<span class="pill reject">AI: REJECT</span>`;
+  if (
+    rec ===
+    "REJECT"
+  ) {
+
+    return `
+      <span class="pill reject">
+        AI: REJECT
+      </span>
+    `;
   }
 
-  return `<span class="pill none">AI: NOT REVIEWED</span>`;
+  return `
+    <span class="pill none">
+      AI: NOT REVIEWED
+    </span>
+  `;
 }
 
-function statusPill(label, status) {
+
+function statusPill(
+  label,
+  status
+) {
 
   if (!status) {
-    return `<span class="pill none">${label}: NOT CHECKED</span>`;
+
+    return `
+      <span class="pill none">
+        ${label}: NOT CHECKED
+      </span>
+    `;
   }
 
-  if (status === "PASS") {
-    return `<span class="pill pass">${label}: PASS</span>`;
+  if (
+    status ===
+    "PASS"
+  ) {
+
+    return `
+      <span class="pill pass">
+        ${label}: PASS
+      </span>
+    `;
   }
 
-  if (status === "WARNING") {
-    return `<span class="pill warning">${label}: WARNING</span>`;
+  if (
+    status ===
+    "WARNING"
+  ) {
+
+    return `
+      <span class="pill warning">
+        ${label}: WARNING
+      </span>
+    `;
   }
 
-  if (status === "BLOCK") {
-    return `<span class="pill block">${label}: BLOCK</span>`;
+  if (
+    status ===
+    "BLOCK"
+  ) {
+
+    return `
+      <span class="pill block">
+        ${label}: BLOCK
+      </span>
+    `;
   }
 
-  if (status === "REVIEW") {
-    return `<span class="pill warning">${label}: REVIEW</span>`;
+  if (
+    status ===
+    "REVIEW"
+  ) {
+
+    return `
+      <span class="pill warning">
+        ${label}: REVIEW
+      </span>
+    `;
   }
 
-  return `<span class="pill none">${label}: ${escapeHtml(status)}</span>`;
+  return `
+    <span class="pill none">
+      ${label}: ${escapeHtml(status)}
+    </span>
+  `;
 }
+
+
+// ================================================================
+// AI REVIEW
+// ================================================================
 
 async function reviewOne(id) {
 
@@ -1314,12 +1843,15 @@ async function reviewOne(id) {
 
   renderSubmissions();
 
-  const { data, error } =
+  const {
+    data,
+    error
+  } =
   await client.functions.invoke(
     "review-submission-v2",
     {
-      body: {
-        submission_id: id
+      body:{
+        submission_id:id
       }
     }
   );
@@ -1349,6 +1881,7 @@ async function reviewOne(id) {
   await loadSubmissions();
 }
 
+
 async function reviewAllPending() {
 
   const targets =
@@ -1373,6 +1906,7 @@ async function reviewAllPending() {
       `Run AI review on ${targets.length} pending submission${targets.length === 1 ? "" : "s"}?`
     )
   ) {
+
     return;
   }
 
@@ -1389,7 +1923,9 @@ async function reviewAllPending() {
   let completed = 0;
   let failed = 0;
 
-  for (const s of targets) {
+  for (
+    const s of targets
+  ) {
 
     runningReviewIds.add(
       s.id
@@ -1414,11 +1950,14 @@ async function reviewAllPending() {
       ) +
       "%";
 
-    const { data, error } =
+    const {
+      data,
+      error
+    } =
     await client.functions.invoke(
       "review-submission-v2",
       {
-        body: {
+        body:{
           submission_id:
             s.id
         }
@@ -1482,6 +2021,11 @@ async function reviewAllPending() {
   );
 }
 
+
+// ================================================================
+// APPROVAL
+// ================================================================
+
 async function approveSubmission(id) {
 
   const s =
@@ -1497,18 +2041,35 @@ async function approveSubmission(id) {
     );
   }
 
+
+  // ------------------------------------------------------------
+  // ARTWORK SAFETY LOCK
+  // ------------------------------------------------------------
+
   if (
     s.ai_artwork_status ===
     "safety_failed"
   ) {
 
+    const details =
+    s.ai_artwork_safety_flags
+    ?
+    "\n\nDetected:\n" +
+    s.ai_artwork_safety_flags
+    :
+    "";
+
     return alert(
-      "This artwork FAILED the automatic artwork safety check.\n\n" +
-      "It may contain a jersey number, logo, name, readable text, branding, " +
-      "or another prohibited visual element.\n\n" +
-      "Regenerate the artwork before publishing."
+      "This artwork FAILED the automatic artwork safety check." +
+      details +
+      "\n\nRegenerate or review the artwork before publishing."
     );
   }
+
+
+  // ------------------------------------------------------------
+  // SOURCE SAFETY LOCK
+  // ------------------------------------------------------------
 
   if (
     s.ai_source_safety_status ===
@@ -1520,12 +2081,14 @@ async function approveSubmission(id) {
     );
   }
 
+
   const artworkNote =
   s.ai_artwork_url
   ?
   "with the approved artwork preview"
   :
   "without artwork";
+
 
   if (
     !confirm(
@@ -1537,12 +2100,16 @@ async function approveSubmission(id) {
     return;
   }
 
+
   const result =
   await insertPublishedMistake(
     s
   );
 
-  if (!result) return;
+  if (!result) {
+    return;
+  }
+
 
   await finishApprovedSubmission(
     s,
@@ -1550,8 +2117,14 @@ async function approveSubmission(id) {
     "Approved and published from AI Editorial Studio."
   );
 
+
   await loadSubmissions();
 }
+
+
+// ================================================================
+// ARTWORK GENERATION
+// ================================================================
 
 async function generateArtworkPreview(id) {
 
@@ -1568,22 +2141,17 @@ async function generateArtworkPreview(id) {
     );
   }
 
+
   const title =
   s.ai_generated_title ||
   s.title ||
   "Untitled Mistake";
 
-  const verb =
-  s.ai_artwork_url
-  ?
-  "regenerate"
-  :
-  "generate";
 
   if (
     !confirm(
       `Generate artwork preview for "${title}"?\n\n` +
-      "This uses the OpenAI image API and may cost about 4 cents. " +
+      "This uses the OpenAI image API. " +
       "It will NOT publish the mistake or email the contributor."
     )
   ) {
@@ -1591,20 +2159,24 @@ async function generateArtworkPreview(id) {
     return;
   }
 
+
   generatingArtworkIds.add(
     id
   );
 
   renderSubmissions();
 
+
   const artwork =
   await generateArtworkForSubmission(
     id
   );
 
+
   generatingArtworkIds.delete(
     id
   );
+
 
   if (
     !artwork ||
@@ -1620,6 +2192,11 @@ async function generateArtworkPreview(id) {
     return;
   }
 
+
+  // ------------------------------------------------------------
+  // FAILED
+  // ------------------------------------------------------------
+
   if (
     artwork.artwork_status ===
     "safety_failed"
@@ -1627,12 +2204,15 @@ async function generateArtworkPreview(id) {
 
     const problems =
     Array.isArray(
-      artwork.artwork_safety?.prohibited_elements
+      artwork.artwork_safety
+      ?.prohibited_elements
     )
     ?
-    artwork.artwork_safety.prohibited_elements
+    artwork.artwork_safety
+      .prohibited_elements
     :
     [];
+
 
     const problemText =
     problems.length
@@ -1644,25 +2224,78 @@ async function generateArtworkPreview(id) {
     :
     "";
 
+
+    const confidence =
+    artwork.artwork_safety
+      ?.confidence != null
+    ?
+    Math.round(
+      Number(
+        artwork.artwork_safety.confidence
+      ) *
+      100
+    )
+    :
+    null;
+
+
     alert(
       "⚠️ ARTWORK SAFETY CHECK FAILED\n\n" +
       "The artwork was generated, but it should NOT be published." +
       problemText +
-      "\n\nReview the image and click Regenerate Artwork Preview."
+      (
+        confidence !== null
+        ?
+        `\n\nInspector confidence: ${confidence}%`
+        :
+        ""
+      ) +
+      "\n\nReview the image and click Regenerate Artwork Preview if necessary."
     );
 
   } else {
 
+    // ------------------------------------------------------------
+    // PASSED
+    // ------------------------------------------------------------
+
+    const confidence =
+    artwork.artwork_safety
+      ?.confidence != null
+    ?
+    Math.round(
+      Number(
+        artwork.artwork_safety.confidence
+      ) *
+      100
+    )
+    :
+    null;
+
+
     alert(
       "✅ ARTWORK CHECK PASSED\n\n" +
-      "The automated check did not detect jersey numbers, logos, names, " +
-      "readable branding, or other prohibited visual elements.\n\n" +
-      "Please still visually review the artwork before publishing."
+      "The automated check did not find a clearly identifiable jersey number, " +
+      "logo, player name, readable branding, or other prohibited visual element." +
+      (
+        confidence !== null
+        ?
+        `\n\nInspector confidence: ${confidence}%`
+        :
+        ""
+      ) +
+      "\n\nPlease still visually review the artwork before publishing."
     );
   }
 
+
   await loadSubmissions();
 }
+
+
+// ================================================================
+// PUBLISH PAYLOAD
+// ================================================================
 
 function buildPublishPayload(s) {
 
@@ -1776,6 +2409,11 @@ function buildPublishPayload(s) {
   };
 }
 
+
+// ================================================================
+// INSERT PUBLISHED MISTAKE
+// ================================================================
+
 async function insertPublishedMistake(s) {
 
   const payload =
@@ -1798,6 +2436,7 @@ async function insertPublishedMistake(s) {
     )
     .single();
 
+
   if (
     insertError ||
     !data
@@ -1814,6 +2453,7 @@ async function insertPublishedMistake(s) {
     return null;
   }
 
+
   return {
     mistake:
       data,
@@ -1821,6 +2461,11 @@ async function insertPublishedMistake(s) {
     payload
   };
 }
+
+
+// ================================================================
+// FINISH APPROVAL
+// ================================================================
 
 async function finishApprovedSubmission(
   s,
@@ -1835,6 +2480,7 @@ async function finishApprovedSubmission(
   await client
     .from("mistake_submissions")
     .update({
+
       status:
         "approved",
 
@@ -1842,11 +2488,13 @@ async function finishApprovedSubmission(
 
       ai_status:
         "reviewed"
+
     })
     .eq(
       "id",
       s.id
     );
+
 
   if (
     updateError
@@ -1863,6 +2511,7 @@ async function finishApprovedSubmission(
     return;
   }
 
+
   await sendSubmissionEmail(
     s.submitter_email,
     publishedTitle,
@@ -1870,6 +2519,11 @@ async function finishApprovedSubmission(
     "Your submission was approved and published on SportsMistakes."
   );
 }
+
+
+// ================================================================
+// ARTWORK ADMIN SECRET
+// ================================================================
 
 function getArtworkAdminSecret() {
 
@@ -1879,6 +2533,7 @@ function getArtworkAdminSecret() {
   ) ||
   "";
 
+
   if (!secret) {
 
     secret =
@@ -1886,6 +2541,7 @@ function getArtworkAdminSecret() {
       "Enter your ARTWORK_ADMIN_SECRET to generate artwork:"
     ) ||
     "";
+
 
     if (secret) {
 
@@ -1896,8 +2552,14 @@ function getArtworkAdminSecret() {
     }
   }
 
+
   return secret;
 }
+
+
+// ================================================================
+// CALL GENERATE-ARTWORK EDGE FUNCTION
+// ================================================================
 
 async function generateArtworkForSubmission(
   submissionId
@@ -1905,6 +2567,7 @@ async function generateArtworkForSubmission(
 
   const secret =
   getArtworkAdminSecret();
+
 
   if (!secret) {
 
@@ -1915,10 +2578,12 @@ async function generateArtworkForSubmission(
     return null;
   }
 
+
   const button =
   document.querySelector(
     `[data-generate-artwork-id="${submissionId}"]`
   );
+
 
   const originalText =
   button
@@ -1926,6 +2591,7 @@ async function generateArtworkForSubmission(
   button.innerText
   :
   "";
+
 
   if (button) {
 
@@ -1936,15 +2602,18 @@ async function generateArtworkForSubmission(
     "🖼 Generating Artwork...";
   }
 
+
   try {
 
     const {
       data:
         sessionData,
+
       error:
         sessionError
     } =
     await client.auth.getSession();
+
 
     if (
       sessionError
@@ -1953,9 +2622,11 @@ async function generateArtworkForSubmission(
       throw sessionError;
     }
 
+
     const accessToken =
     sessionData?.session
     ?.access_token;
+
 
     if (
       !accessToken
@@ -1966,14 +2637,17 @@ async function generateArtworkForSubmission(
       );
     }
 
+
     const response =
     await fetch(
       `${SUPABASE_URL}/functions/v1/generate-artwork`,
       {
+
         method:
           "POST",
 
         headers: {
+
           "Content-Type":
             "application/json",
 
@@ -1989,16 +2663,21 @@ async function generateArtworkForSubmission(
 
         body:
           JSON.stringify({
+
             submission_id:
               submissionId
+
           })
       }
     );
 
+
     const rawText =
     await response.text();
 
+
     let data;
+
 
     try {
 
@@ -2014,6 +2693,7 @@ async function generateArtworkForSubmission(
     } catch {
 
       data = {
+
         success:
           false,
 
@@ -2025,6 +2705,7 @@ async function generateArtworkForSubmission(
       };
     }
 
+
     if (
       response.status ===
       401
@@ -2034,14 +2715,17 @@ async function generateArtworkForSubmission(
         "sportsmistakes_artwork_admin_secret"
       );
 
+
       alert(
         "Incorrect artwork admin password.\n\n" +
         "The saved password has been cleared. " +
         "Click Generate Artwork Preview to retry."
       );
 
+
       return null;
     }
+
 
     if (
       !response.ok ||
@@ -2053,33 +2737,46 @@ async function generateArtworkForSubmission(
         data
       );
 
+
       const detailMessage =
+
       data?.details
       ?.error
       ?.message
+
       ||
+
       data?.details
       ?.message
+
       ||
+
       data?.error
+
       ||
+
       `Request failed with status ${response.status}`;
+
 
       alert(
         "Artwork generation failed:\n\n" +
         detailMessage
       );
 
+
       return null;
     }
 
+
     return data;
+
 
   } catch (err) {
 
     console.error(
       err
     );
+
 
     alert(
       "Artwork generation failed:\n\n" +
@@ -2089,9 +2786,12 @@ async function generateArtworkForSubmission(
       )
     );
 
+
     return null;
 
+
   } finally {
+
 
     if (button) {
 
@@ -2105,6 +2805,11 @@ async function generateArtworkForSubmission(
   }
 }
 
+
+// ================================================================
+// REJECT DUPLICATE
+// ================================================================
+
 async function rejectDuplicate(id) {
 
   const s =
@@ -2113,7 +2818,10 @@ async function rejectDuplicate(id) {
     x.id === id
   );
 
-  if (!s) return;
+  if (!s) {
+    return;
+  }
+
 
   const note =
   `Rejected as duplicate${
@@ -2125,6 +2833,7 @@ async function rejectDuplicate(id) {
     ""
   }.`;
 
+
   if (
     !confirm(note)
   ) {
@@ -2132,11 +2841,13 @@ async function rejectDuplicate(id) {
     return;
   }
 
+
   await updateSubmissionStatus(
     id,
     "rejected",
     note
   );
+
 
   await sendSubmissionEmail(
     s.submitter_email,
@@ -2149,6 +2860,11 @@ async function rejectDuplicate(id) {
   );
 }
 
+
+// ================================================================
+// REJECT SPAM
+// ================================================================
+
 async function rejectSpam(id) {
 
   const s =
@@ -2157,7 +2873,10 @@ async function rejectSpam(id) {
     x.id === id
   );
 
-  if (!s) return;
+  if (!s) {
+    return;
+  }
+
 
   if (
     !confirm(
@@ -2168,11 +2887,13 @@ async function rejectSpam(id) {
     return;
   }
 
+
   await updateSubmissionStatus(
     id,
     "rejected",
     "Rejected as spam/off-topic/unsafe from AI Review 2.0."
   );
+
 
   await sendSubmissionEmail(
     s.submitter_email,
@@ -2185,6 +2906,11 @@ async function rejectSpam(id) {
   );
 }
 
+
+// ================================================================
+// NEEDS REVIEW
+// ================================================================
+
 async function markNeedsReview(id) {
 
   const s =
@@ -2193,7 +2919,10 @@ async function markNeedsReview(id) {
     x.id === id
   );
 
-  if (!s) return;
+  if (!s) {
+    return;
+  }
+
 
   const {
     error
@@ -2201,6 +2930,7 @@ async function markNeedsReview(id) {
   await client
     .from("mistake_submissions")
     .update({
+
       ai_status:
         "reviewed",
 
@@ -2209,11 +2939,13 @@ async function markNeedsReview(id) {
 
       review_notes:
         "Marked for human review from AI Review 2.0."
+
     })
     .eq(
       "id",
       id
     );
+
 
   if (
     error
@@ -2230,6 +2962,7 @@ async function markNeedsReview(id) {
     return;
   }
 
+
   await sendSubmissionEmail(
     s.submitter_email,
     s.title ||
@@ -2240,8 +2973,14 @@ async function markNeedsReview(id) {
     "No action is needed right now."
   );
 
+
   await loadSubmissions();
 }
+
+
+// ================================================================
+// UPDATE SUBMISSION STATUS
+// ================================================================
 
 async function updateSubmissionStatus(
   id,
@@ -2263,6 +3002,7 @@ async function updateSubmissionStatus(
       id
     );
 
+
   if (
     error
   ) {
@@ -2278,8 +3018,14 @@ async function updateSubmissionStatus(
     return;
   }
 
+
   await loadSubmissions();
 }
+
+
+// ================================================================
+// EMAIL
+// ================================================================
 
 async function sendSubmissionEmail(
   email,
@@ -2288,7 +3034,10 @@ async function sendSubmissionEmail(
   reason = ""
 ) {
 
-  if (!email) return;
+  if (!email) {
+    return;
+  }
+
 
   try {
 
@@ -2299,14 +3048,17 @@ async function sendSubmissionEmail(
     await client.functions.invoke(
       "send-submission-email",
       {
+
         body: {
           email,
           title,
           status,
           reason
         }
+
       }
     );
+
 
     if (
       error ||
@@ -2323,6 +3075,7 @@ async function sendSubmissionEmail(
       );
     }
 
+
   } catch (err) {
 
     console.error(
@@ -2332,11 +3085,21 @@ async function sendSubmissionEmail(
   }
 }
 
+
+// ================================================================
+// NAVIGATION
+// ================================================================
+
 function openOriginalAdmin() {
 
   window.location.href =
   "admin-submissions.html";
 }
+
+
+// ================================================================
+// ESCAPE HTML
+// ================================================================
 
 function escapeHtml(value) {
 
@@ -2365,6 +3128,11 @@ function escapeHtml(value) {
       "&#039;"
     );
 }
+
+
+// ================================================================
+// START
+// ================================================================
 
 loadSubmissions();
 
