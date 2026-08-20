@@ -5,282 +5,3006 @@
 <title>Content AI Studio | SportsMistakes Admin</title>
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
 <style>
-:root{--bg:#07111f;--panel:#0d1b2e;--line:#203852;--blue:#1e90ff;--yellow:#ffcc00;--muted:#b7c7d9;--green:#166534;--red:#8b1e1e}
-*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:var(--bg);color:white}.top-nav{display:flex;justify-content:space-between;align-items:center;background:var(--panel);border-bottom:1px solid var(--line);padding:14px 20px}.brand{font-size:20px;font-weight:bold}.brand span{color:var(--yellow)}.links{display:flex;gap:15px;align-items:center;flex-wrap:wrap}.links a{color:#74b9ff;text-decoration:none;font-weight:bold}.logout{background:#444;color:white;border:0;border-radius:8px;padding:9px 12px;font-weight:bold;cursor:pointer}.wrap{max-width:1280px;margin:32px auto 70px;padding:0 20px}.intro{color:var(--muted);line-height:1.55}.toolbar{display:grid;grid-template-columns:1fr auto auto;gap:10px;margin:22px 0}.toolbar input,.toolbar select{width:100%;background:var(--panel);color:white;border:1px solid var(--line);border-radius:10px;padding:12px}.btn{border:0;border-radius:9px;padding:11px 14px;font-weight:bold;color:white;background:var(--blue);cursor:pointer}.btn:disabled{opacity:.5;cursor:not-allowed}.btn.green{background:var(--green)}.btn.red{background:var(--red)}.status{white-space:pre-wrap;color:var(--yellow);margin:12px 0}.layout{display:grid;grid-template-columns:340px 1fr;gap:18px}.list,.studio{background:var(--panel);border:1px solid var(--line);border-radius:16px}.list{max-height:900px;overflow:auto}.item{padding:14px;border-bottom:1px solid var(--line);cursor:pointer}.item:hover,.item.active{background:#132843}.item-title{font-weight:bold}.item-meta{color:#9fb2c7;font-size:12px;margin-top:5px}.empty{padding:28px;color:var(--muted)}.studio{padding:20px}.hero{display:grid;grid-template-columns:130px 1fr;gap:16px;align-items:start}.art{width:130px;height:130px;border-radius:12px;object-fit:cover;background:#07111f;border:1px solid var(--line)}h1{margin:0 0 8px;font-size:34px}h2{margin:0 0 8px}.meta{color:#9fb2c7}.summary{color:var(--muted);line-height:1.55}.actions{display:flex;gap:10px;flex-wrap:wrap;margin:18px 0}.tabs{display:flex;gap:8px;flex-wrap:wrap;border-bottom:1px solid var(--line);padding-bottom:10px}.tab{background:#132843;border:1px solid var(--line);color:white;border-radius:8px;padding:9px 11px;cursor:pointer}.tab.active{background:var(--blue)}.asset{display:none;margin-top:16px}.asset.active{display:block}.field{margin:0 0 15px}.field label{display:flex;justify-content:space-between;font-weight:bold;margin-bottom:7px}.field textarea,.field input{width:100%;background:#07111f;color:white;border:1px solid var(--line);border-radius:10px;padding:12px;line-height:1.5}.field textarea{min-height:140px;resize:vertical}.copy{font-size:12px;padding:6px 9px}.badge{display:inline-block;padding:5px 8px;border-radius:999px;background:#132843;color:#9fd3ff;font-size:12px}.counter{color:#9fb2c7;font-weight:normal;font-size:12px}.hidden{display:none}
-.video-panel{display:grid;gap:16px}
-.video-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-.video-card{background:#07111f;border:1px solid var(--line);border-radius:12px;padding:16px}
-.video-card h3{margin:0 0 8px}
-.video-card p{margin:0 0 14px;color:var(--muted);line-height:1.5}
-.video-preview{width:100%;max-width:360px;aspect-ratio:9/16;background:#000;border:1px solid var(--line);border-radius:12px}
-.audio-preview{width:100%;margin-top:10px}
-.video-actions{display:flex;gap:10px;flex-wrap:wrap}
-.video-status{display:inline-block;padding:6px 9px;border-radius:999px;background:#132843;color:#9fd3ff;font-size:12px;margin-bottom:10px}
-.download-link{display:inline-block;text-decoration:none}
-@media(max-width:850px){.video-grid{grid-template-columns:1fr}}@media(max-width:850px){.layout{grid-template-columns:1fr}.list{max-height:330px}.toolbar{grid-template-columns:1fr}.hero{grid-template-columns:1fr}.art{width:100%;height:220px}}
+:root{
+  --bg:#07111f;
+  --panel:#0d1b2e;
+  --line:#203852;
+  --blue:#1e90ff;
+  --yellow:#ffcc00;
+  --muted:#b7c7d9;
+  --green:#166534;
+  --red:#8b1e1e;
+}
 
-.variant-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-.variant-card{background:#07111f;border:1px solid var(--line);border-radius:12px;padding:16px}
-.variant-card h3{margin:0 0 6px}.variant-tag{display:inline-block;border-radius:999px;padding:5px 8px;background:#132843;color:#9fd3ff;font-size:12px;font-weight:bold}
-.plan-list{margin-top:10px;display:grid;gap:7px}.plan-shot{background:#0d1b2e;border:1px solid #203852;border-radius:8px;padding:9px;font-size:12px;color:#b7c7d9}.plan-shot strong{color:#fff}
-.video-two{display:grid;grid-template-columns:1fr 1fr;gap:14px}.video-two video{width:100%;max-width:360px;aspect-ratio:9/16;background:#000;border:1px solid var(--line);border-radius:12px}
-@media(max-width:900px){.variant-grid,.video-two{grid-template-columns:1fr}}
+*{box-sizing:border-box}
 
+body{
+  margin:0;
+  font-family:Arial,sans-serif;
+  background:var(--bg);
+  color:white;
+}
+
+.top-nav{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  background:var(--panel);
+  border-bottom:1px solid var(--line);
+  padding:14px 20px;
+}
+
+.brand{
+  font-size:20px;
+  font-weight:bold;
+}
+
+.brand span{
+  color:var(--yellow);
+}
+
+.links{
+  display:flex;
+  gap:15px;
+  align-items:center;
+  flex-wrap:wrap;
+}
+
+.links a{
+  color:#74b9ff;
+  text-decoration:none;
+  font-weight:bold;
+}
+
+.logout{
+  background:#444;
+  color:white;
+  border:0;
+  border-radius:8px;
+  padding:9px 12px;
+  font-weight:bold;
+  cursor:pointer;
+}
+
+.wrap{
+  max-width:1280px;
+  margin:32px auto 70px;
+  padding:0 20px;
+}
+
+.intro{
+  color:var(--muted);
+  line-height:1.55;
+}
+
+.toolbar{
+  display:grid;
+  grid-template-columns:1fr auto auto;
+  gap:10px;
+  margin:22px 0;
+}
+
+.toolbar input,
+.toolbar select{
+  width:100%;
+  background:var(--panel);
+  color:white;
+  border:1px solid var(--line);
+  border-radius:10px;
+  padding:12px;
+}
+
+.btn{
+  border:0;
+  border-radius:9px;
+  padding:11px 14px;
+  font-weight:bold;
+  color:white;
+  background:var(--blue);
+  cursor:pointer;
+}
+
+.btn:disabled{
+  opacity:.5;
+  cursor:not-allowed;
+}
+
+.btn.green{
+  background:var(--green);
+}
+
+.btn.red{
+  background:var(--red);
+}
+
+.status{
+  white-space:pre-wrap;
+  color:var(--yellow);
+  margin:12px 0;
+}
+
+.layout{
+  display:grid;
+  grid-template-columns:340px 1fr;
+  gap:18px;
+}
+
+.list,
+.studio{
+  background:var(--panel);
+  border:1px solid var(--line);
+  border-radius:16px;
+}
+
+.list{
+  max-height:900px;
+  overflow:auto;
+}
+
+.item{
+  padding:14px;
+  border-bottom:1px solid var(--line);
+  cursor:pointer;
+}
+
+.item:hover,
+.item.active{
+  background:#132843;
+}
+
+.item-title{
+  font-weight:bold;
+}
+
+.item-meta{
+  color:#9fb2c7;
+  font-size:12px;
+  margin-top:5px;
+}
+
+.empty{
+  padding:28px;
+  color:var(--muted);
+}
+
+.studio{
+  padding:20px;
+}
+
+.hero{
+  display:grid;
+  grid-template-columns:130px 1fr;
+  gap:16px;
+  align-items:start;
+}
+
+.art{
+  width:130px;
+  height:130px;
+  border-radius:12px;
+  object-fit:cover;
+  background:#07111f;
+  border:1px solid var(--line);
+}
+
+h1{
+  margin:0 0 8px;
+  font-size:34px;
+}
+
+h2{
+  margin:0 0 8px;
+}
+
+.meta{
+  color:#9fb2c7;
+}
+
+.summary{
+  color:var(--muted);
+  line-height:1.55;
+}
+
+.actions{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  margin:18px 0;
+}
+
+.tabs{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+  border-bottom:1px solid var(--line);
+  padding-bottom:10px;
+}
+
+.tab{
+  background:#132843;
+  border:1px solid var(--line);
+  color:white;
+  border-radius:8px;
+  padding:9px 11px;
+  cursor:pointer;
+}
+
+.tab.active{
+  background:var(--blue);
+}
+
+.asset{
+  display:none;
+  margin-top:16px;
+}
+
+.asset.active{
+  display:block;
+}
+
+.field{
+  margin:0 0 15px;
+}
+
+.field label{
+  display:flex;
+  justify-content:space-between;
+  font-weight:bold;
+  margin-bottom:7px;
+}
+
+.field textarea,
+.field input{
+  width:100%;
+  background:#07111f;
+  color:white;
+  border:1px solid var(--line);
+  border-radius:10px;
+  padding:12px;
+  line-height:1.5;
+}
+
+.field textarea{
+  min-height:140px;
+  resize:vertical;
+}
+
+.copy{
+  font-size:12px;
+  padding:6px 9px;
+}
+
+.badge{
+  display:inline-block;
+  padding:5px 8px;
+  border-radius:999px;
+  background:#132843;
+  color:#9fd3ff;
+  font-size:12px;
+}
+
+.counter{
+  color:#9fb2c7;
+  font-weight:normal;
+  font-size:12px;
+}
+
+.hidden{
+  display:none;
+}
+
+.video-panel{
+  display:grid;
+  gap:16px;
+}
+
+.video-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:14px;
+}
+
+.video-card{
+  background:#07111f;
+  border:1px solid var(--line);
+  border-radius:12px;
+  padding:16px;
+}
+
+.video-card h3{
+  margin:0 0 8px;
+}
+
+.video-card p{
+  margin:0 0 14px;
+  color:var(--muted);
+  line-height:1.5;
+}
+
+.video-preview{
+  width:100%;
+  max-width:360px;
+  aspect-ratio:9/16;
+  background:#000;
+  border:1px solid var(--line);
+  border-radius:12px;
+}
+
+.audio-preview{
+  width:100%;
+  margin-top:10px;
+}
+
+.video-actions{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+}
+
+.video-status{
+  display:inline-block;
+  padding:6px 9px;
+  border-radius:999px;
+  background:#132843;
+  color:#9fd3ff;
+  font-size:12px;
+  margin-bottom:10px;
+}
+
+.download-link{
+  display:inline-block;
+  text-decoration:none;
+}
+
+.variant-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:14px;
+}
+
+.variant-card{
+  background:#07111f;
+  border:1px solid var(--line);
+  border-radius:12px;
+  padding:16px;
+}
+
+.variant-card h3{
+  margin:0 0 6px;
+}
+
+.variant-tag{
+  display:inline-block;
+  border-radius:999px;
+  padding:5px 8px;
+  background:#132843;
+  color:#9fd3ff;
+  font-size:12px;
+  font-weight:bold;
+}
+
+.plan-list{
+  margin-top:10px;
+  display:grid;
+  gap:10px;
+}
+
+.plan-shot{
+  background:#0d1b2e;
+  border:1px solid #203852;
+  border-radius:10px;
+  padding:10px;
+  font-size:12px;
+  color:#b7c7d9;
+}
+
+.plan-shot strong{
+  color:#fff;
+}
+
+.shot-row{
+  display:grid;
+  grid-template-columns:90px 1fr;
+  gap:10px;
+  align-items:start;
+}
+
+.shot-preview{
+  width:90px;
+  height:160px;
+  border-radius:8px;
+  background:#000;
+  border:1px solid #203852;
+}
+
+.visual-map{
+  margin-top:10px;
+  padding:10px;
+  border:1px solid #203852;
+  border-radius:9px;
+  background:#0d1b2e;
+  color:#b7c7d9;
+  font-size:12px;
+  line-height:1.5;
+}
+
+.visual-map strong{
+  color:white;
+}
+
+.video-two{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:14px;
+}
+
+.video-two video{
+  width:100%;
+  max-width:360px;
+  aspect-ratio:9/16;
+  background:#000;
+  border:1px solid var(--line);
+  border-radius:12px;
+}
+
+@media(max-width:900px){
+  .variant-grid,
+  .video-two{
+    grid-template-columns:1fr;
+  }
+}
+
+@media(max-width:850px){
+  .video-grid{
+    grid-template-columns:1fr;
+  }
+
+  .layout{
+    grid-template-columns:1fr;
+  }
+
+  .list{
+    max-height:330px;
+  }
+
+  .toolbar{
+    grid-template-columns:1fr;
+  }
+
+  .hero{
+    grid-template-columns:1fr;
+  }
+
+  .art{
+    width:100%;
+    height:220px;
+  }
+}
 </style>
 </head>
-<body>
-<nav class="top-nav"><div class="brand">Sports<span>Mistakes</span> Content Studio</div><div class="links"><a href="admin-dashboard.html">Dashboard</a><a href="admin-ai-review.html">AI Review</a><a href="admin-bulk-artwork.html">Artwork</a><a href="index.html">Public Site</a><button class="logout" onclick="logout()">Log Out</button></div></nav>
-<div class="wrap">
-<h1>Content AI Studio</h1>
-<p class="intro">Select a published mistake, generate a complete marketing package, review every item, copy it to the appropriate platform, and mark the package approved or published.</p>
-<div class="toolbar"><input id="search" placeholder="Search published mistakes…"><select id="filter"><option value="all">All mistakes</option><option value="missing">Needs content</option><option value="draft">Draft content</option><option value="approved">Approved</option><option value="published">Published</option></select><button class="btn" onclick="loadMistakes()">Refresh</button></div>
-<div id="status" class="status">Checking admin access…</div>
-<div class="layout">
-  <div class="list" id="mistakeList"><div class="empty">Loading mistakes…</div></div>
-  <div class="studio" id="studio"><div class="empty">Choose a mistake from the left.</div></div>
-</div>
-</div>
-<script>
-const SUPABASE_URL="https://scwjlljurircxuufhqih.supabase.co";
-const SUPABASE_ANON_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNjd2psbGp1cmlyY3h1dWZocWloIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyNjUyMjcsImV4cCI6MjA5Njg0MTIyN30.WF0HRRb9mAkuOySjabTd8CZXVZRqF0MhMl0N2mafnns";
-const ADMIN_EMAIL="jason.susnick@gmail.com";
-const client=supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
-let mistakes=[], assetsByMistake={}, current=null;
 
-async function requireAdmin(){const {data}=await client.auth.getSession();const s=data?.session;if(!s){location.href="admin-login.html?redirect=admin-content-studio.html";return false}if((s.user?.email||"").toLowerCase()!==ADMIN_EMAIL.toLowerCase()){document.body.innerHTML='<div style="padding:50px;color:white">Admin access denied.</div>';return false}return true}
-async function logout(){await client.auth.signOut();location.href="admin-login.html"}
-function esc(v){return String(v??"").replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]))}
-function pick(o,names){for(const n of names)if(o&&o[n]!=null&&o[n]!=="")return o[n];return ""}
-function titleOf(m){return pick(m,["title","mistake_title","name"])||"Untitled mistake"}
-function sportOf(m){return pick(m,["sport","league"])||"Sports"}
-function yearOf(m){return pick(m,["year","event_year"])||""}
-function artworkOf(m){return pick(m,["artwork_url","image_url","art_url"])||""}
+<body>
+
+<nav class="top-nav">
+  <div class="brand">
+    Sports<span>Mistakes</span> Content Studio
+  </div>
+
+  <div class="links">
+    <a href="admin-dashboard.html">Dashboard</a>
+    <a href="admin-ai-review.html">AI Review</a>
+    <a href="admin-bulk-artwork.html">Artwork</a>
+    <a href="index.html">Public Site</a>
+    <button class="logout" onclick="logout()">Log Out</button>
+  </div>
+</nav>
+
+<div class="wrap">
+
+<h1>Content AI Studio</h1>
+
+<p class="intro">
+Select a published mistake, generate a complete marketing package, review every item,
+copy it to the appropriate platform, and mark the package approved or published.
+</p>
+
+<div class="toolbar">
+
+<input
+  id="search"
+  placeholder="Search published mistakes…"
+>
+
+<select id="filter">
+  <option value="all">All mistakes</option>
+  <option value="missing">Needs content</option>
+  <option value="draft">Draft content</option>
+  <option value="approved">Approved</option>
+  <option value="published">Published</option>
+</select>
+
+<button
+  class="btn"
+  onclick="loadMistakes()"
+>
+Refresh
+</button>
+
+</div>
+
+<div
+  id="status"
+  class="status"
+>
+Checking admin access…
+</div>
+
+<div class="layout">
+
+  <div
+    class="list"
+    id="mistakeList"
+  >
+    <div class="empty">
+      Loading mistakes…
+    </div>
+  </div>
+
+  <div
+    class="studio"
+    id="studio"
+  >
+    <div class="empty">
+      Choose a mistake from the left.
+    </div>
+  </div>
+
+</div>
+</div>
+
+<script>
+
+const SUPABASE_URL =
+"https://scwjlljurircxuufhqih.supabase.co";
+
+const SUPABASE_ANON_KEY =
+"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNjd2psbGp1cmlyY3h1dWZocWloIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyNjUyMjcsImV4cCI6MjA5Njg0MTIyN30.WF0HRRb9mAkuOySjabTd8CZXVZRqF0MhMl0N2mafnns";
+
+const ADMIN_EMAIL =
+"jason.susnick@gmail.com";
+
+const client =
+supabase.createClient(
+  SUPABASE_URL,
+  SUPABASE_ANON_KEY
+);
+
+let mistakes = [];
+let assetsByMistake = {};
+let current = null;
+
+async function requireAdmin(){
+
+  const {data} =
+  await client.auth.getSession();
+
+  const s =
+  data?.session;
+
+  if(!s){
+
+    location.href =
+    "admin-login.html?redirect=admin-content-studio.html";
+
+    return false;
+  }
+
+  if(
+    (s.user?.email || "").toLowerCase() !==
+    ADMIN_EMAIL.toLowerCase()
+  ){
+
+    document.body.innerHTML =
+    '<div style="padding:50px;color:white">Admin access denied.</div>';
+
+    return false;
+  }
+
+  return true;
+}
+
+async function logout(){
+
+  await client.auth.signOut();
+
+  location.href =
+  "admin-login.html";
+}
+
+function esc(v){
+
+  return String(
+    v ?? ""
+  ).replace(
+    /[&<>'"]/g,
+    c => ({
+      "&":"&amp;",
+      "<":"&lt;",
+      ">":"&gt;",
+      "'":"&#39;",
+      '"':"&quot;"
+    }[c])
+  );
+}
+
+function pick(o,names){
+
+  for(const n of names){
+
+    if(
+      o &&
+      o[n] != null &&
+      o[n] !== ""
+    ){
+      return o[n];
+    }
+  }
+
+  return "";
+}
+
+function titleOf(m){
+
+  return pick(
+    m,
+    [
+      "title",
+      "mistake_title",
+      "name"
+    ]
+  ) || "Untitled mistake";
+}
+
+function sportOf(m){
+
+  return pick(
+    m,
+    [
+      "sport",
+      "league"
+    ]
+  ) || "Sports";
+}
+
+function yearOf(m){
+
+  return pick(
+    m,
+    [
+      "year",
+      "event_year"
+    ]
+  ) || "";
+}
+
+function artworkOf(m){
+
+  return pick(
+    m,
+    [
+      "artwork_url",
+      "image_url",
+      "art_url"
+    ]
+  ) || "";
+}
 
 async function loadMistakes(){
- document.getElementById('status').textContent='Loading published mistakes and content packages…';
- const [mr,ar]=await Promise.all([
-  client.from('mistakes').select('*').order('created_at',{ascending:false}).limit(1000),
-  client.from('content_assets').select('*').order('updated_at',{ascending:false})
- ]);
- if(mr.error){document.getElementById('status').textContent='Could not load mistakes: '+mr.error.message;return}
- mistakes=mr.data||[]; assetsByMistake={};
- if(!ar.error)(ar.data||[]).forEach(a=>assetsByMistake[a.mistake_id]=a);
- else document.getElementById('status').textContent='Mistakes loaded. Run content-assets.sql before generating content.';
- renderList(); if(current){const fresh=mistakes.find(m=>m.id===current.id);if(fresh)selectMistake(fresh.id)}
- if(!ar.error)document.getElementById('status').textContent=`Loaded ${mistakes.length} mistakes and ${Object.keys(assetsByMistake).length} content packages.`;
+
+  document
+    .getElementById("status")
+    .textContent =
+    "Loading published mistakes and content packages…";
+
+  const [mr,ar] =
+  await Promise.all([
+    client
+      .from("mistakes")
+      .select("*")
+      .order(
+        "created_at",
+        {ascending:false}
+      )
+      .limit(1000),
+
+    client
+      .from("content_assets")
+      .select("*")
+      .order(
+        "updated_at",
+        {ascending:false}
+      )
+  ]);
+
+  if(mr.error){
+
+    document
+      .getElementById("status")
+      .textContent =
+      "Could not load mistakes: " +
+      mr.error.message;
+
+    return;
+  }
+
+  mistakes =
+  mr.data || [];
+
+  assetsByMistake = {};
+
+  if(!ar.error){
+
+    (ar.data || [])
+      .forEach(
+        a =>
+        assetsByMistake[a.mistake_id] = a
+      );
+
+  } else {
+
+    document
+      .getElementById("status")
+      .textContent =
+      "Mistakes loaded. Run content-assets.sql before generating content.";
+  }
+
+  renderList();
+
+  if(current){
+
+    const fresh =
+    mistakes.find(
+      m =>
+      m.id === current.id
+    );
+
+    if(fresh){
+      selectMistake(
+        fresh.id
+      );
+    }
+  }
+
+  if(!ar.error){
+
+    document
+      .getElementById("status")
+      .textContent =
+      `Loaded ${mistakes.length} mistakes and ${Object.keys(assetsByMistake).length} content packages.`;
+  }
 }
+
 function renderList(){
- const q=document.getElementById('search').value.toLowerCase(); const f=document.getElementById('filter').value;
- const filtered=mistakes.filter(m=>{const a=assetsByMistake[m.id];const text=(titleOf(m)+' '+sportOf(m)+' '+yearOf(m)).toLowerCase();if(q&&!text.includes(q))return false;if(f==='missing'&&a)return false;if(['draft','approved','published'].includes(f)&&a?.status!==f)return false;return true});
- document.getElementById('mistakeList').innerHTML=filtered.length?filtered.map(m=>{const a=assetsByMistake[m.id];return `<div class="item ${current?.id===m.id?'active':''}" onclick="selectMistake('${m.id}')"><div class="item-title">${esc(titleOf(m))}</div><div class="item-meta">${esc(sportOf(m))} ${esc(yearOf(m))} · ${a?esc(a.status):'needs content'}</div></div>`}).join(''):'<div class="empty">No matching mistakes.</div>';
+
+  const q =
+  document
+    .getElementById("search")
+    .value
+    .toLowerCase();
+
+  const f =
+  document
+    .getElementById("filter")
+    .value;
+
+  const filtered =
+  mistakes.filter(
+    m => {
+
+      const a =
+      assetsByMistake[m.id];
+
+      const text =
+      (
+        titleOf(m) +
+        " " +
+        sportOf(m) +
+        " " +
+        yearOf(m)
+      ).toLowerCase();
+
+      if(
+        q &&
+        !text.includes(q)
+      ){
+        return false;
+      }
+
+      if(
+        f === "missing" &&
+        a
+      ){
+        return false;
+      }
+
+      if(
+        [
+          "draft",
+          "approved",
+          "published"
+        ].includes(f) &&
+        a?.status !== f
+      ){
+        return false;
+      }
+
+      return true;
+    }
+  );
+
+  document
+    .getElementById("mistakeList")
+    .innerHTML =
+    filtered.length
+    ?
+    filtered.map(
+      m => {
+
+        const a =
+        assetsByMistake[m.id];
+
+        return `
+        <div
+          class="item ${current?.id===m.id ? "active" : ""}"
+          onclick="selectMistake('${m.id}')"
+        >
+          <div class="item-title">
+            ${esc(titleOf(m))}
+          </div>
+
+          <div class="item-meta">
+            ${esc(sportOf(m))}
+            ${esc(yearOf(m))}
+            ·
+            ${a ? esc(a.status) : "needs content"}
+          </div>
+        </div>
+        `;
+      }
+    ).join("")
+    :
+    '<div class="empty">No matching mistakes.</div>';
 }
-function selectMistake(id){current=mistakes.find(m=>m.id===id);renderList();renderStudio()}
+
+function selectMistake(id){
+
+  current =
+  mistakes.find(
+    m =>
+    m.id === id
+  );
+
+  renderList();
+  renderStudio();
+}
+
 function renderStudio(){
- const m=current,a=assetsByMistake[m.id]||{};const art=artworkOf(m);const fields={
- short_script:a.short_script||'',youtube_caption:a.youtube_caption||'',tiktok_caption:a.tiktok_caption||'',instagram_caption:a.instagram_caption||'',x_post:a.x_post||'',reddit_title:a.reddit_title||'',reddit_body:a.reddit_body||'',newsletter_subject:a.newsletter_subject||'',newsletter_body:a.newsletter_body||'',
- narration_url:a.narration_url||a.video_narration_url||'',
- video_url:a.video_url||a.short_video_url||'',
- video_status:a.video_status||'not generated',
- social_video_script:a.social_video_script||'',
- story_video_script:a.story_video_script||'',
- social_video_plan:a.social_video_plan||null,
- story_video_plan:a.story_video_plan||null,
- social_narration_url:a.social_narration_url||'',
- story_narration_url:a.story_narration_url||'',
- social_video_url:a.social_video_url||'',
- story_video_url:a.story_video_url||a.video_url||'',
- social_video_status:a.social_video_status||'not generated',
- story_video_status:a.story_video_status||'not generated'};
- document.getElementById('studio').innerHTML=`
- <div class="hero">${art?`<img class="art" src="${esc(art)}" alt="">`:'<div class="art"></div>'}<div><h2>${esc(titleOf(m))}</h2><div class="meta">${esc(sportOf(m))} ${esc(yearOf(m))} · <span class="badge">${esc(a.status||'not generated')}</span></div><p class="summary">${esc(pick(m,['summary','description','story','why_it_matters']))}</p></div></div>
- <div class="actions"><button class="btn" id="generateBtn" onclick="generatePackage()">${a.id?'Regenerate Package':'Generate Content Package'}</button>${a.id?'<button class="btn green" onclick="saveEdits()">Save Edits</button><button class="btn green" onclick="setStatus(\'approved\')">Approve Package</button><button class="btn red" onclick="setStatus(\'published\')">Mark Published</button>':''}</div>
- <div class="tabs">${[['short','30-sec Short'],['social','Social'],['reddit','Reddit'],['newsletter','Newsletter'],['video','VIDEO']].map((x,i)=>`<button class="tab ${i===0?'active':''}" onclick="showTab('${x[0]}',this)">${x[1]}</button>`).join('')}</div>
- <div class="asset active" id="tab-short">${area('short_script','30-second documentary script',fields.short_script)}</div>
- <div class="asset" id="tab-social">${area('youtube_caption','YouTube Shorts caption',fields.youtube_caption)}${area('tiktok_caption','TikTok caption',fields.tiktok_caption)}${area('instagram_caption','Instagram caption',fields.instagram_caption)}${area('x_post','X post',fields.x_post,280)}</div>
- <div class="asset" id="tab-reddit">${input('reddit_title','Reddit title',fields.reddit_title)}${area('reddit_body','Reddit discussion body',fields.reddit_body)}</div>
- <div class="asset" id="tab-newsletter">${input('newsletter_subject','Newsletter subject',fields.newsletter_subject)}${area('newsletter_body','Newsletter feature',fields.newsletter_body)}</div>
- <div class="asset" id="tab-video">
-   <div class="video-panel">
-     <div class="video-card">
-       <span class="video-status">AI DIRECTOR · TWO AUTOMATED VERSIONS</span>
-       <h3>1. Create scripts + six-shot director plans</h3>
-       <p>AI analyzes the approved painting and creates both a fast 15-second social cut and a 30-second story cut. Each script is divided into six narration beats with matching camera crops, pans, zooms, and short on-screen captions.</p>
-       <div class="video-actions">
-         <button class="btn" id="prepareVideoBtn" onclick="prepareVideoVariants()">${fields.social_video_script&&fields.story_video_script?'Regenerate Both Plans':'Prepare Both Video Versions'}</button>
-         ${(fields.social_video_script||fields.story_video_script)?'<button class="btn green" onclick="saveVideoScripts()">Save Script Edits</button>':''}
-       </div>
-     </div>
 
-     <div class="variant-grid">
-       <div class="variant-card">
-         <span class="variant-tag">VERSION A · ~15 SEC</span>
-         <h3 style="margin-top:10px">Social Short</h3>
-         <p>TikTok · Instagram Reels · Facebook Reels · YouTube Shorts</p>
-         ${area('social_video_script','15-second live-call script',fields.social_video_script)}
-         ${renderPlanHtml(fields.social_video_plan)}
-         ${fields.social_narration_url?`<audio class="audio-preview" controls src="${esc(fields.social_narration_url)}"></audio>`:''}
-         <div class="video-actions" style="margin-top:12px">
-           <button class="btn" onclick="generateVariantNarration('social')" ${fields.social_video_script?'':'disabled'}>${fields.social_narration_url?'Regenerate Narration':'Generate Narration'}</button>
-           <button class="btn green" onclick="renderVariant('social')" ${fields.social_narration_url?'':'disabled'}>${fields.social_video_url?'Rebuild Video':'Render 6-Shot Video'}</button>
-         </div>
-       </div>
+  const m =
+  current;
 
-       <div class="variant-card">
-         <span class="variant-tag">VERSION B · ~30 SEC</span>
-         <h3 style="margin-top:10px">Story Version</h3>
-         <p>YouTube Shorts · Reels · Facebook · SportsMistakes website</p>
-         ${area('story_video_script','30-second live-call story',fields.story_video_script)}
-         ${renderPlanHtml(fields.story_video_plan)}
-         ${fields.story_narration_url?`<audio class="audio-preview" controls src="${esc(fields.story_narration_url)}"></audio>`:''}
-         <div class="video-actions" style="margin-top:12px">
-           <button class="btn" onclick="generateVariantNarration('story')" ${fields.story_video_script?'':'disabled'}>${fields.story_narration_url?'Regenerate Narration':'Generate Narration'}</button>
-           <button class="btn green" onclick="renderVariant('story')" ${fields.story_narration_url?'':'disabled'}>${fields.story_video_url?'Rebuild Video':'Render 6-Shot Video'}</button>
-         </div>
-       </div>
-     </div>
+  const a =
+  assetsByMistake[m.id] || {};
 
-     <div class="video-card">
-       <h3>2. One-click automation</h3>
-       <p>This runs the complete pipeline in order: prepare both scripts/plans if needed → Social narration → Social render → Story narration → Story render.</p>
-       <div class="video-actions">
-         <button class="btn green" id="bothVideosBtn" onclick="generateBothVideos()">Generate BOTH Finished Videos</button>
-       </div>
-     </div>
+  const art =
+  artworkOf(m);
 
-     <div class="video-two">
-       <div class="video-card">
-         <h3>Social Short Preview</h3>
-         ${fields.social_video_url?`<video controls playsinline src="${esc(fields.social_video_url)}"></video><div class="video-actions" style="margin-top:12px"><a class="btn green download-link" href="${esc(fields.social_video_url)}" download>Download Social MP4</a><button class="btn" onclick="copyVariantUrl('social')">Copy URL</button></div>`:'<div class="meta">Not rendered yet.</div>'}
-       </div>
-       <div class="video-card">
-         <h3>Story Version Preview</h3>
-         ${fields.story_video_url?`<video controls playsinline src="${esc(fields.story_video_url)}"></video><div class="video-actions" style="margin-top:12px"><a class="btn green download-link" href="${esc(fields.story_video_url)}" download>Download Story MP4</a><button class="btn" onclick="copyVariantUrl('story')">Copy URL</button></div>`:'<div class="meta">Not rendered yet.</div>'}
-       </div>
-     </div>
-   </div>
- </div>
- </div>`;
+  const fields = {
+
+    short_script:
+      a.short_script || "",
+
+    youtube_caption:
+      a.youtube_caption || "",
+
+    tiktok_caption:
+      a.tiktok_caption || "",
+
+    instagram_caption:
+      a.instagram_caption || "",
+
+    x_post:
+      a.x_post || "",
+
+    reddit_title:
+      a.reddit_title || "",
+
+    reddit_body:
+      a.reddit_body || "",
+
+    newsletter_subject:
+      a.newsletter_subject || "",
+
+    newsletter_body:
+      a.newsletter_body || "",
+
+    narration_url:
+      a.narration_url ||
+      a.video_narration_url ||
+      "",
+
+    video_url:
+      a.video_url ||
+      a.short_video_url ||
+      "",
+
+    video_status:
+      a.video_status ||
+      "not generated",
+
+    social_video_script:
+      a.social_video_script ||
+      "",
+
+    story_video_script:
+      a.story_video_script ||
+      "",
+
+    social_video_plan:
+      a.social_video_plan ||
+      null,
+
+    story_video_plan:
+      a.story_video_plan ||
+      null,
+
+    social_narration_url:
+      a.social_narration_url ||
+      "",
+
+    story_narration_url:
+      a.story_narration_url ||
+      "",
+
+    social_video_url:
+      a.social_video_url ||
+      "",
+
+    story_video_url:
+      a.story_video_url ||
+      a.video_url ||
+      "",
+
+    social_video_status:
+      a.social_video_status ||
+      "not generated",
+
+    story_video_status:
+      a.story_video_status ||
+      "not generated"
+  };
+
+  document
+    .getElementById("studio")
+    .innerHTML = `
+
+  <div class="hero">
+
+    ${
+      art
+      ?
+      `<img class="art" src="${esc(art)}" alt="">`
+      :
+      '<div class="art"></div>'
+    }
+
+    <div>
+
+      <h2>
+        ${esc(titleOf(m))}
+      </h2>
+
+      <div class="meta">
+        ${esc(sportOf(m))}
+        ${esc(yearOf(m))}
+        ·
+        <span class="badge">
+          ${esc(a.status || "not generated")}
+        </span>
+      </div>
+
+      <p class="summary">
+        ${esc(
+          pick(
+            m,
+            [
+              "summary",
+              "description",
+              "story",
+              "why_it_matters"
+            ]
+          )
+        )}
+      </p>
+
+    </div>
+  </div>
+
+  <div class="actions">
+
+    <button
+      class="btn"
+      id="generateBtn"
+      onclick="generatePackage()"
+    >
+      ${
+        a.id
+        ?
+        "Regenerate Package"
+        :
+        "Generate Content Package"
+      }
+    </button>
+
+    ${
+      a.id
+      ?
+      `
+      <button
+        class="btn green"
+        onclick="saveEdits()"
+      >
+        Save Edits
+      </button>
+
+      <button
+        class="btn green"
+        onclick="setStatus('approved')"
+      >
+        Approve Package
+      </button>
+
+      <button
+        class="btn red"
+        onclick="setStatus('published')"
+      >
+        Mark Published
+      </button>
+      `
+      :
+      ""
+    }
+
+  </div>
+
+  <div class="tabs">
+
+    ${
+      [
+        ["short","30-sec Short"],
+        ["social","Social"],
+        ["reddit","Reddit"],
+        ["newsletter","Newsletter"],
+        ["video","VIDEO"]
+      ]
+      .map(
+        (x,i) =>
+        `
+        <button
+          class="tab ${i===0 ? "active" : ""}"
+          onclick="showTab('${x[0]}',this)"
+        >
+          ${x[1]}
+        </button>
+        `
+      )
+      .join("")
+    }
+
+  </div>
+
+  <div
+    class="asset active"
+    id="tab-short"
+  >
+    ${
+      area(
+        "short_script",
+        "30-second documentary script",
+        fields.short_script
+      )
+    }
+  </div>
+
+  <div
+    class="asset"
+    id="tab-social"
+  >
+
+    ${
+      area(
+        "youtube_caption",
+        "YouTube Shorts caption",
+        fields.youtube_caption
+      )
+    }
+
+    ${
+      area(
+        "tiktok_caption",
+        "TikTok caption",
+        fields.tiktok_caption
+      )
+    }
+
+    ${
+      area(
+        "instagram_caption",
+        "Instagram caption",
+        fields.instagram_caption
+      )
+    }
+
+    ${
+      area(
+        "x_post",
+        "X post",
+        fields.x_post,
+        280
+      )
+    }
+
+  </div>
+
+  <div
+    class="asset"
+    id="tab-reddit"
+  >
+
+    ${
+      input(
+        "reddit_title",
+        "Reddit title",
+        fields.reddit_title
+      )
+    }
+
+    ${
+      area(
+        "reddit_body",
+        "Reddit discussion body",
+        fields.reddit_body
+      )
+    }
+
+  </div>
+
+  <div
+    class="asset"
+    id="tab-newsletter"
+  >
+
+    ${
+      input(
+        "newsletter_subject",
+        "Newsletter subject",
+        fields.newsletter_subject
+      )
+    }
+
+    ${
+      area(
+        "newsletter_body",
+        "Newsletter feature",
+        fields.newsletter_body
+      )
+    }
+
+  </div>
+
+  <div
+    class="asset"
+    id="tab-video"
+  >
+
+    <div class="video-panel">
+
+      <div class="video-card">
+
+        <span class="video-status">
+          VIDEO DIRECTOR 2.0 · IMAGE-AWARE EDITING
+        </span>
+
+        <h3>
+          1. Analyze painting + create image-aware director plans
+        </h3>
+
+        <p>
+          Video Director 2.0 first maps the people, objects,
+          action areas, and safe multi-subject compositions
+          in the approved painting. It then writes the narration
+          and chooses those named visual targets. Camera math
+          is calculated from the targets instead of guessed X/Y
+          coordinates.
+        </p>
+
+        <div class="video-actions">
+
+          <button
+            class="btn"
+            id="prepareVideoBtn"
+            onclick="prepareVideoVariants()"
+          >
+            ${
+              fields.social_video_script &&
+              fields.story_video_script
+              ?
+              "Regenerate Both Plans"
+              :
+              "Prepare Both Video Versions"
+            }
+          </button>
+
+          ${
+            (
+              fields.social_video_script ||
+              fields.story_video_script
+            )
+            ?
+            `
+            <button
+              class="btn green"
+              onclick="saveVideoScripts()"
+            >
+              Save Script Edits
+            </button>
+            `
+            :
+            ""
+          }
+
+        </div>
+
+      </div>
+
+      <div class="variant-grid">
+
+        <div class="variant-card">
+
+          <span class="variant-tag">
+            VERSION A · ~15 SEC
+          </span>
+
+          <h3 style="margin-top:10px">
+            Social Short
+          </h3>
+
+          <p>
+            TikTok · Instagram Reels · Facebook Reels · YouTube Shorts
+          </p>
+
+          ${
+            area(
+              "social_video_script",
+              "15-second live-call script",
+              fields.social_video_script
+            )
+          }
+
+          ${
+            renderPlanHtml(
+              fields.social_video_plan,
+              "social"
+            )
+          }
+
+          ${
+            fields.social_narration_url
+            ?
+            `
+            <audio
+              class="audio-preview"
+              controls
+              src="${esc(fields.social_narration_url)}"
+            ></audio>
+            `
+            :
+            ""
+          }
+
+          <div
+            class="video-actions"
+            style="margin-top:12px"
+          >
+
+            <button
+              class="btn"
+              onclick="generateVariantNarration('social')"
+              ${
+                fields.social_video_script
+                ?
+                ""
+                :
+                "disabled"
+              }
+            >
+              ${
+                fields.social_narration_url
+                ?
+                "Regenerate Narration"
+                :
+                "Generate Narration"
+              }
+            </button>
+
+            <button
+              class="btn green"
+              onclick="renderVariant('social')"
+              ${
+                fields.social_narration_url
+                ?
+                ""
+                :
+                "disabled"
+              }
+            >
+              ${
+                fields.social_video_url
+                ?
+                "Rebuild Video"
+                :
+                "Render Directed Video"
+              }
+            </button>
+
+          </div>
+
+        </div>
+
+        <div class="variant-card">
+
+          <span class="variant-tag">
+            VERSION B · ~30 SEC
+          </span>
+
+          <h3 style="margin-top:10px">
+            Story Version
+          </h3>
+
+          <p>
+            YouTube Shorts · Reels · Facebook · SportsMistakes website
+          </p>
+
+          ${
+            area(
+              "story_video_script",
+              "30-second live-call story",
+              fields.story_video_script
+            )
+          }
+
+          ${
+            renderPlanHtml(
+              fields.story_video_plan,
+              "story"
+            )
+          }
+
+          ${
+            fields.story_narration_url
+            ?
+            `
+            <audio
+              class="audio-preview"
+              controls
+              src="${esc(fields.story_narration_url)}"
+            ></audio>
+            `
+            :
+            ""
+          }
+
+          <div
+            class="video-actions"
+            style="margin-top:12px"
+          >
+
+            <button
+              class="btn"
+              onclick="generateVariantNarration('story')"
+              ${
+                fields.story_video_script
+                ?
+                ""
+                :
+                "disabled"
+              }
+            >
+              ${
+                fields.story_narration_url
+                ?
+                "Regenerate Narration"
+                :
+                "Generate Narration"
+              }
+            </button>
+
+            <button
+              class="btn green"
+              onclick="renderVariant('story')"
+              ${
+                fields.story_narration_url
+                ?
+                ""
+                :
+                "disabled"
+              }
+            >
+              ${
+                fields.story_video_url
+                ?
+                "Rebuild Video"
+                :
+                "Render Directed Video"
+              }
+            </button>
+
+          </div>
+
+        </div>
+
+      </div>
+
+      <div class="video-card">
+
+        <h3>
+          2. One-click automation
+        </h3>
+
+        <p>
+          This runs the complete pipeline in order:
+          prepare both scripts/plans if needed →
+          Social narration →
+          Social render →
+          Story narration →
+          Story render.
+        </p>
+
+        <div class="video-actions">
+
+          <button
+            class="btn green"
+            id="bothVideosBtn"
+            onclick="generateBothVideos()"
+          >
+            Generate BOTH Finished Videos
+          </button>
+
+        </div>
+
+      </div>
+
+      <div class="video-two">
+
+        <div class="video-card">
+
+          <h3>
+            Social Short Preview
+          </h3>
+
+          ${
+            fields.social_video_url
+            ?
+            `
+            <video
+              controls
+              playsinline
+              src="${esc(fields.social_video_url)}"
+            ></video>
+
+            <div
+              class="video-actions"
+              style="margin-top:12px"
+            >
+
+              <a
+                class="btn green download-link"
+                href="${esc(fields.social_video_url)}"
+                download
+              >
+                Download Social MP4
+              </a>
+
+              <button
+                class="btn"
+                onclick="copyVariantUrl('social')"
+              >
+                Copy URL
+              </button>
+
+            </div>
+            `
+            :
+            '<div class="meta">Not rendered yet.</div>'
+          }
+
+        </div>
+
+        <div class="video-card">
+
+          <h3>
+            Story Version Preview
+          </h3>
+
+          ${
+            fields.story_video_url
+            ?
+            `
+            <video
+              controls
+              playsinline
+              src="${esc(fields.story_video_url)}"
+            ></video>
+
+            <div
+              class="video-actions"
+              style="margin-top:12px"
+            >
+
+              <a
+                class="btn green download-link"
+                href="${esc(fields.story_video_url)}"
+                download
+              >
+                Download Story MP4
+              </a>
+
+              <button
+                class="btn"
+                onclick="copyVariantUrl('story')"
+              >
+                Copy URL
+              </button>
+
+            </div>
+            `
+            :
+            '<div class="meta">Not rendered yet.</div>'
+          }
+
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
+  </div>
+  `;
+
+  setTimeout(
+    paintDirectorPreviews,
+    0
+  );
 }
-function renderPlanHtml(plan){
- if(!plan?.shots?.length)return '<div class="meta" style="margin-top:10px">Director plan not generated yet.</div>';
- return `<div class="plan-list">${plan.shots.map((s,i)=>`<div class="plan-shot"><strong>Shot ${i+1} · ${esc(s.beat||'beat')}</strong> — ${esc(s.caption||'no caption')}<br>Camera: (${Number(s.start_x??.5).toFixed(2)}, ${Number(s.start_y??.5).toFixed(2)}) → (${Number(s.end_x??.5).toFixed(2)}, ${Number(s.end_y??.5).toFixed(2)}) · zoom ${Number(s.start_zoom??1).toFixed(2)} → ${Number(s.end_zoom??1).toFixed(2)}</div>`).join('')}</div>`;
+
+function renderPlanHtml(
+  plan,
+  variant
+){
+
+  if(
+    !plan?.shots?.length
+  ){
+    return `
+      <div
+        class="meta"
+        style="margin-top:10px"
+      >
+        Director plan not generated yet.
+      </div>
+    `;
+  }
+
+  const vm =
+  plan.visual_map;
+
+  const mapHtml =
+  vm
+  ?
+  `
+  <div class="visual-map">
+
+    <strong>
+      Visual map:
+    </strong>
+
+    ${esc(vm.description || "Painting analyzed")}
+
+    <br>
+
+    ${
+      [
+        ...(vm.regions || []),
+        ...(vm.compositions || [])
+      ]
+      .filter(
+        x =>
+        x.id !== "full_art"
+      )
+      .slice(
+        0,
+        10
+      )
+      .map(
+        x =>
+        esc(x.label)
+      )
+      .join(" · ")
+    }
+
+  </div>
+  `
+  :
+  "";
+
+  return `
+  ${mapHtml}
+
+  <div class="plan-list">
+
+    ${
+      plan.shots
+      .map(
+        (s,i) =>
+        `
+        <div class="plan-shot">
+
+          <div class="shot-row">
+
+            <canvas
+              class="shot-preview"
+              width="180"
+              height="320"
+              data-variant="${variant}"
+              data-shot="${i}"
+            ></canvas>
+
+            <div>
+
+              <strong>
+                Shot ${i+1}
+                ·
+                ${esc(s.beat || "beat")}
+              </strong>
+
+              <br>
+
+              Target:
+              <strong>
+                ${esc(
+                  s.target_label ||
+                  s.target_id ||
+                  "visual"
+                )}
+              </strong>
+
+              ·
+              ${esc(s.framing || "medium")}
+
+              ·
+              ${esc(s.motion || "hold")}
+
+              <br>
+
+              Caption:
+              ${esc(s.caption || "none")}
+
+              <br>
+
+              <span class="meta">
+                ${esc(s.narration || "")}
+              </span>
+
+            </div>
+
+          </div>
+
+        </div>
+        `
+      )
+      .join("")
+    }
+
+  </div>
+  `;
 }
-function area(id,label,value,max=''){return `<div class="field"><label>${label}<span><span class="counter" id="count-${id}"></span> <button class="btn copy" onclick="copyField('${id}')">Copy</button></span></label><textarea id="${id}" ${max?`maxlength="${max}"`:''} oninput="updateCount('${id}')">${esc(value)}</textarea></div>`}
-function input(id,label,value){return `<div class="field"><label>${label}<button class="btn copy" onclick="copyField('${id}')">Copy</button></label><input id="${id}" value="${esc(value)}"></div>`}
-function showTab(id,btn){document.querySelectorAll('.asset').forEach(x=>x.classList.remove('active'));document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));document.getElementById('tab-'+id).classList.add('active');btn.classList.add('active')}
-function updateCount(id){const el=document.getElementById(id),out=document.getElementById('count-'+id);if(out)out.textContent=el.value.length+' characters'}
-async function copyField(id){const el=document.getElementById(id);await navigator.clipboard.writeText(el.value);document.getElementById('status').textContent='Copied to clipboard.'}
-function collect(){return {short_script:val('short_script'),youtube_caption:val('youtube_caption'),tiktok_caption:val('tiktok_caption'),instagram_caption:val('instagram_caption'),x_post:val('x_post'),reddit_title:val('reddit_title'),reddit_body:val('reddit_body'),newsletter_subject:val('newsletter_subject'),newsletter_body:val('newsletter_body')}}
-function val(id){return document.getElementById(id)?.value||''}
-async function generatePackage(){const b=document.getElementById('generateBtn');b.disabled=true;document.getElementById('status').textContent='Generating the complete content package…';const {data,error}=await client.functions.invoke('generate-content-assets',{body:{mistake_id:current.id}});b.disabled=false;if(error){document.getElementById('status').textContent='Generation failed: '+error.message;return}assetsByMistake[current.id]=data.asset;document.getElementById('status').textContent='Content package generated. Review and edit before approving.';renderStudio();renderList()}
-async function saveEdits(showMessage=true){const a=assetsByMistake[current.id];if(!a){document.getElementById('status').textContent='Generate a package before saving.';return false}const asset={...collect(),short_title:a.short_title||'',hook:a.hook||'',hashtags:a.hashtags||[]};const {data,error}=await client.functions.invoke('generate-content-assets',{body:{action:'save',mistake_id:current.id,asset}});if(error||data?.error){document.getElementById('status').textContent='Save failed: '+(data?.error||error?.message||'Unknown error');return false}assetsByMistake[current.id]=data.asset;if(showMessage)document.getElementById('status').textContent='Edits saved.';return true}
-async function setStatus(status){const saved=await saveEdits(false);if(!saved)return;const asset={...collect(),short_title:assetsByMistake[current.id]?.short_title||'',hook:assetsByMistake[current.id]?.hook||'',hashtags:assetsByMistake[current.id]?.hashtags||[]};const {data,error}=await client.functions.invoke('generate-content-assets',{body:{action:'status',mistake_id:current.id,status,asset}});if(error||data?.error){document.getElementById('status').textContent='Status update failed: '+(data?.error||error?.message||'Unknown error');return}assetsByMistake[current.id]=data.asset;document.getElementById('status').textContent='Package marked '+status+'.';renderStudio();renderList()}
+
+function clamp01(v){
+
+  return Math.max(
+    0,
+    Math.min(
+      1,
+      Number(v) || 0
+    )
+  );
+}
+
+function previewBox(raw){
+
+  let x =
+  clamp01(
+    raw?.x
+  );
+
+  let y =
+  clamp01(
+    raw?.y
+  );
+
+  let w =
+  Math.max(
+    .02,
+    Math.min(
+      1,
+      Number(raw?.w) || 1
+    )
+  );
+
+  let h =
+  Math.max(
+    .02,
+    Math.min(
+      1,
+      Number(raw?.h) || 1
+    )
+  );
+
+  if(
+    x + w > 1
+  ){
+    w =
+    1 - x;
+  }
+
+  if(
+    y + h > 1
+  ){
+    h =
+    1 - y;
+  }
+
+  return {
+    x,
+    y,
+    w,
+    h
+  };
+}
+
+function previewZoom(
+  box,
+  framing
+){
+
+  const margin =
+  framing === "detail"
+  ?
+  1.28
+  :
+  framing === "wide"
+  ?
+  2.05
+  :
+  framing === "relationship"
+  ?
+  1.65
+  :
+  1.48;
+
+  const fit =
+  Math.min(
+    1 /
+    Math.max(
+      .02,
+      box.w * margin
+    ),
+
+    1 /
+    Math.max(
+      .02,
+      box.h * margin
+    )
+  );
+
+  const cap =
+  framing === "wide"
+  ?
+  1.35
+  :
+  framing === "relationship"
+  ?
+  2.3
+  :
+  framing === "detail"
+  ?
+  4.8
+  :
+  3.25;
+
+  return Math.max(
+    1,
+    Math.min(
+      cap,
+      fit
+    )
+  );
+}
+
+function drawPreview(
+  canvas,
+  img,
+  shot
+){
+
+  const W =
+  720;
+
+  const H =
+  1280;
+
+  const off =
+  document.createElement(
+    "canvas"
+  );
+
+  off.width =
+  W;
+
+  off.height =
+  H;
+
+  const c =
+  off.getContext(
+    "2d"
+  );
+
+  const cover =
+  Math.max(
+    W / img.naturalWidth,
+    H / img.naturalHeight
+  );
+
+  const bw =
+  img.naturalWidth *
+  cover;
+
+  const bh =
+  img.naturalHeight *
+  cover;
+
+  c.save();
+
+  c.filter =
+  "blur(22px)";
+
+  c.drawImage(
+    img,
+    (W-bw)/2,
+    (H-bh)/2,
+    bw,
+    bh
+  );
+
+  c.restore();
+
+  const fit =
+  Math.min(
+    W / img.naturalWidth,
+    H / img.naturalHeight
+  );
+
+  const fw =
+  img.naturalWidth *
+  fit;
+
+  const fh =
+  img.naturalHeight *
+  fit;
+
+  const ox =
+  (W-fw)/2;
+
+  const oy =
+  (H-fh)/2;
+
+  c.drawImage(
+    img,
+    ox,
+    oy,
+    fw,
+    fh
+  );
+
+  const artBox =
+  previewBox(
+    shot.end_box ||
+    shot.start_box ||
+    {
+      x:0,
+      y:0,
+      w:1,
+      h:1
+    }
+  );
+
+  const box = {
+
+    x:
+    (
+      ox +
+      artBox.x *
+      fw
+    ) /
+    W,
+
+    y:
+    (
+      oy +
+      artBox.y *
+      fh
+    ) /
+    H,
+
+    w:
+    (
+      artBox.w *
+      fw
+    ) /
+    W,
+
+    h:
+    (
+      artBox.h *
+      fh
+    ) /
+    H
+  };
+
+  const zoom =
+  shot.framing === "wide"
+  ?
+  1
+  :
+  previewZoom(
+    box,
+    shot.framing ||
+    "medium"
+  );
+
+  const sw =
+  W / zoom;
+
+  const sh =
+  H / zoom;
+
+  const cx =
+  (
+    box.x +
+    box.w / 2
+  ) *
+  W;
+
+  const cy =
+  (
+    box.y +
+    box.h / 2
+  ) *
+  H;
+
+  const sx =
+  Math.max(
+    0,
+    Math.min(
+      W-sw,
+      cx-sw/2
+    )
+  );
+
+  const sy =
+  Math.max(
+    0,
+    Math.min(
+      H-sh,
+      cy-sh/2
+    )
+  );
+
+  const out =
+  canvas.getContext(
+    "2d"
+  );
+
+  out.clearRect(
+    0,
+    0,
+    canvas.width,
+    canvas.height
+  );
+
+  out.drawImage(
+    off,
+    sx,
+    sy,
+    sw,
+    sh,
+    0,
+    0,
+    canvas.width,
+    canvas.height
+  );
+}
+
+function paintDirectorPreviews(){
+
+  const art =
+  artworkOf(
+    current || {}
+  );
+
+  if(!art){
+    return;
+  }
+
+  const img =
+  new Image();
+
+  img.crossOrigin =
+  "anonymous";
+
+  img.onload =
+  () =>
+  document
+    .querySelectorAll(
+      "canvas.shot-preview"
+    )
+    .forEach(
+      canvas => {
+
+        const variant =
+        canvas.dataset.variant;
+
+        const i =
+        Number(
+          canvas.dataset.shot
+        );
+
+        const plan =
+        assetsByMistake[current.id]
+        ?.[
+          variant +
+          "_video_plan"
+        ];
+
+        const shot =
+        plan?.shots?.[i];
+
+        if(shot){
+
+          drawPreview(
+            canvas,
+            img,
+            shot
+          );
+        }
+      }
+    );
+
+  img.src =
+  art;
+}
+
+function area(
+  id,
+  label,
+  value,
+  max=""
+){
+
+  return `
+  <div class="field">
+
+    <label>
+
+      ${label}
+
+      <span>
+
+        <span
+          class="counter"
+          id="count-${id}"
+        ></span>
+
+        <button
+          class="btn copy"
+          onclick="copyField('${id}')"
+        >
+          Copy
+        </button>
+
+      </span>
+
+    </label>
+
+    <textarea
+      id="${id}"
+      ${
+        max
+        ?
+        `maxlength="${max}"`
+        :
+        ""
+      }
+      oninput="updateCount('${id}')"
+    >${esc(value)}</textarea>
+
+  </div>
+  `;
+}
+
+function input(
+  id,
+  label,
+  value
+){
+
+  return `
+  <div class="field">
+
+    <label>
+
+      ${label}
+
+      <button
+        class="btn copy"
+        onclick="copyField('${id}')"
+      >
+        Copy
+      </button>
+
+    </label>
+
+    <input
+      id="${id}"
+      value="${esc(value)}"
+    >
+
+  </div>
+  `;
+}
+
+function showTab(
+  id,
+  btn
+){
+
+  document
+    .querySelectorAll(
+      ".asset"
+    )
+    .forEach(
+      x =>
+      x.classList.remove(
+        "active"
+      )
+    );
+
+  document
+    .querySelectorAll(
+      ".tab"
+    )
+    .forEach(
+      x =>
+      x.classList.remove(
+        "active"
+      )
+    );
+
+  document
+    .getElementById(
+      "tab-" + id
+    )
+    .classList.add(
+      "active"
+    );
+
+  btn
+    .classList
+    .add(
+      "active"
+    );
+}
+
+function updateCount(id){
+
+  const el =
+  document
+    .getElementById(id);
+
+  const out =
+  document
+    .getElementById(
+      "count-" + id
+    );
+
+  if(out){
+
+    out.textContent =
+    el.value.length +
+    " characters";
+  }
+}
+
+async function copyField(id){
+
+  const el =
+  document
+    .getElementById(id);
+
+  await navigator.clipboard.writeText(
+    el.value
+  );
+
+  document
+    .getElementById("status")
+    .textContent =
+    "Copied to clipboard.";
+}
+
+function collect(){
+
+  return {
+
+    short_script:
+      val("short_script"),
+
+    youtube_caption:
+      val("youtube_caption"),
+
+    tiktok_caption:
+      val("tiktok_caption"),
+
+    instagram_caption:
+      val("instagram_caption"),
+
+    x_post:
+      val("x_post"),
+
+    reddit_title:
+      val("reddit_title"),
+
+    reddit_body:
+      val("reddit_body"),
+
+    newsletter_subject:
+      val("newsletter_subject"),
+
+    newsletter_body:
+      val("newsletter_body")
+  };
+}
+
+function val(id){
+
+  return document
+    .getElementById(id)
+    ?.value ||
+    "";
+}
+
+async function generatePackage(){
+
+  const b =
+  document
+    .getElementById(
+      "generateBtn"
+    );
+
+  b.disabled =
+  true;
+
+  document
+    .getElementById("status")
+    .textContent =
+    "Generating the complete content package…";
+
+  const {
+    data,
+    error
+  } =
+  await client.functions.invoke(
+    "generate-content-assets",
+    {
+      body:{
+        mistake_id:
+          current.id
+      }
+    }
+  );
+
+  b.disabled =
+  false;
+
+  if(error){
+
+    document
+      .getElementById("status")
+      .textContent =
+      "Generation failed: " +
+      error.message;
+
+    return;
+  }
+
+  assetsByMistake[current.id] =
+  data.asset;
+
+  document
+    .getElementById("status")
+    .textContent =
+    "Content package generated. Review and edit before approving.";
+
+  renderStudio();
+  renderList();
+}
+
+async function saveEdits(
+  showMessage=true
+){
+
+  const a =
+  assetsByMistake[current.id];
+
+  if(!a){
+
+    document
+      .getElementById("status")
+      .textContent =
+      "Generate a package before saving.";
+
+    return false;
+  }
+
+  const asset = {
+
+    ...collect(),
+
+    short_title:
+      a.short_title || "",
+
+    hook:
+      a.hook || "",
+
+    hashtags:
+      a.hashtags || []
+  };
+
+  const {
+    data,
+    error
+  } =
+  await client.functions.invoke(
+    "generate-content-assets",
+    {
+      body:{
+        action:"save",
+        mistake_id:
+          current.id,
+        asset
+      }
+    }
+  );
+
+  if(
+    error ||
+    data?.error
+  ){
+
+    document
+      .getElementById("status")
+      .textContent =
+      "Save failed: " +
+      (
+        data?.error ||
+        error?.message ||
+        "Unknown error"
+      );
+
+    return false;
+  }
+
+  assetsByMistake[current.id] =
+  data.asset;
+
+  if(showMessage){
+
+    document
+      .getElementById("status")
+      .textContent =
+      "Edits saved.";
+  }
+
+  return true;
+}
+
+async function setStatus(status){
+
+  const saved =
+  await saveEdits(
+    false
+  );
+
+  if(!saved){
+    return;
+  }
+
+  const asset = {
+
+    ...collect(),
+
+    short_title:
+      assetsByMistake[current.id]
+      ?.short_title ||
+      "",
+
+    hook:
+      assetsByMistake[current.id]
+      ?.hook ||
+      "",
+
+    hashtags:
+      assetsByMistake[current.id]
+      ?.hashtags ||
+      []
+  };
+
+  const {
+    data,
+    error
+  } =
+  await client.functions.invoke(
+    "generate-content-assets",
+    {
+      body:{
+        action:"status",
+        mistake_id:
+          current.id,
+        status,
+        asset
+      }
+    }
+  );
+
+  if(
+    error ||
+    data?.error
+  ){
+
+    document
+      .getElementById("status")
+      .textContent =
+      "Status update failed: " +
+      (
+        data?.error ||
+        error?.message ||
+        "Unknown error"
+      );
+
+    return;
+  }
+
+  assetsByMistake[current.id] =
+  data.asset;
+
+  document
+    .getElementById("status")
+    .textContent =
+    "Package marked " +
+    status +
+    ".";
+
+  renderStudio();
+  renderList();
+}
 
 async function invokeVideo(body){
- const {data,error}=await client.functions.invoke('generate-video-assets',{body});
- if(error||data?.error)throw new Error(data?.error||error?.message||'Unknown video error');
- if(data?.asset)assetsByMistake[current.id]=data.asset;
- return data;
+
+  const {
+    data,
+    error
+  } =
+  await client.functions.invoke(
+    "generate-video-assets",
+    {
+      body
+    }
+  );
+
+  if(
+    error ||
+    data?.error
+  ){
+
+    throw new Error(
+      data?.error ||
+      error?.message ||
+      "Unknown video error"
+    );
+  }
+
+  if(
+    data?.asset
+  ){
+
+    assetsByMistake[current.id] =
+    data.asset;
+  }
+
+  return data;
 }
 
 async function prepareVideoVariants(){
- const b=document.getElementById('prepareVideoBtn');
- if(b)b.disabled=true;
- document.getElementById('status').textContent='AI is analyzing the painting and directing both video versions…';
- try{
-  await invokeVideo({action:'prepare-variants',mistake_id:current.id});
-  document.getElementById('status').textContent='Both scripts and six-shot director plans are ready.';
-  renderStudio();
- }catch(error){
-  document.getElementById('status').textContent='Video planning failed: '+error.message;
- }finally{if(b)b.disabled=false}
+
+  const b =
+  document
+    .getElementById(
+      "prepareVideoBtn"
+    );
+
+  if(b){
+    b.disabled = true;
+  }
+
+  document
+    .getElementById("status")
+    .textContent =
+    "AI is analyzing the painting and directing both video versions…";
+
+  try{
+
+    await invokeVideo({
+      action:
+        "prepare-variants",
+
+      mistake_id:
+        current.id
+    });
+
+    document
+      .getElementById("status")
+      .textContent =
+      "Both scripts and image-aware director plans are ready. Review the shot previews before rendering.";
+
+    renderStudio();
+
+  }catch(error){
+
+    document
+      .getElementById("status")
+      .textContent =
+      "Video planning failed: " +
+      error.message;
+
+  }finally{
+
+    if(b){
+      b.disabled = false;
+    }
+  }
 }
 
 async function saveVideoScripts(){
- try{
-  await invokeVideo({
-   action:'save-variants',
-   mistake_id:current.id,
-   social_script:val('social_video_script'),
-   story_script:val('story_video_script')
-  });
-  document.getElementById('status').textContent='Video script edits saved.';
- }catch(error){
-  document.getElementById('status').textContent='Video script save failed: '+error.message;
- }
+
+  try{
+
+    await invokeVideo({
+
+      action:
+        "save-variants",
+
+      mistake_id:
+        current.id,
+
+      social_script:
+        val(
+          "social_video_script"
+        ),
+
+      story_script:
+        val(
+          "story_video_script"
+        )
+    });
+
+    document
+      .getElementById("status")
+      .textContent =
+      "Video script edits saved.";
+
+  }catch(error){
+
+    document
+      .getElementById("status")
+      .textContent =
+      "Video script save failed: " +
+      error.message;
+  }
 }
 
-async function generateVariantNarration(variant){
- const script=val(variant+'_video_script')||assetsByMistake[current.id]?.[variant+'_video_script']||'';
- if(!script.trim()){document.getElementById('status').textContent='Generate the director package first.';return false}
- document.getElementById('status').textContent=`Generating ${variant} narration…`;
- try{
-  await invokeVideo({action:'narration',mistake_id:current.id,variant,script});
-  document.getElementById('status').textContent=`${variant==='social'?'Social':'Story'} narration ready.`;
-  renderStudio();
-  return true;
- }catch(error){
-  document.getElementById('status').textContent='Narration failed: '+error.message;
-  return false;
- }
+async function generateVariantNarration(
+  variant
+){
+
+  const script =
+  val(
+    variant +
+    "_video_script"
+  ) ||
+  assetsByMistake[current.id]
+  ?.[
+    variant +
+    "_video_script"
+  ] ||
+  "";
+
+  if(
+    !script.trim()
+  ){
+
+    document
+      .getElementById("status")
+      .textContent =
+      "Generate the director package first.";
+
+    return false;
+  }
+
+  document
+    .getElementById("status")
+    .textContent =
+    `Generating ${variant} narration…`;
+
+  try{
+
+    await invokeVideo({
+
+      action:
+        "narration",
+
+      mistake_id:
+        current.id,
+
+      variant,
+
+      script
+    });
+
+    document
+      .getElementById("status")
+      .textContent =
+      `${
+        variant === "social"
+        ?
+        "Social"
+        :
+        "Story"
+      } narration ready.`;
+
+    renderStudio();
+
+    return true;
+
+  }catch(error){
+
+    document
+      .getElementById("status")
+      .textContent =
+      "Narration failed: " +
+      error.message;
+
+    return false;
+  }
 }
 
-async function renderVariant(variant){
- const a=assetsByMistake[current.id]||{};
- const narration=a[variant+'_narration_url'];
- if(!narration){document.getElementById('status').textContent=`Generate ${variant} narration first.`;return false}
- document.getElementById('status').textContent=`Rendering ${variant} six-shot video. This may take a few minutes…`;
- try{
-  await invokeVideo({action:'render',mistake_id:current.id,variant});
-  document.getElementById('status').textContent=`${variant==='social'?'Social Short':'Story Version'} video complete.`;
-  renderStudio();
-  return true;
- }catch(error){
-  document.getElementById('status').textContent='Video render failed: '+error.message;
-  return false;
- }
+async function renderVariant(
+  variant
+){
+
+  const a =
+  assetsByMistake[current.id] ||
+  {};
+
+  const narration =
+  a[
+    variant +
+    "_narration_url"
+  ];
+
+  if(
+    !narration
+  ){
+
+    document
+      .getElementById("status")
+      .textContent =
+      `Generate ${variant} narration first.`;
+
+    return false;
+  }
+
+  document
+    .getElementById("status")
+    .textContent =
+    `Rendering ${variant} Video Director 2.0 cut. This may take a few minutes…`;
+
+  try{
+
+    await invokeVideo({
+
+      action:
+        "render",
+
+      mistake_id:
+        current.id,
+
+      variant
+    });
+
+    document
+      .getElementById("status")
+      .textContent =
+      `${
+        variant === "social"
+        ?
+        "Social Short"
+        :
+        "Story Version"
+      } video complete.`;
+
+    renderStudio();
+
+    return true;
+
+  }catch(error){
+
+    document
+      .getElementById("status")
+      .textContent =
+      "Video render failed: " +
+      error.message;
+
+    return false;
+  }
 }
 
 async function generateBothVideos(){
- const b=document.getElementById('bothVideosBtn');
- if(b)b.disabled=true;
- try{
-  let a=assetsByMistake[current.id]||{};
-  if(!a.social_video_script||!a.story_video_script||!a.social_video_plan||!a.story_video_plan){
-   document.getElementById('status').textContent='Step 1/5: AI directing both versions…';
-   await invokeVideo({action:'prepare-variants',mistake_id:current.id});
-   renderStudio();
+
+  const b =
+  document
+    .getElementById(
+      "bothVideosBtn"
+    );
+
+  if(b){
+    b.disabled = true;
   }
 
-  document.getElementById('status').textContent='Step 2/5: Generating Social narration…';
-  await invokeVideo({action:'narration',mistake_id:current.id,variant:'social',script:assetsByMistake[current.id].social_video_script});
+  try{
 
-  document.getElementById('status').textContent='Step 3/5: Rendering Social six-shot video…';
-  await invokeVideo({action:'render',mistake_id:current.id,variant:'social'});
+    let a =
+    assetsByMistake[current.id] ||
+    {};
 
-  document.getElementById('status').textContent='Step 4/5: Generating Story narration…';
-  await invokeVideo({action:'narration',mistake_id:current.id,variant:'story',script:assetsByMistake[current.id].story_video_script});
+    if(
+      !a.social_video_script ||
+      !a.story_video_script ||
+      !a.social_video_plan ||
+      !a.story_video_plan
+    ){
 
-  document.getElementById('status').textContent='Step 5/5: Rendering Story six-shot video…';
-  await invokeVideo({action:'render',mistake_id:current.id,variant:'story'});
+      document
+        .getElementById("status")
+        .textContent =
+        "Step 1/5: AI directing both versions…";
 
-  document.getElementById('status').textContent='Both finished videos are ready.';
-  renderStudio();
- }catch(error){
-  document.getElementById('status').textContent='Automated video pipeline stopped: '+error.message;
- }finally{if(b)b.disabled=false}
+      await invokeVideo({
+
+        action:
+          "prepare-variants",
+
+        mistake_id:
+          current.id
+      });
+
+      renderStudio();
+    }
+
+    document
+      .getElementById("status")
+      .textContent =
+      "Step 2/5: Generating Social narration…";
+
+    await invokeVideo({
+
+      action:
+        "narration",
+
+      mistake_id:
+        current.id,
+
+      variant:
+        "social",
+
+      script:
+        assetsByMistake[current.id]
+        .social_video_script
+    });
+
+    document
+      .getElementById("status")
+      .textContent =
+      "Step 3/5: Rendering Social directed video…";
+
+    await invokeVideo({
+
+      action:
+        "render",
+
+      mistake_id:
+        current.id,
+
+      variant:
+        "social"
+    });
+
+    document
+      .getElementById("status")
+      .textContent =
+      "Step 4/5: Generating Story narration…";
+
+    await invokeVideo({
+
+      action:
+        "narration",
+
+      mistake_id:
+        current.id,
+
+      variant:
+        "story",
+
+      script:
+        assetsByMistake[current.id]
+        .story_video_script
+    });
+
+    document
+      .getElementById("status")
+      .textContent =
+      "Step 5/5: Rendering Story directed video…";
+
+    await invokeVideo({
+
+      action:
+        "render",
+
+      mistake_id:
+        current.id,
+
+      variant:
+        "story"
+    });
+
+    document
+      .getElementById("status")
+      .textContent =
+      "Both finished videos are ready.";
+
+    renderStudio();
+
+  }catch(error){
+
+    document
+      .getElementById("status")
+      .textContent =
+      "Automated video pipeline stopped: " +
+      error.message;
+
+  }finally{
+
+    if(b){
+      b.disabled = false;
+    }
+  }
 }
 
-async function copyVariantUrl(variant){
- const a=assetsByMistake[current.id]||{};
- const url=a[variant+'_video_url']||(variant==='story'?a.video_url:'');
- if(!url){document.getElementById('status').textContent='No video URL is available.';return}
- await navigator.clipboard.writeText(url);
- document.getElementById('status').textContent=`${variant==='social'?'Social':'Story'} video URL copied.`;
+async function copyVariantUrl(
+  variant
+){
+
+  const a =
+  assetsByMistake[current.id] ||
+  {};
+
+  const url =
+  a[
+    variant +
+    "_video_url"
+  ] ||
+  (
+    variant === "story"
+    ?
+    a.video_url
+    :
+    ""
+  );
+
+  if(
+    !url
+  ){
+
+    document
+      .getElementById("status")
+      .textContent =
+      "No video URL is available.";
+
+    return;
+  }
+
+  await navigator.clipboard.writeText(
+    url
+  );
+
+  document
+    .getElementById("status")
+    .textContent =
+    `${
+      variant === "social"
+      ?
+      "Social"
+      :
+      "Story"
+    } video URL copied.`;
 }
 
-document.getElementById('search').addEventListener('input',renderList);document.getElementById('filter').addEventListener('change',renderList);
-requireAdmin().then(ok=>{if(ok)loadMistakes()});
+document
+  .getElementById("search")
+  .addEventListener(
+    "input",
+    renderList
+  );
+
+document
+  .getElementById("filter")
+  .addEventListener(
+    "change",
+    renderList
+  );
+
+requireAdmin()
+.then(
+  ok => {
+
+    if(ok){
+      loadMistakes();
+    }
+  }
+);
+
 </script>
-</body></html>
+
+</body>
+</html>
