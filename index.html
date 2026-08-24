@@ -1338,7 +1338,7 @@
     <section class="search-hero">
       <h1 class="tagline">The Internet's Largest Crowdsourced Database of <span class="red">Sports Mistakes</span></h1>
       <div class="tagline-sub">
-        <strong>Discover. Debate. Add to the Record.</strong>
+        <strong>Discover. Debate. Learn. Add to the Record.</strong>
       </div>
 
       <div class="hero-participate">
@@ -1348,7 +1348,7 @@
 
       <div class="search-row">
         <div class="search-icon">⌕</div>
-        <input id="searchInput" type="text" placeholder='Search "Bill Buckner", "Hand of God", "P.K. Subban"...' />
+        <input id="searchInput" type="text" placeholder='Search mistakes, people, teams, or lessons like "leadership"...' />
       </div>
 
       <div class="filter-row">
@@ -1511,6 +1511,17 @@
         <button onclick="quickSearch('JR Smith')">JR Smith</button>
       </div>
 
+      <div class="popular learn-searches">
+        Learn from mistakes:
+        <button onclick="quickSearch('Leadership')">Leadership</button>
+        <button onclick="quickSearch('Preparation')">Preparation</button>
+        <button onclick="quickSearch('Pressure')">Pressure</button>
+        <button onclick="quickSearch('Communication')">Communication</button>
+        <button onclick="quickSearch('Decision-making')">Decision-making</button>
+        <button onclick="quickSearch('Risk')">Risk</button>
+        <button onclick="quickSearch('Teamwork')">Teamwork</button>
+      </div>
+
       <div class="search-results-wrap" id="searchResultsWrap">
         <div class="search-results-head">
           <h2>Search Results</h2>
@@ -1623,7 +1634,7 @@
       while (true) {
         const { data, error } = await client
           .from("mistakes")
-          .select("id,title,sport,year,category,subcategory,teams_people,summary,why_it_matters,controversy_score,views,artwork_url")
+          .select("id,title,sport,year,category,subcategory,teams_people,summary,why_it_matters,lessons_learned,controversy_score,views,artwork_url")
           .order("controversy_score", { ascending:false })
           .range(from, from + pageSize - 1);
 
@@ -1876,7 +1887,7 @@
       const filtered = mistakes.filter(m => {
         const text = normalize(
           `${m.title || ""} ${m.sport || ""} ${m.category || ""} ${m.subcategory || ""} ` +
-          `${m.teams_people || ""} ${m.summary || ""} ${m.why_it_matters || ""}`
+          `${m.teams_people || ""} ${m.summary || ""} ${m.why_it_matters || ""} ${m.lessons_learned || ""}`
         );
 
         const matchesSearch = !search || text.includes(search);
