@@ -1,0 +1,492 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SportsMistakes — 10-Record Description Upgrade Test</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  background: #f4f6f8;
+  color: #17202a;
+}
+
+.wrap {
+  max-width: 1100px;
+  margin: auto;
+  padding: 24px;
+}
+
+h1 {
+  margin-bottom: 6px;
+}
+
+.note {
+  background: #fff4cc;
+  border: 1px solid #e4c85a;
+  padding: 14px;
+  border-radius: 10px;
+  margin: 14px 0;
+}
+
+.controls {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin: 16px 0;
+}
+
+button {
+  border: 0;
+  border-radius: 8px;
+  padding: 11px 15px;
+  font-weight: 700;
+  cursor: pointer;
+  background: #111;
+  color: #fff;
+}
+
+button.secondary {
+  background: #566573;
+}
+
+button:disabled {
+  opacity: .45;
+  cursor: not-allowed;
+}
+
+.card {
+  background: #fff;
+  border: 1px solid #d9dee3;
+  border-radius: 12px;
+  padding: 18px;
+  margin: 14px 0;
+}
+
+.meta {
+  font-size: 13px;
+  color: #5d6d7e;
+  margin-bottom: 12px;
+}
+
+.cols {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.box {
+  border: 1px solid #d9dee3;
+  border-radius: 9px;
+  padding: 13px;
+  white-space: pre-wrap;
+  line-height: 1.45;
+}
+
+.label {
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: .06em;
+  margin-bottom: 7px;
+}
+
+.good {
+  border-color: #4f9d69;
+  background: #f4fbf6;
+}
+
+.status {
+  font-size: 13px;
+  margin-top: 9px;
+  color: #566573;
+}
+
+.count {
+  font-weight: 700;
+}
+
+.error {
+  color: #b03a2e;
+}
+
+@media(max-width:760px) {
+  .cols {
+    grid-template-columns: 1fr;
+  }
+
+  .wrap {
+    padding: 14px;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<div class="wrap">
+
+<h1>10-Record Description Upgrade Test</h1>
+
+<p>
+This page finds ten of the thinnest published descriptions and generates
+proposed 60–100 word replacements.
+</p>
+
+<div class="note">
+<b>TEST MODE:</b>
+Nothing on this page overwrites or edits a live SportsMistakes description.
+It only lets you compare BEFORE vs. PROPOSED.
+</div>
+
+<div class="controls">
+  <button onclick="loadTen()">Load 10 Thin Descriptions</button>
+  <button id="runAll" onclick="runAll()" disabled>Generate All 10</button>
+  <button class="secondary" onclick="clearSecret()">Forget Admin Secret</button>
+</div>
+
+<div id="overall"></div>
+
+<div id="cards"></div>
+
+</div>
+
+<script>
+
+const SUPABASE_URL =
+  "https://scwjlljurircxuufhqih.supabase.co";
+
+const SUPABASE_ANON_KEY =
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNjd2psbGp1cmlyY3h1dWZocWloIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyNjUyMjcsImV4cCI6MjA5Njg0MTIyN30.WF0HRRb9mAkuOySjabTd8CZXVZRqF0MhMl0N2mafnns";
+
+const client =
+  supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+let rows = [];
+
+function esc(s) {
+  return String(s ?? "").replace(
+    /[&<>"']/g,
+    c => ({
+      "&":"&amp;",
+      "<":"&lt;",
+      ">":"&gt;",
+      '"':"&quot;",
+      "'":"&#39;"
+    }[c])
+  );
+}
+
+function words(s) {
+  return String(s || "").trim()
+    ? String(s).trim().split(/\s+/).length
+    : 0;
+}
+
+function getSecret() {
+
+  let s =
+    sessionStorage.getItem(
+      "sportsmistakes_artwork_admin_secret"
+    ) || "";
+
+  if (!s) {
+
+    s =
+      prompt(
+        "Enter your ARTWORK_ADMIN_SECRET:"
+      ) || "";
+
+    if (s) {
+      sessionStorage.setItem(
+        "sportsmistakes_artwork_admin_secret",
+        s
+      );
+    }
+  }
+
+  return s;
+}
+
+function clearSecret() {
+
+  sessionStorage.removeItem(
+    "sportsmistakes_artwork_admin_secret"
+  );
+
+  alert(
+    "Admin secret forgotten for this browser session."
+  );
+}
+
+async function loadTen() {
+
+  document.getElementById("overall").textContent =
+    "Loading candidates…";
+
+  const { data, error } =
+    await client
+      .from("mistakes")
+      .select(
+        "id,title,sport,year,league,summary,why_it_matters,source_1,source_2"
+      )
+      .limit(250);
+
+  if (error) {
+
+    document.getElementById("overall").innerHTML =
+      '<span class="error">' +
+      esc(error.message) +
+      "</span>";
+
+    return;
+  }
+
+  rows =
+    (data || [])
+      .map(x => ({
+        ...x,
+        wc: words(x.summary)
+      }))
+      .sort((a,b) => a.wc - b.wc)
+      .slice(0,10);
+
+  render();
+
+  document.getElementById("runAll").disabled =
+    rows.length === 0;
+
+  document.getElementById("overall").innerHTML =
+    "<b>" +
+    rows.length +
+    "</b> records loaded. These are selected from the fetched candidate pool by shortest current description.";
+}
+
+function render() {
+
+  document.getElementById("cards").innerHTML =
+    rows.map((r,i) => `
+
+<div class="card" id="card-${i}">
+
+<h2>
+${i+1}. ${esc(r.title || "Untitled")}
+</h2>
+
+<div class="meta">
+
+${esc(r.sport || "")}
+${esc(r.year || "")}
+
+· Current description:
+
+<span class="count">
+${r.wc} words
+</span>
+
+</div>
+
+<div class="cols">
+
+<div>
+
+<div class="label">
+BEFORE — LIVE DESCRIPTION
+</div>
+
+<div class="box">
+${esc(r.summary || "(empty)")}
+</div>
+
+</div>
+
+<div>
+
+<div class="label">
+PROPOSED AI UPGRADE
+</div>
+
+<div class="box" id="proposal-${i}">
+Not generated yet.
+</div>
+
+<div class="status" id="status-${i}">
+</div>
+
+</div>
+
+</div>
+
+<div class="controls">
+
+<button
+id="btn-${i}"
+onclick="upgradeOne(${i})">
+
+Generate Proposal
+
+</button>
+
+</div>
+
+</div>
+
+`).join("");
+}
+
+async function upgradeOne(i) {
+
+  const r = rows[i];
+
+  const btn =
+    document.getElementById("btn-" + i);
+
+  const st =
+    document.getElementById("status-" + i);
+
+  const box =
+    document.getElementById("proposal-" + i);
+
+  const secret = getSecret();
+
+  if (!secret)
+    return false;
+
+  btn.disabled = true;
+
+  st.textContent =
+    "Researching and writing…";
+
+  box.textContent =
+    "Working…";
+
+  try {
+
+    const resp =
+      await fetch(
+        `${SUPABASE_URL}/functions/v1/upgrade-mistake-description-test`,
+        {
+          method: "POST",
+
+          headers: {
+            "Content-Type":
+              "application/json",
+
+            "apikey":
+              SUPABASE_ANON_KEY,
+
+            "Authorization":
+              `Bearer ${SUPABASE_ANON_KEY}`,
+
+            "x-admin-secret":
+              secret
+          },
+
+          body:
+            JSON.stringify({
+              mistake_id: r.id
+            })
+        }
+      );
+
+    const d =
+      await resp.json();
+
+    if (!resp.ok || !d.success)
+      throw new Error(
+        d.error || "Upgrade failed"
+      );
+
+    if (!d.verified) {
+
+      box.textContent =
+        "AI could not confidently verify this event. No proposal accepted.";
+
+      st.textContent =
+        d.reason ||
+        "Needs human review.";
+
+      return true;
+    }
+
+    box.textContent =
+      d.improved_description ||
+      "(No proposal returned)";
+
+    box.classList.add("good");
+
+    st.innerHTML =
+      `<b>${d.improved_word_count} words.</b> ` +
+      `${esc(d.reason || "")}` +
+
+      (
+        d.verification_url
+          ? "<br>Verification: " +
+            esc(d.verification_url)
+          : ""
+      ) +
+
+      "<br><b>No database change was made.</b>";
+
+    return true;
+
+  }
+
+  catch(e) {
+
+    box.textContent =
+      "Failed.";
+
+    st.innerHTML =
+      '<span class="error">' +
+      esc(e.message) +
+      "</span>";
+
+    return false;
+  }
+
+  finally {
+
+    btn.disabled =
+      false;
+  }
+}
+
+async function runAll() {
+
+  const b =
+    document.getElementById("runAll");
+
+  b.disabled =
+    true;
+
+  let ok =
+    0;
+
+  for (
+    let i = 0;
+    i < rows.length;
+    i++
+  ) {
+
+    document.getElementById("overall").textContent =
+      `Generating ${i+1} of ${rows.length}…`;
+
+    if (await upgradeOne(i))
+      ok++;
+  }
+
+  document.getElementById("overall").innerHTML =
+    `Finished: <b>${ok}/${rows.length}</b> requests completed. Review the BEFORE/PROPOSED pairs below.`;
+
+  b.disabled =
+    false;
+}
+
+</script>
+
+</body>
+</html>
