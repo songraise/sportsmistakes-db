@@ -119,7 +119,11 @@
 
     <label>Your Name <span class="optional">(optional)</span></label>
     <input id="submitter_name" placeholder="Example: Jason" />
-    <div class="help">Used only for admin review and future contributor credit.</div>
+    <div class="help">Private. Used only for admin review and notifications.</div>
+
+    <label>Public Fan Name / Nickname <span class="optional">(optional)</span></label>
+    <input id="fan_display_name" placeholder="Example: HabsFan1975" maxlength="60" />
+    <div class="help">If this mistake is published, this is the only name that may appear with your fan take. Leave blank to appear as “Anonymous fan.”</div>
 
     <label>Email Address <span class="optional">(optional)</span></label>
     <input id="submitter_email" type="email" placeholder="you@example.com" />
@@ -220,20 +224,25 @@
     <input id="key_people" placeholder="Example: P.K. Subban, Shea Weber, Marc Bergevin" />
     <div class="help">Players, coaches, referees, owners, GMs, or other people central to the mistake.</div>
 
-    <label>Description</label>
-    <textarea id="description" placeholder="Briefly explain what happened and why it belongs in the database."></textarea>
-
-    <label>Why do fans still debate this? <span class="optional">(optional)</span></label>
-    <textarea id="why_it_matters" placeholder="Example: Fans still debate whether the team gave away the better player, whether the move damaged the franchise, or whether it changed the playoff window."></textarea>
+    <label>Why do YOU think this was a mistake?</label>
+    <textarea id="fan_submission_text" placeholder="Write it in your own words. Tell us what happened and why you think it belongs in SportsMistakes. Your voice will be preserved if the submission is published."></textarea>
+    <div class="help"><strong>This is your fan take.</strong> SportsMistakes will not silently rewrite it into an AI voice. Safety moderation still applies.</div>
 
     <div class="ai-helper">
-      <div class="ai-helper-title">✨ AI Autofill</div>
+      <div class="ai-helper-title">✨ Research + Autofill</div>
       <div class="ai-helper-text">
-        Type a rough title such as “JR Smith forgets the score.” SportsMistakes will make one web search, verify the event, and fill blank details including the description, sport, year, league, category, teams, key people, debate summary, and source links. You can edit everything before submitting.
+        Enter a rough title and, if you want, your fan take above. SportsMistakes will make one web search, verify the event, and build a neutral factual draft for <strong>The Record</strong> while filling year, league, teams, key people, category and source links. Your fan take stays separate.
       </div>
       <button id="aiAutofillButton" class="ai-button" onclick="suggestSubmissionFields()">✨ Research + Autofill</button>
       <div id="aiSuggestStatus" class="ai-status"></div>
     </div>
+
+    <label>The Record — AI-Researched Factual Draft <span class="optional">(optional)</span></label>
+    <textarea id="description" placeholder="AI Autofill can place a neutral factual account here. If you submit without using Autofill, your fan take will still go to the review queue and SportsMistakes can create The Record during review."></textarea>
+    <div class="help">This is separate from your opinion. It is reviewed/fact-checked before publication and may be corrected by SportsMistakes.</div>
+
+    <label>Why is this still debated? <span class="optional">(optional)</span></label>
+    <textarea id="why_it_matters" placeholder="Optional context about why fans still argue about this moment."></textarea>
 
     <label>Primary Source URL</label>
     <input id="source_url" placeholder="https://example.com/article-or-video" />
@@ -451,6 +460,7 @@
       category: document.getElementById("category").value,
       teams_people: document.getElementById("teams_people").value.trim(),
       key_people: document.getElementById("key_people").value.trim(),
+      fan_submission_text: document.getElementById("fan_submission_text").value.trim(),
       description: document.getElementById("description").value.trim(),
       why_it_matters: document.getElementById("why_it_matters").value.trim(),
       source_url: document.getElementById("source_url").value.trim(),
@@ -461,7 +471,8 @@
     if (fields.title) score += 12;
     if (fields.sport) score += 12;
     if (fields.category) score += 12;
-    if (fields.description.length >= 30) score += 18;
+    if (fields.fan_submission_text.length >= 20) score += 12;
+    if (fields.description.length >= 30) score += 6;
     if (fields.source_url.startsWith("https://")) score += 13;
     if (fields.source_url_2.startsWith("https://")) score += 3;
     if (fields.year) score += 8;
@@ -489,7 +500,7 @@
   }
 
   function setupCompletenessListeners() {
-    ["title","sport","year","league","category","teams_people","key_people","description","why_it_matters","source_url","source_url_2"].forEach(id => {
+    ["title","sport","year","league","category","teams_people","key_people","fan_submission_text","description","why_it_matters","source_url","source_url_2"].forEach(id => {
       const el = document.getElementById(id);
       if (el) {
         el.addEventListener("input", calculateCompleteness);
@@ -528,9 +539,10 @@
     const button = document.getElementById("aiAutofillButton");
     const title = document.getElementById("title").value.trim();
     const sport = document.getElementById("sport").value;
+    const fanText = document.getElementById("fan_submission_text").value.trim();
     const description = document.getElementById("description").value.trim();
 
-    if (!title && !description) {
+    if (!title && !fanText && !description) {
       status.innerText = "Type a rough sports-mistake title first.";
       return;
     }
@@ -554,7 +566,7 @@
         body: JSON.stringify({
           title,
           sport,
-          description,
+          description: fanText || description,
           client_id: getAutofillClientId()
         })
       });
@@ -596,7 +608,7 @@
         const remaining = data?.rate_limit?.device_hour_remaining;
         status.innerText =
           "Verified and autofilled: " + filled.join(", ") +
-          ". Please review before submitting." +
+          ". Your fan take was preserved separately. Please review before submitting." +
           (Number.isFinite(remaining) ? ` ${remaining} AI Autofill use${remaining === 1 ? "" : "s"} remain this hour.` : "");
       } else {
         status.innerText = "The event was verified, but the fields already contained information. Review the form before submitting.";
@@ -618,6 +630,8 @@
 
     const submitter_name = document.getElementById("submitter_name").value.trim();
     const submitter_email = document.getElementById("submitter_email").value.trim().toLowerCase();
+    const fan_display_name = document.getElementById("fan_display_name").value.trim();
+    const fan_submission_text = document.getElementById("fan_submission_text").value.trim();
 
     const title = document.getElementById("title").value.trim();
     const sport = document.getElementById("sport").value;
@@ -634,10 +648,12 @@
     const completeness_score = calculateCompleteness();
     const rulesCheck = document.getElementById("rulesCheck").checked;
 
-    if (!title || !description || !source_url) {
-      message.innerText = "Please add a title, description, and source URL.";
+    if (!title || !fan_submission_text || !source_url) {
+      message.innerText = "Please add a title, your fan take, and a source URL.";
       return;
     }
+
+    const recordDraft = description || fan_submission_text;
 
     if (submitter_email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(submitter_email)) {
       message.innerText = "Please enter a valid email address, or leave the email field blank.";
@@ -664,14 +680,14 @@
       return;
     }
 
-    if (containsUnsafeText(title + " " + teams_people + " " + key_people + " " + description + " " + why_it_matters + " " + source_url + " " + source_url_2)) {
+    if (containsUnsafeText(title + " " + fan_display_name + " " + fan_submission_text + " " + teams_people + " " + key_people + " " + description + " " + why_it_matters + " " + source_url + " " + source_url_2)) {
       message.innerText = "This submission appears to violate the safety rules.";
       return;
     }
 
     message.innerText = "Checking for possible duplicates...";
 
-    const possibleDuplicate = await findPossibleDuplicate(title, description, sport, category, year, league, teams_people, key_people);
+    const possibleDuplicate = await findPossibleDuplicate(title, recordDraft, sport, category, year, league, teams_people, key_people);
 
     if (possibleDuplicate) {
       const strengthText =
@@ -707,13 +723,17 @@
         league: league || null,
         category,
 
-        // Original submit-page fields
-        description,
+        // Preserve the contributor's human voice separately.
+        fan_submission_text,
+        fan_display_name: fan_display_name || null,
+
+        // Working factual draft for AI/admin review.
+        description: recordDraft,
         source_url,
 
         // AI review / publishing fields
-        summary: description,
-        why_it_matters: why_it_matters || description,
+        summary: recordDraft,
+        why_it_matters: why_it_matters || null,
         source_1: source_url,
         source_2: source_url_2 || null,
         teams_people: teams_people || null,
@@ -739,6 +759,8 @@
 
     document.getElementById("submitter_name").value = "";
     document.getElementById("submitter_email").value = "";
+    document.getElementById("fan_display_name").value = "";
+    document.getElementById("fan_submission_text").value = "";
     document.getElementById("title").value = "";
     document.getElementById("sport").value = "";
     document.getElementById("year").value = "";
