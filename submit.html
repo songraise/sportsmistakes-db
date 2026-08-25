@@ -231,15 +231,15 @@
     <div class="ai-helper">
       <div class="ai-helper-title">✨ Research + Autofill</div>
       <div class="ai-helper-text">
-        Enter a rough title and, if you want, your fan take above. SportsMistakes will make one web search, verify the event, and build a neutral factual draft for <strong>The Record</strong> while filling year, league, teams, key people, category and source links. Your fan take stays separate.
+        <strong>Optional preview:</strong> click here if you want to see the research before submitting. If you skip this button, SportsMistakes will automatically run the same one-search verification when you click <strong>Submit Sports Mistake</strong>. Your fan take always stays separate.
       </div>
-      <button id="aiAutofillButton" class="ai-button" onclick="suggestSubmissionFields()">✨ Research + Autofill</button>
+      <button id="aiAutofillButton" class="ai-button" onclick="suggestSubmissionFields()">✨ Preview Research + Autofill</button>
       <div id="aiSuggestStatus" class="ai-status"></div>
     </div>
 
-    <label>The Record — AI-Researched Factual Draft <span class="optional">(optional)</span></label>
-    <textarea id="description" placeholder="AI Autofill can place a neutral factual account here. If you submit without using Autofill, your fan take will still go to the review queue and SportsMistakes can create The Record during review."></textarea>
-    <div class="help">This is separate from your opinion. It is reviewed/fact-checked before publication and may be corrected by SportsMistakes.</div>
+    <label>The Record — AI-Researched Factual Draft <span class="optional">(preview)</span></label>
+    <textarea id="description" placeholder="SportsMistakes creates this automatically from verified research. You may preview it with the button above, or simply submit and let the research run automatically."></textarea>
+    <div class="help">This is separate from your opinion. Every submission must pass the factual research step before it enters the review queue.</div>
 
     <label>Why is this still debated? <span class="optional">(optional)</span></label>
     <textarea id="why_it_matters" placeholder="Optional context about why fans still argue about this moment."></textarea>
@@ -263,7 +263,7 @@
     <div class="checkbox-row">
       <input type="checkbox" id="rulesCheck" />
       <span>
-        I confirm this submission is sports-related, safe, and supported by a real source.
+        I confirm this submission is sports-related and safe. SportsMistakes will automatically verify the event and sources before it enters the review queue.
       </span>
     </div>
 
@@ -283,6 +283,18 @@
   const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNjd2psbGp1cmlyY3h1dWZocWloIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyNjUyMjcsImV4cCI6MjA5Njg0MTIyN30.WF0HRRb9mAkuOySjabTd8CZXVZRqF0MhMl0N2mafnns";
 
   const client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  // Stores the most recent verified research result in this page session.
+  // If the user already previewed the exact same title/fan take, Submit reuses it
+  // instead of paying for a second web search.
+  let lastVerifiedResearch = null;
+  let researchInFlight = null;
+
+  function researchKey() {
+    const title = document.getElementById("title").value.trim().toLowerCase();
+    const fanText = document.getElementById("fan_submission_text").value.trim().toLowerCase();
+    return `${title}|||${fanText}`;
+  }
 
   function containsUnsafeText(text) {
     const bannedPatterns = [
@@ -534,144 +546,196 @@
     return value;
   }
 
-  async function suggestSubmissionFields() {
+  async function requestVerifiedResearch({ automatic = false } = {}) {
     const status = document.getElementById("aiSuggestStatus");
     const button = document.getElementById("aiAutofillButton");
     const title = document.getElementById("title").value.trim();
     const sport = document.getElementById("sport").value;
     const fanText = document.getElementById("fan_submission_text").value.trim();
     const description = document.getElementById("description").value.trim();
+    const key = researchKey();
 
     if (!title && !fanText && !description) {
-      status.innerText = "Type a rough sports-mistake title first.";
-      return;
+      const msg = "Type a rough sports-mistake title first.";
+      if (status) status.innerText = msg;
+      return { success:false, error:msg };
     }
 
-    const originalButtonText = button ? button.innerText : "✨ Research + Autofill";
+    // Reuse the already verified result for the exact same submission subject.
+    if (lastVerifiedResearch && lastVerifiedResearch.key === key) {
+      return {
+        success: true,
+        suggestions: lastVerifiedResearch.suggestions,
+        reused: true,
+        rate_limit: lastVerifiedResearch.rate_limit || null
+      };
+    }
+
+    if (researchInFlight) return researchInFlight;
+
+    const originalButtonText = button ? button.innerText : "✨ Preview Research + Autofill";
+
     if (button) {
       button.disabled = true;
-      button.innerText = "Researching...";
+      button.innerText = automatic ? "Verifying Before Submit..." : "Researching...";
     }
 
-    status.innerText = "Searching the web once, verifying the event, and building the submission...";
-
-    try {
-      const response = await fetch(`${SUPABASE_URL}/functions/v1/suggest-submission-fields`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "apikey": SUPABASE_ANON_KEY,
-          "Authorization": `Bearer ${SUPABASE_ANON_KEY}`
-        },
-        body: JSON.stringify({
-          title,
-          sport,
-          description: fanText || description,
-          client_id: getAutofillClientId()
-        })
-      });
-
-      const raw = await response.text();
-      let data = {};
-      try { data = raw ? JSON.parse(raw) : {}; }
-      catch { data = { success:false, error:"AI Autofill returned an invalid response." }; }
-
-      if (!response.ok || !data || data.success === false) {
-        console.error("AI Autofill failed:", data);
-        status.innerText = data?.error || "AI Autofill failed. You can still submit manually.";
-        return;
-      }
-
-      const s = data.suggestions || {};
-
-      if (s.verified === false) {
-        status.innerText = s.verification_note || "AI could not confidently verify this event from the search. Please add more detail and try again.";
-        return;
-      }
-
-      const filled = [];
-
-      if (setFieldIfSuggestion("sport", s.sport)) filled.push("sport");
-      if (setFieldIfSuggestion("year", s.year)) filled.push("year");
-      if (setFieldIfSuggestion("league", s.league)) filled.push("league");
-      if (setFieldIfSuggestion("category", s.category)) filled.push("category");
-      if (setFieldIfSuggestion("teams_people", s.teams_people)) filled.push("teams involved");
-      if (setFieldIfSuggestion("key_people", s.key_people)) filled.push("key names");
-      if (setFieldIfSuggestion("description", s.description)) filled.push("description");
-      if (setFieldIfSuggestion("why_it_matters", s.why_it_matters)) filled.push("why fans debate it");
-      if (setFieldIfSuggestion("source_url", s.source_url)) filled.push("primary source");
-      if (setFieldIfSuggestion("source_url_2", s.source_url_2)) filled.push("second source");
-
-      calculateCompleteness();
-
-      if (filled.length) {
-        const remaining = data?.rate_limit?.device_hour_remaining;
-        status.innerText =
-          "Verified and autofilled: " + filled.join(", ") +
-          ". Your fan take was preserved separately. Please review before submitting." +
-          (Number.isFinite(remaining) ? ` ${remaining} AI Autofill use${remaining === 1 ? "" : "s"} remain this hour.` : "");
-      } else {
-        status.innerText = "The event was verified, but the fields already contained information. Review the form before submitting.";
-      }
-
-    } catch (err) {
-      console.error(err);
-      status.innerText = "AI Autofill could not be reached. You can still submit manually.";
-    } finally {
-      if (button) {
-        button.disabled = false;
-        button.innerText = originalButtonText;
-      }
+    if (status) {
+      status.innerText = automatic
+        ? "Automatically researching and verifying this submission before it enters the review queue..."
+        : "Searching the web once, verifying the event, and building The Record...";
     }
+
+    researchInFlight = (async () => {
+      try {
+        const response = await fetch(`${SUPABASE_URL}/functions/v1/suggest-submission-fields`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "apikey": SUPABASE_ANON_KEY,
+            "Authorization": `Bearer ${SUPABASE_ANON_KEY}`
+          },
+          body: JSON.stringify({
+            title,
+            sport,
+            description: fanText || description,
+            client_id: getAutofillClientId()
+          })
+        });
+
+        const raw = await response.text();
+        let data = {};
+        try { data = raw ? JSON.parse(raw) : {}; }
+        catch { data = { success:false, error:"AI research returned an invalid response." }; }
+
+        if (!response.ok || !data || data.success === false) {
+          console.error("AI research failed:", data);
+          const msg = data?.error || "AI research could not be completed. Please try again.";
+          if (status) status.innerText = msg;
+          return { success:false, error:msg, data };
+        }
+
+        const suggestions = data.suggestions || {};
+
+        if (suggestions.verified === false) {
+          const msg = suggestions.verification_note ||
+            "SportsMistakes could not confidently verify this event from the search. Add more identifying detail and try again.";
+          if (status) status.innerText = msg;
+          return { success:false, error:msg, unverified:true, data };
+        }
+
+        lastVerifiedResearch = {
+          key,
+          suggestions,
+          rate_limit: data.rate_limit || null,
+          verified_at: Date.now()
+        };
+
+        return {
+          success: true,
+          suggestions,
+          rate_limit: data.rate_limit || null,
+          reused: false
+        };
+      } catch (err) {
+        console.error(err);
+        const msg = "AI research could not be reached. Please try again before submitting.";
+        if (status) status.innerText = msg;
+        return { success:false, error:msg };
+      } finally {
+        researchInFlight = null;
+        if (button) {
+          button.disabled = false;
+          button.innerText = originalButtonText;
+        }
+      }
+    })();
+
+    return researchInFlight;
+  }
+
+  function applyVerifiedResearch(suggestions, { overwriteFactual = true } = {}) {
+    const s = suggestions || {};
+    const changed = [];
+
+    const apply = (id, value, label, overwrite = overwriteFactual) => {
+      if (value === null || value === undefined || value === "") return;
+      const el = document.getElementById(id);
+      if (!el) return;
+      const current = String(el.value || "").trim();
+      if (current && !overwrite) return;
+      if (String(el.value ?? "") !== String(value)) {
+        el.value = String(value);
+        el.dispatchEvent(new Event("input", { bubbles:true }));
+        el.dispatchEvent(new Event("change", { bubbles:true }));
+        changed.push(label);
+      }
+    };
+
+    // These are factual/structured fields, not the contributor's voice.
+    apply("sport", s.sport, "sport");
+    apply("year", s.year, "year");
+    apply("league", s.league, "league");
+    apply("category", s.category, "category");
+    apply("teams_people", s.teams_people, "teams involved");
+    apply("key_people", s.key_people, "key names");
+
+    // The Record and source fields should always use the verified research version.
+    apply("description", s.description, "The Record", true);
+    apply("why_it_matters", s.why_it_matters, "debate context", true);
+    apply("source_url", s.source_url, "primary source", true);
+
+    if (s.source_url_2) {
+      apply("source_url_2", s.source_url_2, "second source", true);
+    }
+
+    calculateCompleteness();
+    return changed;
+  }
+
+  async function suggestSubmissionFields() {
+    const status = document.getElementById("aiSuggestStatus");
+
+    const result = await requestVerifiedResearch({ automatic:false });
+    if (!result.success) return false;
+
+    const changed = applyVerifiedResearch(result.suggestions, { overwriteFactual:true });
+    const remaining = result?.rate_limit?.device_hour_remaining;
+
+    if (status) {
+      status.innerText =
+        (result.reused ? "Using the verified research already completed for this submission. " : "Verified. ") +
+        (changed.length ? "Updated: " + changed.join(", ") + ". " : "") +
+        "Your fan take remains unchanged." +
+        (Number.isFinite(remaining)
+          ? ` ${remaining} AI Autofill use${remaining === 1 ? "" : "s"} remain this hour.`
+          : "");
+    }
+
+    return true;
   }
 
   async function submitMistake() {
     const message = document.getElementById("message");
+    const submitButton = document.querySelector(".submit-button");
+    const originalSubmitText = submitButton ? submitButton.innerText : "Submit Sports Mistake";
 
     const submitter_name = document.getElementById("submitter_name").value.trim();
     const submitter_email = document.getElementById("submitter_email").value.trim().toLowerCase();
     const fan_display_name = document.getElementById("fan_display_name").value.trim();
     const fan_submission_text = document.getElementById("fan_submission_text").value.trim();
-
     const title = document.getElementById("title").value.trim();
-    const sport = document.getElementById("sport").value;
-    const yearRaw = document.getElementById("year").value;
-    const year = yearRaw ? Number(yearRaw) : null;
-    const league = document.getElementById("league").value;
-    const category = document.getElementById("category").value;
-    const teams_people = document.getElementById("teams_people").value.trim();
-    const key_people = document.getElementById("key_people").value.trim();
-    const description = document.getElementById("description").value.trim();
-    const why_it_matters = document.getElementById("why_it_matters").value.trim();
-    const source_url = document.getElementById("source_url").value.trim();
-    const source_url_2 = document.getElementById("source_url_2").value.trim();
-    const completeness_score = calculateCompleteness();
     const rulesCheck = document.getElementById("rulesCheck").checked;
 
-    if (!title || !fan_submission_text || !source_url) {
-      message.innerText = "Please add a title, your fan take, and a source URL.";
+    // Only the human contribution and consent are required BEFORE research.
+    // Factual fields and source URLs can be created/corrected by the mandatory research pass.
+    if (!title || !fan_submission_text) {
+      message.innerText = "Please add a title and tell us why YOU think this was a mistake.";
       return;
     }
-
-    const recordDraft = description || fan_submission_text;
 
     if (submitter_email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(submitter_email)) {
       message.innerText = "Please enter a valid email address, or leave the email field blank.";
-      return;
-    }
-
-    if (!source_url.startsWith("https://")) {
-      message.innerText = "Please use a full secure primary source URL starting with https://";
-      return;
-    }
-
-    if (source_url_2 && !source_url_2.startsWith("https://")) {
-      message.innerText = "Please use a full secure second source URL starting with https://, or leave it blank.";
-      return;
-    }
-
-    if (!sport || !category) {
-      message.innerText = "Please select a sport and category.";
       return;
     }
 
@@ -680,99 +744,181 @@
       return;
     }
 
-    if (containsUnsafeText(title + " " + fan_display_name + " " + fan_submission_text + " " + teams_people + " " + key_people + " " + description + " " + why_it_matters + " " + source_url + " " + source_url_2)) {
+    if (containsUnsafeText(title + " " + fan_display_name + " " + fan_submission_text)) {
       message.innerText = "This submission appears to violate the safety rules.";
       return;
     }
 
-    message.innerText = "Checking for possible duplicates...";
+    if (submitButton) {
+      submitButton.disabled = true;
+      submitButton.innerText = "Verifying & Preparing...";
+    }
 
-    const possibleDuplicate = await findPossibleDuplicate(title, recordDraft, sport, category, year, league, teams_people, key_people);
+    try {
+      // MANDATORY FACTUAL GATE.
+      // If Preview Research + Autofill was already run for this exact title/fan take,
+      // requestVerifiedResearch() reuses that result and performs ZERO extra searches.
+      // Otherwise this triggers exactly one research request now.
+      message.innerText = "Researching and fact-checking your submission...";
 
-    if (possibleDuplicate) {
-      const strengthText =
-        possibleDuplicate.duplicate_strength === "high"
-          ? "This looks like a strong possible duplicate."
-          : "This may be related or a possible duplicate.";
+      const research = await requestVerifiedResearch({ automatic:true });
 
-      const proceed = confirm(
-        `${strengthText}\n\n` +
-        `Closest existing record:\n` +
-        `"${possibleDuplicate.title}" (${possibleDuplicate.sport || ""} ${possibleDuplicate.year || ""})\n\n` +
-        `Match score: ${possibleDuplicate.match_score || 0}%\n\n` +
-        `If this is truly a different event, click OK and it will still go to the admin review queue.\n\n` +
-        `If it is the same event, click Cancel.`
-      );
-
-      if (!proceed) {
+      if (!research.success) {
         message.innerText =
-          `Possible duplicate found: "${possibleDuplicate.title}" (${possibleDuplicate.sport || ""} ${possibleDuplicate.year || ""}).\n\n` +
-          `Submission cancelled. Please search the database before submitting.`;
+          research.error ||
+          "SportsMistakes could not verify this submission well enough to send it to review. Please add more detail and try again.";
         return;
       }
-    }
 
-    message.innerText = "Submitting to review queue...";
+      // Force the verified factual fields into the form before saving.
+      // The contributor's fan_submission_text is NEVER overwritten.
+      applyVerifiedResearch(research.suggestions, { overwriteFactual:true });
 
-    const { error } = await client
-      .from("mistake_submissions")
-      .insert({
+      // Re-read every factual field AFTER research, so only the verified version is stored.
+      const sport = document.getElementById("sport").value;
+      const yearRaw = document.getElementById("year").value;
+      const year = yearRaw ? Number(yearRaw) : null;
+      const league = document.getElementById("league").value;
+      const category = document.getElementById("category").value;
+      const teams_people = document.getElementById("teams_people").value.trim();
+      const key_people = document.getElementById("key_people").value.trim();
+      const description = document.getElementById("description").value.trim();
+      const why_it_matters = document.getElementById("why_it_matters").value.trim();
+      const source_url = document.getElementById("source_url").value.trim();
+      const source_url_2 = document.getElementById("source_url_2").value.trim();
+      const completeness_score = calculateCompleteness();
+
+      if (!sport || !category || !description || !source_url) {
+        message.innerText =
+          "The event was researched, but SportsMistakes could not build a complete enough factual record. Please add more identifying detail and try again.";
+        return;
+      }
+
+      if (!source_url.startsWith("https://")) {
+        message.innerText = "The verified research did not return a usable secure source. Please try again.";
+        return;
+      }
+
+      if (source_url_2 && !source_url_2.startsWith("https://")) {
+        document.getElementById("source_url_2").value = "";
+      }
+
+      // Safety check again, now including the generated factual layer.
+      if (containsUnsafeText(
+        title + " " + fan_display_name + " " + fan_submission_text + " " +
+        teams_people + " " + key_people + " " + description + " " +
+        why_it_matters + " " + source_url + " " + source_url_2
+      )) {
+        message.innerText = "This submission appears to violate the safety rules.";
+        return;
+      }
+
+      message.innerText = "Checking for possible duplicates...";
+
+      const possibleDuplicate = await findPossibleDuplicate(
         title,
+        description,
         sport,
-        year,
-        league: league || null,
         category,
+        year,
+        league,
+        teams_people,
+        key_people
+      );
 
-        // Preserve the contributor's human voice separately.
-        fan_submission_text,
-        fan_display_name: fan_display_name || null,
+      if (possibleDuplicate) {
+        const strengthText =
+          possibleDuplicate.duplicate_strength === "high"
+            ? "This looks like a strong possible duplicate."
+            : "This may be related or a possible duplicate.";
 
-        // Working factual draft for AI/admin review.
-        description: recordDraft,
-        source_url,
+        const proceed = confirm(
+          `${strengthText}\n\n` +
+          `Closest existing record:\n` +
+          `"${possibleDuplicate.title}" (${possibleDuplicate.sport || ""} ${possibleDuplicate.year || ""})\n\n` +
+          `Match score: ${possibleDuplicate.match_score || 0}%\n\n` +
+          `If this is truly a different event, click OK and it will still go to the admin review queue.\n\n` +
+          `If it is the same event, click Cancel.`
+        );
 
-        // AI review / publishing fields
-        summary: recordDraft,
-        why_it_matters: why_it_matters || null,
-        source_1: source_url,
-        source_2: source_url_2 || null,
-        teams_people: teams_people || null,
-        key_people: key_people || null,
-        completeness_score,
-      
+        if (!proceed) {
+          message.innerText =
+            `Possible duplicate found: "${possibleDuplicate.title}" (${possibleDuplicate.sport || ""} ${possibleDuplicate.year || ""}).\n\n` +
+            `Submission cancelled. Please search the database before submitting.`;
+          return;
+        }
+      }
 
-        // Optional notification / contributor fields
-        submitter_name: submitter_name || null,
-        submitter_email: submitter_email || null,
-        submitter_trust_score: 50,
+      message.innerText = "Submitting the verified record and your original fan take to the review queue...";
 
-        status: "pending"
-      });
+      const { error } = await client
+        .from("mistake_submissions")
+        .insert({
+          title,
+          sport,
+          year,
+          league: league || null,
+          category,
 
-    if (error) {
-      console.error(error);
-      message.innerText = "Submission failed: " + (error.message || JSON.stringify(error));
-      return;
+          // HUMAN LAYER — preserved exactly as submitted.
+          fan_submission_text,
+          fan_display_name: fan_display_name || null,
+
+          // FACTUAL LAYER — mandatory verified research result.
+          description,
+          summary: description,
+          why_it_matters: why_it_matters || null,
+          source_url,
+          source_1: source_url,
+          source_2: source_url_2 || null,
+          teams_people: teams_people || null,
+          key_people: key_people || null,
+          completeness_score,
+
+          // Contributor/admin metadata
+          submitter_name: submitter_name || null,
+          submitter_email: submitter_email || null,
+          submitter_trust_score: 50,
+
+          status: "pending"
+        });
+
+      if (error) {
+        console.error(error);
+        message.innerText = "Submission failed: " + (error.message || JSON.stringify(error));
+        return;
+      }
+
+      message.innerText =
+        "Submission received. Thank you!\n\n" +
+        "Your original fan take was preserved, and SportsMistakes created a separate verified factual record for review.";
+
+      document.getElementById("submitter_name").value = "";
+      document.getElementById("submitter_email").value = "";
+      document.getElementById("fan_display_name").value = "";
+      document.getElementById("fan_submission_text").value = "";
+      document.getElementById("title").value = "";
+      document.getElementById("sport").value = "";
+      document.getElementById("year").value = "";
+      document.getElementById("league").value = "";
+      document.getElementById("category").value = "";
+      document.getElementById("teams_people").value = "";
+      document.getElementById("key_people").value = "";
+      document.getElementById("description").value = "";
+      document.getElementById("why_it_matters").value = "";
+      document.getElementById("source_url").value = "";
+      document.getElementById("source_url_2").value = "";
+      document.getElementById("rulesCheck").checked = false;
+      document.getElementById("aiSuggestStatus").innerText = "";
+      lastVerifiedResearch = null;
+      calculateCompleteness();
+
+    } finally {
+      if (submitButton) {
+        submitButton.disabled = false;
+        submitButton.innerText = originalSubmitText;
+      }
     }
-
-    message.innerText = "Submission received. Thank you! It will be reviewed before publishing.";
-
-    document.getElementById("submitter_name").value = "";
-    document.getElementById("submitter_email").value = "";
-    document.getElementById("fan_display_name").value = "";
-    document.getElementById("fan_submission_text").value = "";
-    document.getElementById("title").value = "";
-    document.getElementById("sport").value = "";
-    document.getElementById("year").value = "";
-    document.getElementById("league").value = "";
-    document.getElementById("category").value = "";
-    document.getElementById("teams_people").value = "";
-    document.getElementById("key_people").value = "";
-    document.getElementById("description").value = "";
-    document.getElementById("why_it_matters").value = "";
-    document.getElementById("source_url").value = "";
-    document.getElementById("source_url_2").value = "";
-    document.getElementById("rulesCheck").checked = false;
   }
 
   populateYearDropdown();
