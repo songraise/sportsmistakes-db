@@ -46,7 +46,7 @@
     input::placeholder,textarea::placeholder{color:#768394}textarea{min-height:130px;resize:vertical}
     .help{margin-top:6px;color:var(--muted);font-size:13px;line-height:1.4}
     .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
-    .ai-helper-title{font-weight:1000;color:#fff;margin-bottom:6px;font-size:17px}.ai-helper-text{color:#cbd5e1;margin-bottom:12px}.ai-status{margin-top:10px;font-size:13px;color:#d7dee8;white-space:pre-wrap}
+    .ai-helper-title{font-weight:1000;color:#fff;margin-bottom:6px;font-size:17px}.ai-helper-text{color:#cbd5e1;margin-bottom:12px}.ai-status{margin-top:10px;font-size:13px;color:#d7dee8;white-space:pre-wrap}.ai-button:disabled{opacity:.6;cursor:not-allowed;transform:none}
     button{margin-top:22px;padding:15px 20px;border:none;border-radius:8px;background:linear-gradient(135deg,var(--red),#c81010);color:white;font-weight:1000;cursor:pointer;font-size:16px;text-transform:uppercase;letter-spacing:.4px;box-shadow:0 9px 20px rgba(226,36,36,.2)}
     button:hover{transform:translateY(-1px);filter:brightness(1.06)}.ai-button{margin-top:0;background:#202a36;box-shadow:none;border:1px solid rgba(255,255,255,.15)}
     .completeness-row{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:10px;font-weight:900;color:#fff}.completeness-bar{height:12px;background:#1d2732;border-radius:999px;overflow:hidden}.completeness-fill{height:100%;width:0;background:linear-gradient(90deg,var(--red-dark),var(--red));transition:width .2s ease}.completeness-tip{margin-top:10px;color:#cbd5e1;font-size:13px;line-height:1.45}
@@ -223,21 +223,24 @@
     <label>Description</label>
     <textarea id="description" placeholder="Briefly explain what happened and why it belongs in the database."></textarea>
 
-    <label>What can be learned from this mistake? <span class="optional">(optional)</span></label>
-    <textarea id="lessons_learned" placeholder="Example: Under pressure, slow the decision down, communicate responsibilities clearly, and make sure the team has rehearsed the situation before it happens in a game."></textarea>
-    <div class="help">Think about the takeaway for players, coaches, officials, owners, executives, or teams. There may be more than one lesson.</div>
+    <label>Why do fans still debate this? <span class="optional">(optional)</span></label>
+    <textarea id="why_it_matters" placeholder="Example: Fans still debate whether the team gave away the better player, whether the move damaged the franchise, or whether it changed the playoff window."></textarea>
 
     <div class="ai-helper">
       <div class="ai-helper-title">✨ AI Autofill</div>
       <div class="ai-helper-text">
-        Add a title and short description, then let SportsMistakes suggest the year, league, teams, key people, category, and debate summary. You can edit anything before submitting.
+        Type a rough title such as “JR Smith forgets the score.” SportsMistakes will make one web search, verify the event, and fill blank details including the description, sport, year, league, category, teams, key people, debate summary, and source links. You can edit everything before submitting.
       </div>
-      <button class="ai-button" onclick="suggestSubmissionFields()">✨ Autofill Missing Details</button>
+      <button id="aiAutofillButton" class="ai-button" onclick="suggestSubmissionFields()">✨ Research + Autofill</button>
       <div id="aiSuggestStatus" class="ai-status"></div>
     </div>
 
-    <label>Source URL</label>
+    <label>Primary Source URL</label>
     <input id="source_url" placeholder="https://example.com/article-or-video" />
+
+    <label>Second Source URL <span class="optional">(optional)</span></label>
+    <input id="source_url_2" placeholder="https://example.com/second-source" />
+    <div class="help">AI Autofill will add a second independent source when the single research search returns one.</div>
 
     <div class="completeness-box">
       <div class="completeness-row">
@@ -340,14 +343,14 @@
       ${old.teams_people || ""}
       ${old.key_people || ""}
       ${old.summary || ""}
-      ${old.lessons_learned || old.why_it_matters || ""}
+      ${old.why_it_matters || ""}
     `;
   }
 
   async function findPossibleDuplicate(title, description, sport, category, year, league, teams_people, key_people) {
     const { data, error } = await client
       .from("mistakes")
-      .select("title,sport,year,league,category,teams_people,key_people,summary,why_it_matters,lessons_learned")
+      .select("title,sport,year,league,category,teams_people,key_people,summary,why_it_matters")
       .limit(3000);
 
     if (error) {
@@ -449,8 +452,9 @@
       teams_people: document.getElementById("teams_people").value.trim(),
       key_people: document.getElementById("key_people").value.trim(),
       description: document.getElementById("description").value.trim(),
-      lessons_learned: document.getElementById("lessons_learned").value.trim(),
-      source_url: document.getElementById("source_url").value.trim()
+      why_it_matters: document.getElementById("why_it_matters").value.trim(),
+      source_url: document.getElementById("source_url").value.trim(),
+      source_url_2: document.getElementById("source_url_2").value.trim()
     };
 
     let score = 0;
@@ -458,12 +462,13 @@
     if (fields.sport) score += 12;
     if (fields.category) score += 12;
     if (fields.description.length >= 30) score += 18;
-    if (fields.source_url.startsWith("https://")) score += 16;
+    if (fields.source_url.startsWith("https://")) score += 13;
+    if (fields.source_url_2.startsWith("https://")) score += 3;
     if (fields.year) score += 8;
     if (fields.league) score += 6;
     if (fields.teams_people) score += 8;
     if (fields.key_people) score += 5;
-    if (fields.lessons_learned.length >= 20) score += 3;
+    if (fields.why_it_matters.length >= 20) score += 3;
 
     score = Math.min(score, 100);
 
@@ -484,7 +489,7 @@
   }
 
   function setupCompletenessListeners() {
-    ["title","sport","year","league","category","teams_people","key_people","description","lessons_learned","source_url"].forEach(id => {
+    ["title","sport","year","league","category","teams_people","key_people","description","why_it_matters","source_url","source_url_2"].forEach(id => {
       const el = document.getElementById(id);
       if (el) {
         el.addEventListener("input", calculateCompleteness);
@@ -507,54 +512,106 @@
     return true;
   }
 
+  function getAutofillClientId() {
+    const key = "sportsmistakes_autofill_client_id";
+    let value = localStorage.getItem(key);
+    if (!value) {
+      value = (crypto && crypto.randomUUID) ? crypto.randomUUID() :
+        "sm-" + Date.now() + "-" + Math.random().toString(36).slice(2);
+      localStorage.setItem(key, value);
+    }
+    return value;
+  }
+
   async function suggestSubmissionFields() {
     const status = document.getElementById("aiSuggestStatus");
+    const button = document.getElementById("aiAutofillButton");
     const title = document.getElementById("title").value.trim();
     const sport = document.getElementById("sport").value;
     const description = document.getElementById("description").value.trim();
 
     if (!title && !description) {
-      status.innerText = "Add at least a title or short description first.";
+      status.innerText = "Type a rough sports-mistake title first.";
       return;
     }
 
-    status.innerText = "AI is looking for likely year, league, teams, key names, and debate summary...";
+    const originalButtonText = button ? button.innerText : "✨ Research + Autofill";
+    if (button) {
+      button.disabled = true;
+      button.innerText = "Researching...";
+    }
+
+    status.innerText = "Searching the web once, verifying the event, and building the submission...";
 
     try {
-      const { data, error } = await client.functions.invoke("suggest-submission-fields", {
-        body: { title, sport, description }
+      const response = await fetch(`${SUPABASE_URL}/functions/v1/suggest-submission-fields`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "apikey": SUPABASE_ANON_KEY,
+          "Authorization": `Bearer ${SUPABASE_ANON_KEY}`
+        },
+        body: JSON.stringify({
+          title,
+          sport,
+          description,
+          client_id: getAutofillClientId()
+        })
       });
 
-      if (error || !data || data.success === false) {
-        console.error(error || data);
-        status.innerText = "AI autofill failed. You can still submit manually.";
+      const raw = await response.text();
+      let data = {};
+      try { data = raw ? JSON.parse(raw) : {}; }
+      catch { data = { success:false, error:"AI Autofill returned an invalid response." }; }
+
+      if (!response.ok || !data || data.success === false) {
+        console.error("AI Autofill failed:", data);
+        status.innerText = data?.error || "AI Autofill failed. You can still submit manually.";
         return;
       }
 
       const s = data.suggestions || {};
-      let filled = [];
 
+      if (s.verified === false) {
+        status.innerText = s.verification_note || "AI could not confidently verify this event from the search. Please add more detail and try again.";
+        return;
+      }
+
+      const filled = [];
+
+      if (setFieldIfSuggestion("sport", s.sport)) filled.push("sport");
       if (setFieldIfSuggestion("year", s.year)) filled.push("year");
       if (setFieldIfSuggestion("league", s.league)) filled.push("league");
       if (setFieldIfSuggestion("category", s.category)) filled.push("category");
       if (setFieldIfSuggestion("teams_people", s.teams_people)) filled.push("teams involved");
       if (setFieldIfSuggestion("key_people", s.key_people)) filled.push("key names");
-      
+      if (setFieldIfSuggestion("description", s.description)) filled.push("description");
+      if (setFieldIfSuggestion("why_it_matters", s.why_it_matters)) filled.push("why fans debate it");
+      if (setFieldIfSuggestion("source_url", s.source_url)) filled.push("primary source");
+      if (setFieldIfSuggestion("source_url_2", s.source_url_2)) filled.push("second source");
 
       calculateCompleteness();
 
       if (filled.length) {
-        status.innerText = "AI autofilled: " + filled.join(", ") + ". Please review and edit anything that looks wrong before submitting.";
+        const remaining = data?.rate_limit?.device_hour_remaining;
+        status.innerText =
+          "Verified and autofilled: " + filled.join(", ") +
+          ". Please review before submitting." +
+          (Number.isFinite(remaining) ? ` ${remaining} AI Autofill use${remaining === 1 ? "" : "s"} remain this hour.` : "");
       } else {
-        status.innerText = "AI did not find any blank fields to fill. You can edit the form manually or keep going.";
+        status.innerText = "The event was verified, but the fields already contained information. Review the form before submitting.";
       }
 
     } catch (err) {
       console.error(err);
-      status.innerText = "AI autofill failed. You can still submit manually.";
+      status.innerText = "AI Autofill could not be reached. You can still submit manually.";
+    } finally {
+      if (button) {
+        button.disabled = false;
+        button.innerText = originalButtonText;
+      }
     }
   }
-
 
   async function submitMistake() {
     const message = document.getElementById("message");
@@ -571,8 +628,9 @@
     const teams_people = document.getElementById("teams_people").value.trim();
     const key_people = document.getElementById("key_people").value.trim();
     const description = document.getElementById("description").value.trim();
-    const lessons_learned = document.getElementById("lessons_learned").value.trim();
+    const why_it_matters = document.getElementById("why_it_matters").value.trim();
     const source_url = document.getElementById("source_url").value.trim();
+    const source_url_2 = document.getElementById("source_url_2").value.trim();
     const completeness_score = calculateCompleteness();
     const rulesCheck = document.getElementById("rulesCheck").checked;
 
@@ -587,7 +645,12 @@
     }
 
     if (!source_url.startsWith("https://")) {
-      message.innerText = "Please use a full secure source URL starting with https://";
+      message.innerText = "Please use a full secure primary source URL starting with https://";
+      return;
+    }
+
+    if (source_url_2 && !source_url_2.startsWith("https://")) {
+      message.innerText = "Please use a full secure second source URL starting with https://, or leave it blank.";
       return;
     }
 
@@ -601,7 +664,7 @@
       return;
     }
 
-    if (containsUnsafeText(title + " " + teams_people + " " + key_people + " " + description + " " + lessons_learned + " " + source_url)) {
+    if (containsUnsafeText(title + " " + teams_people + " " + key_people + " " + description + " " + why_it_matters + " " + source_url + " " + source_url_2)) {
       message.innerText = "This submission appears to violate the safety rules.";
       return;
     }
@@ -650,10 +713,9 @@
 
         // AI review / publishing fields
         summary: description,
-        why_it_matters: description,
-        lessons_learned: lessons_learned || null,
+        why_it_matters: why_it_matters || description,
         source_1: source_url,
-        source_2: null,
+        source_2: source_url_2 || null,
         teams_people: teams_people || null,
         key_people: key_people || null,
         completeness_score,
@@ -685,8 +747,9 @@
     document.getElementById("teams_people").value = "";
     document.getElementById("key_people").value = "";
     document.getElementById("description").value = "";
-    document.getElementById("lessons_learned").value = "";
+    document.getElementById("why_it_matters").value = "";
     document.getElementById("source_url").value = "";
+    document.getElementById("source_url_2").value = "";
     document.getElementById("rulesCheck").checked = false;
   }
 
