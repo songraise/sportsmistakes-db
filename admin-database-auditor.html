@@ -1,4 +1,4 @@
-
+<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
@@ -541,6 +541,80 @@ async function loadReviewFilter() {
   }
 }
 
+
+function humanMistakeAssessment(value) {
+  const map = {
+    verified_mistake: "VERIFIED MISTAKE",
+    debatable_interpretation: "DEBATABLE INTERPRETATION",
+    event_only: "EVENT ONLY",
+    unclear: "UNCLEAR"
+  };
+  return map[value] || "NOT ASSESSED";
+}
+
+function mistakeClass(value) {
+  if (value === "verified_mistake") return "mistake-green";
+  if (value === "debatable_interpretation") return "mistake-yellow";
+  if (value === "event_only") return "mistake-red";
+  return "mistake-gray";
+}
+
+function recommendationFor(r) {
+  if (r.audit_status === "possible_error") {
+    return {
+      cls:"rec-red",
+      text:"🔴 DO NOT UPGRADE — the seeded record may contain a factual error. Review the record itself before changing its description."
+    };
+  }
+
+  if (r.audit_status === "unverified") {
+    return {
+      cls:"rec-gray",
+      text:"⚪ HOLD — the specific event could not be verified confidently enough to rewrite."
+    };
+  }
+
+  if (r.audit_status === "partially_verified") {
+    return {
+      cls:"rec-yellow",
+      text:"🟡 HUMAN REVIEW — the event appears real, but one or more important facts remain uncertain."
+    };
+  }
+
+  if (r.audit_status === "verified" && r.mistake_assessment === "event_only") {
+    return {
+      cls:"rec-red",
+      text:"🔴 REVIEW RECORD — the event is real, but the research does not support the specific claimed mistake."
+    };
+  }
+
+  if (r.audit_status === "verified" && r.mistake_assessment === "debatable_interpretation") {
+    return {
+      cls:"rec-yellow",
+      text:"🟡 SAFE FACTUAL DESCRIPTION, BUT REVIEW TITLE/FRAMING — the event is verified, while the 'mistake' label is interpretive."
+    };
+  }
+
+  if (r.audit_status === "verified" && r.mistake_assessment === "verified_mistake" && r.proposed_summary) {
+    return {
+      cls:"rec-green",
+      text:"🟢 SAFE TO UPGRADE DESCRIPTION — the event and the specific mistake are both supported, and a factual replacement is ready."
+    };
+  }
+
+  if (r.audit_status === "verified" && r.proposed_summary) {
+    return {
+      cls:"rec-yellow",
+      text:"🟡 DESCRIPTION READY, CLAIM NEEDS REVIEW — the event is verified but the mistake classification is not fully settled."
+    };
+  }
+
+  return {
+    cls:"rec-gray",
+    text:"⚪ NOT YET READY — run the audit and review its findings."
+  };
+}
+
 function render() {
 
   document.getElementById("cards").innerHTML =
@@ -883,6 +957,16 @@ async function approveOne(i) {
       false;
   }
 }
+
+
+window.addEventListener("DOMContentLoaded", async () => {
+  const existingSecret =
+    sessionStorage.getItem("sportsmistakes_artwork_admin_secret") || "";
+
+  if (existingSecret) {
+    await refreshStats();
+  }
+});
 
 </script>
 
