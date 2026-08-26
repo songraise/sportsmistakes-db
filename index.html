@@ -1,8 +1,8 @@
-<!DOCTYPE html>
+
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>SportsMistakes | The Internet's Database of Sports Mistakes</title>
+  <title>SportsMistakes | Nominate. Judge. Learn. Compare.</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
   <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
@@ -35,7 +35,6 @@
     }
 
     * { box-sizing:border-box; }
-<script src="sportsmistakes-analytics.js" defer></script>
     body {
       margin:0;
       font-family:Arial, Helvetica, sans-serif;
@@ -1324,7 +1323,245 @@
     @media(max-width:900px){.judge-hero{grid-template-columns:1fr}.judge-art{min-height:360px;height:52vw;max-height:500px}.judge-copy{padding:28px}.quick-actions{grid-template-columns:repeat(2,1fr)}.today-grid{grid-template-columns:repeat(2,1fr)}.today-card:last-child{grid-column:1/-1}.judge-copy h2{font-size:36px}}
     @media(max-width:600px){.fan-compare{grid-template-columns:96px 1fr;gap:12px}.fan-donut{width:92px;height:92px}.fan-donut::after{width:58px;height:58px}.fan-donut-center strong{font-size:20px}.page-shell{padding:12px 12px 50px}.engage-intro h1{font-size:20px}.judge-art{min-height:280px}.judge-copy{padding:22px 18px}.judge-copy h2{font-size:31px}.judge-summary{font-size:16px}.quick-actions{gap:10px}.quick-action{min-height:128px;padding:16px 10px}.quick-action strong{font-size:14px}.today-panel{padding:16px}.today-grid{grid-template-columns:1fr}.today-card:last-child{grid-column:auto}.today-card{display:grid;grid-template-columns:105px 1fr}.today-art{height:88px}.top-nav{position:relative !important}}
 
+
+    /* =========================================================
+       MUSEUM-ART COMMUNITY HOMEPAGE — AUG 26 2026
+       Presentation redesign only. Existing database/voting/search logic retained.
+       ========================================================= */
+    .museum-home{margin:0 0 28px}
+    .museum-hero{
+      min-height:600px;
+      display:grid;
+      grid-template-columns:1.02fr .98fr;
+      border:1px solid rgba(255,255,255,.14);
+      border-radius:16px;
+      overflow:hidden;
+      background:#070b10;
+      box-shadow:0 26px 60px rgba(0,0,0,.42);
+      margin-top:10px;
+    }
+    .museum-hero-copy{
+      padding:52px 44px 42px;
+      background:
+        radial-gradient(circle at 25% 15%,rgba(226,36,36,.12),transparent 35%),
+        linear-gradient(135deg,#080d13,#04070a);
+      display:flex;
+      flex-direction:column;
+      justify-content:center;
+      position:relative;
+      z-index:2;
+    }
+    .museum-kicker,.section-kicker{
+      color:#e22424;
+      font-weight:1000;
+      text-transform:uppercase;
+      letter-spacing:1.35px;
+      font-size:12px;
+    }
+    .museum-hero h1{
+      margin:12px 0 14px;
+      font-size:64px;
+      line-height:.95;
+      letter-spacing:-2.5px;
+      font-weight:1000;
+      text-transform:uppercase;
+    }
+    .museum-hero h1 span{color:#e22424}
+    .museum-subhead{
+      margin:0 0 24px;
+      color:#e2e8f0;
+      font-size:18px;
+      line-height:1.5;
+      max-width:620px;
+    }
+    .museum-hero-art{
+      min-height:600px;
+      position:relative;
+      overflow:hidden;
+      background:
+        radial-gradient(circle at 50% 40%,rgba(226,36,36,.28),transparent 35%),
+        linear-gradient(135deg,#352214,#0b1118 70%);
+    }
+    .museum-hero-art::after{
+      content:"";
+      position:absolute;
+      inset:0;
+      background:linear-gradient(90deg,rgba(4,7,10,.7) 0%,transparent 28%,rgba(0,0,0,.08) 100%);
+      pointer-events:none;
+    }
+    .museum-hero-art img{width:100%;height:100%;object-fit:cover;display:block}
+    .museum-art-placeholder{
+      position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+      text-align:center;font-size:58px;font-weight:1000;line-height:.85;color:#fff
+    }
+    .museum-art-placeholder span{color:#e22424}
+    .nominate-card{
+      border:1px solid rgba(255,255,255,.18);
+      background:rgba(10,15,21,.88);
+      border-radius:13px;
+      padding:20px;
+      box-shadow:0 18px 35px rgba(0,0,0,.26);
+      backdrop-filter:blur(8px);
+    }
+    .nominate-title-row{display:flex;gap:13px;align-items:center;margin-bottom:14px}
+    .nominate-icon{
+      width:42px;height:42px;border-radius:50%;display:grid;place-items:center;
+      color:#fff;background:#e22424;font-size:22px;font-weight:1000;flex:0 0 auto
+    }
+    .nominate-title-row h2{margin:0 0 3px;font-size:21px;text-transform:uppercase}
+    .nominate-title-row p{margin:0;color:#b9c4d0;font-size:14px}
+    .nominate-row{display:grid;grid-template-columns:1fr 170px;gap:10px}
+    #nominationInput{
+      width:100%;min-width:0;padding:16px 17px;border-radius:8px;
+      border:1px solid rgba(255,255,255,.25);background:#fff;color:#111827;
+      font-size:16px;outline:none
+    }
+    #nominationInput:focus{border-color:#e22424;box-shadow:0 0 0 3px rgba(226,36,36,.16)}
+    .nominate-row button{
+      border:none;border-radius:8px;background:linear-gradient(135deg,#ed3131,#c81010);
+      color:#fff;font-size:15px;font-weight:1000;text-transform:uppercase;cursor:pointer
+    }
+    .nominate-row button:hover{filter:brightness(1.08);transform:translateY(-1px)}
+    .nominate-steps{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:15px}
+    .nominate-steps div{min-width:0}
+    .nominate-steps strong{display:block;font-size:11px;color:#fff;margin-bottom:3px}
+    .nominate-steps span{display:block;color:#95a2b2;font-size:10px;line-height:1.35}
+    .nominate-note{margin-top:13px;text-align:center;color:#aab4c2;font-size:11px}
+    .museum-section,.museum-feature-panel,.judge-museum-wrap{
+      margin-top:18px;
+      border:1px solid rgba(255,255,255,.13);
+      border-radius:14px;
+      background:rgba(7,11,16,.9);
+      box-shadow:0 14px 36px rgba(0,0,0,.22);
+    }
+    .museum-section{padding:22px}
+    .judge-museum-wrap{padding:22px}
+    .museum-section-head,.panel-title-row{
+      display:flex;align-items:flex-end;justify-content:space-between;gap:20px;margin-bottom:16px
+    }
+    .museum-section-head.compact{margin-bottom:14px}
+    .museum-section-head h2,.panel-title-row h2{
+      margin:4px 0 2px;font-size:25px;text-transform:uppercase;letter-spacing:-.45px
+    }
+    .museum-section-head p{margin:0;color:#aeb8c5;font-size:14px}
+    .museum-link,.panel-title-row a,.text-link-button{
+      color:#ff4b4b;text-decoration:none;font-size:12px;font-weight:1000;text-transform:uppercase;
+      letter-spacing:.4px;background:none;border:none;cursor:pointer;padding:0
+    }
+    .museum-today-grid{grid-template-columns:repeat(5,1fr)}
+    .museum-today-grid .today-card{
+      background:#0c131c;border-color:rgba(255,255,255,.14);box-shadow:0 8px 20px rgba(0,0,0,.18)
+    }
+    .museum-today-grid .today-art{height:145px}
+    .museum-today-grid .today-title{font-size:15px}
+    .judge-museum-wrap .judge-hero{margin:0}
+    .museum-two-col{display:grid;grid-template-columns:.9fr 1.1fr;gap:16px;margin-top:18px}
+    .museum-feature-panel{padding:20px;margin-top:0}
+    .battle-grid{display:grid;grid-template-columns:1fr 56px 1fr;gap:10px;align-items:center}
+    .battle-card{
+      border:1px solid rgba(255,255,255,.14);border-radius:10px;overflow:hidden;
+      background:#0b121a;text-decoration:none;color:#fff;min-width:0
+    }
+    .battle-art{height:165px;overflow:hidden;background:#141b24}
+    .battle-art img{width:100%;height:100%;object-fit:cover}
+    .battle-copy{padding:12px}
+    .battle-copy strong{display:block;font-size:15px;line-height:1.25}
+    .battle-copy span{display:block;color:#9eabb9;font-size:12px;margin-top:4px}
+    .battle-vs{
+      width:50px;height:50px;border-radius:50%;display:grid;place-items:center;
+      border:1px solid #d59a24;background:#15110a;color:#f7c552;font-weight:1000
+    }
+    .battle-footer{grid-column:1/-1;text-align:center;color:#a8b3c1;font-size:12px;padding-top:2px}
+    .museum-ranking-list{display:grid;gap:7px}
+    .museum-rank-row{
+      display:grid;grid-template-columns:34px 54px 1fr auto;gap:10px;align-items:center;
+      min-height:58px;padding:6px 8px;border-bottom:1px solid rgba(255,255,255,.09);
+      color:#fff;text-decoration:none
+    }
+    .museum-rank-row:hover{background:rgba(255,255,255,.04)}
+    .rank-num{font-size:20px;font-weight:1000;color:#f5b942;text-align:center}
+    .rank-thumb{width:54px;height:48px;border-radius:6px;overflow:hidden;background:#151b23}
+    .rank-thumb img{width:100%;height:100%;object-fit:cover}
+    .rank-title{font-size:13px;font-weight:900;line-height:1.2}
+    .rank-meta{font-size:11px;color:#95a2b2;margin-top:3px}
+    .rank-score{font-size:20px;font-weight:1000;color:#ff4444}
+    .hall-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:12px}
+    .hall-card{
+      display:block;text-decoration:none;color:#fff;border:1px solid rgba(245,185,66,.28);
+      border-radius:10px;overflow:hidden;background:#0b1118
+    }
+    .hall-card:hover{border-color:#f5b942;transform:translateY(-1px)}
+    .hall-art{height:150px;background:#151b23;overflow:hidden}
+    .hall-art img{width:100%;height:100%;object-fit:cover}
+    .hall-copy{padding:10px;text-align:center}
+    .hall-copy strong{font-size:13px;line-height:1.2;display:block}
+    .hall-copy span{font-size:11px;color:#d1a94f;display:block;margin-top:4px}
+    .how-it-works{
+      margin-top:18px;padding:22px;border-radius:14px;background:#f2f4f6;color:#111827
+    }
+    .how-it-works .section-kicker{color:#d01c1c}
+    .how-it-works .museum-section-head h2{color:#111827}
+    .how-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:16px}
+    .how-step{text-align:center}
+    .how-num{
+      width:42px;height:42px;border-radius:50%;display:grid;place-items:center;margin:0 auto 9px;
+      background:#e22424;color:#fff;font-weight:1000;font-size:18px
+    }
+    .how-step:nth-child(2) .how-num{background:#6f45c8}
+    .how-step:nth-child(3) .how-num{background:#4c9d3f}
+    .how-step:nth-child(4) .how-num{background:#d69b20}
+    .how-step:nth-child(5) .how-num{background:#3977c9}
+    .how-step strong{display:block;font-size:14px;margin-bottom:5px}
+    .how-step span{display:block;font-size:12px;line-height:1.4;color:#4b5563}
+    .museum-stats{
+      margin-top:12px;display:grid;grid-template-columns:repeat(4,1fr);
+      border:1px solid rgba(255,255,255,.12);border-radius:12px;overflow:hidden;background:#07101b
+    }
+    .museum-stats div{padding:20px;text-align:center;border-right:1px solid rgba(255,255,255,.1)}
+    .museum-stats div:last-child{border-right:none}
+    .museum-stats strong{display:block;font-size:27px;font-weight:1000;color:#fff}
+    .museum-stats span{display:block;margin-top:4px;color:#a7b3c1;font-size:11px;text-transform:uppercase;font-weight:900}
+    .engage-divider{margin:30px 0 10px}
+    .featured-hero,.submit-spotlight{display:none!important}
+    .dashboard-four{margin-top:18px}
+    .search-hero{
+      border:1px solid rgba(255,255,255,.12);border-radius:14px;padding:28px 22px;
+      background:rgba(7,11,16,.82);margin-top:8px
+    }
+    .search-hero .tagline{font-size:38px;max-width:900px}
+    .nav-nominate{
+      background:#e22424;padding:11px 16px!important;border-radius:7px;color:#fff!important
+    }
+    @media(max-width:1050px){
+      .museum-hero{grid-template-columns:1fr}
+      .museum-hero-art{min-height:430px;max-height:500px}
+      .museum-hero h1{font-size:52px}
+      .museum-two-col{grid-template-columns:1fr}
+      .hall-grid{grid-template-columns:repeat(3,1fr)}
+      .how-grid{grid-template-columns:repeat(3,1fr)}
+    }
+    @media(max-width:760px){
+      .museum-hero-copy{padding:30px 20px}
+      .museum-hero h1{font-size:42px}
+      .museum-subhead{font-size:16px}
+      .nominate-row{grid-template-columns:1fr}
+      .nominate-row button{min-height:52px}
+      .nominate-steps{grid-template-columns:1fr 1fr}
+      .museum-today-grid{grid-template-columns:1fr}
+      .museum-today-grid .today-card{display:grid;grid-template-columns:118px 1fr}
+      .museum-today-grid .today-art{height:94px}
+      .battle-grid{grid-template-columns:1fr}
+      .battle-vs{margin:0 auto}
+      .hall-grid{grid-template-columns:repeat(2,1fr)}
+      .how-grid{grid-template-columns:1fr}
+      .museum-stats{grid-template-columns:1fr 1fr}
+      .museum-stats div:nth-child(2){border-right:none}
+      .museum-stats div{border-bottom:1px solid rgba(255,255,255,.1)}
+      .search-hero .tagline{font-size:30px}
+    }
+
 </style>
+<script src="sportsmistakes-analytics.js" defer></script>
 </head>
 
 <body>
@@ -1338,36 +1575,138 @@
       <a href="rankings.html">Rankings</a>
       <a href="collections.html">Collections</a>
       <a href="hall-of-fame.html">Hall of Fame</a>
-      <a href="submit.html">Add a Mistake</a>
+      <a class="nav-nominate" href="#nominate">Nominate</a>
     </div>
   </nav>
 
   <main class="page-shell">
 
-    <section class="engage-home" aria-label="SportsMistakes quick play">
-      <div class="engage-intro">
-        <div class="engage-kicker">SportsMistakes</div>
-        <h1>One mistake. One decision. One moment that changed everything.</h1>
-        <p><strong>Judge. Learn. Compare.</strong> Make your call, discover what the moment can teach, and see how your judgment compares with other fans.</p>
-      </div>
-      <section class="judge-hero" id="judgeHero">
-        <div class="judge-art"><div class="featured-placeholder">🏆</div></div>
-        <div class="judge-copy"><div class="judge-label">Today's Sports Mistake</div><h2>Loading...</h2></div>
+    <section class="museum-home" aria-label="SportsMistakes community homepage">
+
+      <section class="museum-hero">
+        <div class="museum-hero-copy">
+          <div class="museum-kicker">THE CROWD-SOURCED RECORD OF SPORTS MISTAKES</div>
+          <h1>ONE MISTAKE.<br>ONE MOMENT.<br><span>CHANGES EVERYTHING.</span></h1>
+          <p class="museum-subhead">Real fans nominate. We document the facts. Fans judge. History remembers.</p>
+
+          <div class="nominate-card" id="nominate">
+            <div class="nominate-title-row">
+              <div class="nominate-icon">✎</div>
+              <div>
+                <h2>Nominate a Sports Mistake</h2>
+                <p>What mistake belongs in the record?</p>
+              </div>
+            </div>
+
+            <div class="nominate-row">
+              <input id="nominationInput" type="text" maxlength="180"
+                placeholder="e.g. Buckner lets ball pass through his legs"
+                aria-label="Nominate a sports mistake">
+              <button type="button" onclick="nominateFromHome()">Nominate It</button>
+            </div>
+
+            <div class="nominate-steps">
+              <div><strong>👥 Fans nominate</strong><span>Suggest a moment in seconds.</span></div>
+              <div><strong>🔎 We research</strong><span>Facts and sources are checked.</span></div>
+              <div><strong>🛡 We document</strong><span>A neutral factual record is created.</span></div>
+              <div><strong>⭐ You judge</strong><span>The crowd decides how bad it was.</span></div>
+            </div>
+
+            <div class="nominate-note">No long form required. Start with the moment you remember.</div>
+          </div>
+        </div>
+
+        <div class="museum-hero-art" id="museumHeroArt">
+          <div class="museum-art-placeholder">SPORTS<br><span>MISTAKES</span></div>
+        </div>
       </section>
-      <section class="quick-actions" aria-label="Quick actions">
-        <button class="quick-action" type="button" onclick="startTodaysFive()"><div class="quick-icon">🔥</div><strong>Today's 5</strong><span>Judge, learn and compare across 5 mistakes</span></button>
-        <a class="quick-action" href="rankings.html"><div class="quick-icon">⚔️</div><strong>Mistake Battle</strong><span>See how the biggest mistakes rank</span></a>
-        <button class="quick-action" type="button" onclick="openSearchExperience()"><div class="quick-icon">🔍</div><strong>Find a Mistake</strong><span>Search the complete SportsMistakes database</span></button>
-        <a class="quick-action" href="submit.html"><div class="quick-icon">＋</div><strong>Add a Mistake</strong><span>Tell us about a mistake we're missing</span></a>
+
+      <section class="museum-section today-museum" id="todaysFivePanel">
+        <div class="museum-section-head">
+          <div>
+            <div class="section-kicker">🔥 TODAY'S 5</div>
+            <h2>Judge today's mistakes</h2>
+            <p>Five moments. Make your call. Compare with other fans.</p>
+          </div>
+          <button class="text-link-button" onclick="startTodaysFive()">Start judging →</button>
+        </div>
+        <div class="today-grid museum-today-grid" id="todaysFiveGrid"></div>
       </section>
-      <section class="today-panel" id="todaysFivePanel">
-        <div class="today-head"><div><h2>🔥 Today's 5</h2><p>Five mistakes. Judge them, learn from them, compare with fans.</p></div></div>
-        <div class="today-grid" id="todaysFiveGrid"></div>
+
+      <section class="judge-museum-wrap">
+        <div class="museum-section-head compact">
+          <div>
+            <div class="section-kicker">JUDGE · LEARN · COMPARE</div>
+            <h2>Make the call</h2>
+          </div>
+        </div>
+        <section class="judge-hero" id="judgeHero">
+          <div class="judge-art"><div class="featured-placeholder">🏆</div></div>
+          <div class="judge-copy"><div class="judge-label">Today's Sports Mistake</div><h2>Loading...</h2></div>
+        </section>
       </section>
-      <div class="engage-divider">Explore deeper</div>
+
+      <section class="museum-two-col">
+        <div class="museum-feature-panel battle-panel">
+          <div class="panel-title-row">
+            <div>
+              <div class="section-kicker">⚔️ MISTAKE BATTLE</div>
+              <h2>Which was worse?</h2>
+            </div>
+            <a href="rankings.html">View rankings →</a>
+          </div>
+          <div class="battle-grid" id="museumBattle"></div>
+        </div>
+
+        <div class="museum-feature-panel rankings-panel">
+          <div class="panel-title-row">
+            <div>
+              <div class="section-kicker">📊 RANKINGS</div>
+              <h2>How mistakes stack up</h2>
+            </div>
+            <a href="rankings.html">View all →</a>
+          </div>
+          <div class="museum-ranking-list" id="museumRankings"></div>
+        </div>
+      </section>
+
+      <section class="museum-section hall-panel">
+        <div class="museum-section-head">
+          <div>
+            <div class="section-kicker">🏆 HALL OF FAME</div>
+            <h2>The mistakes the community remembers</h2>
+            <p>A visual gallery of the most debated moments in the record.</p>
+          </div>
+          <a class="museum-link" href="hall-of-fame.html">View Hall of Fame →</a>
+        </div>
+        <div class="hall-grid" id="museumHallGrid"></div>
+      </section>
+
+      <section class="how-it-works">
+        <div class="museum-section-head compact">
+          <div>
+            <div class="section-kicker">HOW IT WORKS</div>
+            <h2>People build the record. The crowd decides the verdict.</h2>
+          </div>
+        </div>
+        <div class="how-grid">
+          <div class="how-step"><div class="how-num">1</div><strong>Nominate</strong><span>Anyone can suggest a sports mistake in seconds.</span></div>
+          <div class="how-step"><div class="how-num">2</div><strong>Research</strong><span>SportsMistakes checks the event, facts and sources.</span></div>
+          <div class="how-step"><div class="how-num">3</div><strong>Document</strong><span>The Record presents a neutral factual account.</span></div>
+          <div class="how-step"><div class="how-num">4</div><strong>Judge</strong><span>Fans decide whether it was a mistake and compare opinions.</span></div>
+          <div class="how-step"><div class="how-num">5</div><strong>Remember</strong><span>Rankings and the Hall of Fame preserve the moments that endure.</span></div>
+        </div>
+      </section>
+
+      <section class="museum-stats" aria-label="SportsMistakes statistics">
+        <div><strong id="museumMistakeCount">—</strong><span>Mistakes in the Record</span></div>
+        <div><strong id="museumJudgmentCount">—</strong><span>Fan Judgments</span></div>
+        <div><strong id="museumSportCount">—</strong><span>Sports & Leagues</span></div>
+        <div><strong>EVERY SPORT.</strong><span>Every level. Every mistake.</span></div>
+      </section>
+
+      <div class="engage-divider">Search and explore the complete record</div>
     </section>
-
-
 
     <section class="search-hero">
       <h1 class="tagline">The Internet's Largest Crowdsourced Database of <span class="red">Sports Mistakes</span></h1>
@@ -1708,6 +2047,7 @@
         renderDashboardLists();
         renderMistakes();
         if (currentQuickMistake) renderQuickPlay(currentQuickMistake);
+        renderMuseumExtras();
       } catch (error) {
         console.error("Vote statistics could not be loaded:", error);
       }
@@ -1734,6 +2074,7 @@
       const quickPool = getQuickPlayPool();
       if (quickPool.length) { quickPlayIndex = 0; renderQuickPlay(quickPool[0]); }
       renderTodaysFive();
+      renderMuseumExtras();
 
       // Votes are useful, but they must never delay the homepage.
       window.setTimeout(loadVoteStatsInBackground, 300);
@@ -2367,6 +2708,105 @@
 
     function startTodaysFive(){ document.getElementById("todaysFivePanel")?.scrollIntoView({behavior:"smooth",block:"start"}); }
     function openSearchExperience(){ document.querySelector(".search-hero")?.scrollIntoView({behavior:"smooth",block:"start"}); setTimeout(()=>document.getElementById("searchInput")?.focus(),450); }
+
+
+    function nominateFromHome(){
+      const input=document.getElementById("nominationInput");
+      const text=String(input?.value||"").trim();
+      if(!text){
+        input?.focus();
+        return;
+      }
+      sessionStorage.setItem("sportsmistakes_nomination_draft",text);
+      localStorage.setItem("sportsmistakes_nomination_draft",text);
+      window.location.href="submit.html?nomination="+encodeURIComponent(text);
+    }
+
+    document.addEventListener("keydown",e=>{
+      if(e.key==="Enter" && document.activeElement?.id==="nominationInput"){
+        e.preventDefault();
+        nominateFromHome();
+      }
+    });
+
+    function renderMuseumExtras(){
+      if(!mistakes.length) return;
+
+      const featured=findFeaturedMistake();
+      const heroArt=document.getElementById("museumHeroArt");
+      if(heroArt && featured){
+        heroArt.innerHTML=renderArt(featured,"featured");
+      }
+
+      const pool=getQuickPlayPool();
+      const battle=pool.slice(0,2);
+      const battleBox=document.getElementById("museumBattle");
+      if(battleBox && battle.length===2){
+        const card=(m)=>`
+          <a class="battle-card" href="mistake.html?id=${encodeURIComponent(m.id)}">
+            <div class="battle-art">${renderArt(m,"card")}</div>
+            <div class="battle-copy">
+              <strong>${escapeHtml(m.title||"Untitled Mistake")}</strong>
+              <span>${escapeHtml([m.year,m.sport].filter(Boolean).join(" • "))}</span>
+            </div>
+          </a>`;
+        battleBox.innerHTML=`
+          ${card(battle[0])}
+          <div class="battle-vs">VS.</div>
+          ${card(battle[1])}
+          <div class="battle-footer">Open either moment, judge it, then see where it ranks with fans.</div>`;
+      }
+
+      const ranked=[...mistakes]
+        .sort((a,b)=>{
+          const voteDiff=getVoteTotal(b.id)-getVoteTotal(a.id);
+          if(voteStatsLoaded && voteDiff!==0) return voteDiff;
+          return Number(b.controversy_score||0)-Number(a.controversy_score||0);
+        })
+        .slice(0,5);
+
+      const rankBox=document.getElementById("museumRankings");
+      if(rankBox){
+        rankBox.innerHTML=ranked.map((m,i)=>`
+          <a class="museum-rank-row" href="mistake.html?id=${encodeURIComponent(m.id)}">
+            <div class="rank-num">${i+1}</div>
+            <div class="rank-thumb">${renderArt(m,"card")}</div>
+            <div>
+              <div class="rank-title">${escapeHtml(m.title||"Untitled Mistake")}</div>
+              <div class="rank-meta">${escapeHtml([m.year,m.sport].filter(Boolean).join(" • "))}</div>
+            </div>
+            <div class="rank-score">${voteStatsLoaded && getVoteTotal(m.id)>0 ? getVoteTotal(m.id) : Number(m.controversy_score||0)}</div>
+          </a>`).join("");
+      }
+
+      const hall=[...mistakes]
+        .filter(m=>m.artwork_url)
+        .sort((a,b)=>Number(b.controversy_score||0)-Number(a.controversy_score||0))
+        .slice(0,6);
+
+      const hallBox=document.getElementById("museumHallGrid");
+      if(hallBox){
+        hallBox.innerHTML=hall.map(m=>`
+          <a class="hall-card" href="mistake.html?id=${encodeURIComponent(m.id)}">
+            <div class="hall-art">${renderArt(m,"card")}</div>
+            <div class="hall-copy">
+              <strong>${escapeHtml(m.title||"Untitled Mistake")}</strong>
+              <span>${escapeHtml([m.year,m.sport].filter(Boolean).join(" • "))}</span>
+            </div>
+          </a>`).join("");
+      }
+
+      const totalJudgments=Object.values(voteStatsByMistake||{})
+        .reduce((sum,s)=>sum+Number(s?.total||0),0);
+      const sportsCount=new Set(mistakes.map(m=>String(m.sport||"").trim()).filter(Boolean)).size;
+
+      const mc=document.getElementById("museumMistakeCount");
+      const jc=document.getElementById("museumJudgmentCount");
+      const sc=document.getElementById("museumSportCount");
+      if(mc) mc.textContent=mistakes.length.toLocaleString();
+      if(jc) jc.textContent=voteStatsLoaded ? totalJudgments.toLocaleString() : "Loading…";
+      if(sc) sc.textContent=sportsCount.toLocaleString();
+    }
 
     loadMistakes().catch(err => {
       console.error(err);
