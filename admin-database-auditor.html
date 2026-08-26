@@ -1,10 +1,3 @@
-
-/
-admin-database-auditor.html
-
-
-
-
 <!doctype html>
 <html lang="en">
 <head>
@@ -201,6 +194,89 @@ button:disabled{opacity:.45;cursor:not-allowed}
   .cols{grid-template-columns:1fr}
   .wrap{padding:18px 12px}
 }
+
+.audit-grid{
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:10px;
+  margin:14px 0;
+}
+.audit-pill{
+  background:#080e15;
+  border:1px solid rgba(255,255,255,.12);
+  border-radius:10px;
+  padding:12px;
+}
+.audit-pill .k{
+  display:block;
+  font-size:10px;
+  font-weight:900;
+  letter-spacing:.08em;
+  color:#8fa1b5;
+  text-transform:uppercase;
+  margin-bottom:5px;
+}
+.audit-pill .v{
+  font-size:14px;
+  font-weight:900;
+  line-height:1.3;
+}
+.recommendation{
+  margin:14px 0 0;
+  padding:13px 14px;
+  border-radius:10px;
+  border:1px solid rgba(255,255,255,.14);
+  font-weight:800;
+  line-height:1.45;
+}
+.rec-green{background:rgba(31,157,85,.12);border-color:rgba(31,157,85,.35);color:#8cf0ad}
+.rec-yellow{background:rgba(201,139,0,.12);border-color:rgba(201,139,0,.35);color:#ffd878}
+.rec-red{background:rgba(201,101,22,.14);border-color:rgba(201,101,22,.38);color:#ffae72}
+.rec-gray{background:rgba(101,113,127,.14);border-color:rgba(101,113,127,.4);color:#d0d8e2}
+.reason-box{
+  margin-top:12px;
+  padding:12px 13px;
+  background:#080e15;
+  border:1px solid rgba(255,255,255,.1);
+  border-radius:9px;
+  line-height:1.5;
+  color:#d7dee8;
+}
+.reason-box b{
+  color:#fff;
+}
+.sources{
+  margin-top:12px;
+  padding:12px 13px;
+  background:#080e15;
+  border:1px solid rgba(255,255,255,.1);
+  border-radius:9px;
+}
+.sources a{
+  color:#8cc9ff;
+  word-break:break-all;
+}
+.audit-small{
+  color:#93a4b7;
+  font-size:12px;
+  line-height:1.45;
+}
+.title-warning{
+  color:#ffca70;
+  font-weight:900;
+}
+.title-ok{
+  color:#79e3a1;
+  font-weight:900;
+}
+.mistake-green{color:#79e3a1}
+.mistake-yellow{color:#ffd878}
+.mistake-red{color:#ffae72}
+.mistake-gray{color:#c7d0db}
+@media(max-width:850px){
+  .audit-grid{grid-template-columns:1fr 1fr}
+}
+
 </style>
 </head>
 
@@ -210,7 +286,7 @@ button:disabled{opacity:.45;cursor:not-allowed}
 <h1>SportsMistakes Database Auditor</h1>
 
 <p>
-Research and audit existing bulk-seeded records before replacing thin or questionable descriptions.
+Research existing bulk-seeded records, separate verified facts from interpretation, and review proposed “The Record” upgrades before anything goes live.
 </p>
 
 <div class="note">
@@ -368,16 +444,97 @@ async function loadTen() {
     "</b> bulk-seeded records loaded. These are prioritized by shortest current description.";
 }
 
+function humanMistakeAssessment(value) {
+  const map = {
+    verified_mistake: "VERIFIED MISTAKE",
+    debatable_interpretation: "DEBATABLE INTERPRETATION",
+    event_only: "EVENT ONLY",
+    unclear: "UNCLEAR"
+  };
+  return map[value] || "NOT ASSESSED";
+}
+
+function mistakeClass(value) {
+  if (value === "verified_mistake") return "mistake-green";
+  if (value === "debatable_interpretation") return "mistake-yellow";
+  if (value === "event_only") return "mistake-red";
+  return "mistake-gray";
+}
+
+function recommendationFor(r) {
+  if (r.audit_status === "possible_error") {
+    return {
+      cls:"rec-red",
+      text:"🔴 DO NOT UPGRADE — the seeded record may contain a factual error. Review the record itself before changing its description."
+    };
+  }
+
+  if (r.audit_status === "unverified") {
+    return {
+      cls:"rec-gray",
+      text:"⚪ HOLD — the specific event could not be verified confidently enough to rewrite."
+    };
+  }
+
+  if (r.audit_status === "partially_verified") {
+    return {
+      cls:"rec-yellow",
+      text:"🟡 HUMAN REVIEW — the event appears real, but one or more important facts remain uncertain."
+    };
+  }
+
+  if (r.audit_status === "verified" && r.mistake_assessment === "event_only") {
+    return {
+      cls:"rec-red",
+      text:"🔴 REVIEW RECORD — the event is real, but the research does not support the specific claimed mistake."
+    };
+  }
+
+  if (r.audit_status === "verified" && r.mistake_assessment === "debatable_interpretation") {
+    return {
+      cls:"rec-yellow",
+      text:"🟡 SAFE FACTUAL DESCRIPTION, BUT REVIEW TITLE/FRAMING — the event is verified, while the 'mistake' label is interpretive."
+    };
+  }
+
+  if (r.audit_status === "verified" && r.mistake_assessment === "verified_mistake" && r.proposed_summary) {
+    return {
+      cls:"rec-green",
+      text:"🟢 SAFE TO UPGRADE DESCRIPTION — the event and the specific mistake are both supported, and a factual replacement is ready."
+    };
+  }
+
+  if (r.audit_status === "verified" && r.proposed_summary) {
+    return {
+      cls:"rec-yellow",
+      text:"🟡 DESCRIPTION READY, CLAIM NEEDS REVIEW — the event is verified but the mistake classification is not fully settled."
+    };
+  }
+
+  return {
+    cls:"rec-gray",
+    text:"⚪ NOT YET READY — run the audit and review its findings."
+  };
+}
+
 function render() {
 
   document.getElementById("cards").innerHTML =
-    rows.map((r,i) => `
+    rows.map((r,i) => {
+
+      const rec = recommendationFor(r);
+      const mistakeAssessment = r.mistake_assessment || "unclear";
+      const titleReview = Boolean(r.title_review_recommended);
+      const canApprove =
+        r.audit_status === "verified" &&
+        Boolean(r.proposed_summary) &&
+        Boolean(r.verification_url);
+
+      return `
 
 <div class="card" id="card-${i}">
 
-<h2>
-${i+1}. ${esc(r.title || "Untitled")}
-</h2>
+<h2>${i+1}. ${esc(r.title || "Untitled")}</h2>
 
 <div class="meta">
 ${esc(r.sport || "")}
@@ -391,26 +548,82 @@ ${r.league ? " • " + esc(r.league) : ""}
 ${badge(r.audit_status || "not_audited")}
 </div>
 
+<div class="audit-grid">
+
+  <div class="audit-pill">
+    <span class="k">Event</span>
+    <span class="v">${esc(String(r.audit_status || "not_audited").replaceAll("_"," ").toUpperCase())}</span>
+  </div>
+
+  <div class="audit-pill">
+    <span class="k">Confidence</span>
+    <span class="v">${r.confidence != null ? esc(r.confidence) + "%" : "—"}</span>
+  </div>
+
+  <div class="audit-pill">
+    <span class="k">Mistake</span>
+    <span class="v ${mistakeClass(mistakeAssessment)}">
+      ${esc(humanMistakeAssessment(mistakeAssessment))}
+    </span>
+  </div>
+
+  <div class="audit-pill">
+    <span class="k">Title</span>
+    <span class="v ${titleReview ? "title-warning" : "title-ok"}">
+      ${titleReview ? "⚠ REVIEW" : (r.audit_status === "not_audited" ? "—" : "✓ OK")}
+    </span>
+  </div>
+
+</div>
+
 <div class="cols">
 
-<div>
-<div class="label">CURRENT LIVE DESCRIPTION</div>
-<div class="box">
-${esc(r.summary || "(empty)")}
-</div>
-</div>
+  <div>
+    <div class="label">CURRENT LIVE DESCRIPTION</div>
+    <div class="box">${esc(r.summary || "(empty)")}</div>
+  </div>
 
-<div>
-<div class="label">PROPOSED “THE RECORD”</div>
-<div class="box" id="proposal-${i}">
-${esc(r.proposed_summary || "Not audited yet.")}
-</div>
-</div>
+  <div>
+    <div class="label">PROPOSED “THE RECORD”</div>
+    <div class="box" id="proposal-${i}">
+      ${esc(r.proposed_summary || "Not audited yet.")}
+    </div>
+  </div>
 
 </div>
 
-<div class="findings" id="findings-${i}"></div>
-<div class="status" id="status-${i}"></div>
+<div class="reason-box" id="reason-${i}" ${r.audit_status==="not_audited" ? 'style="display:none"' : ""}>
+  <b>Why the auditor classified it this way:</b><br>
+  ${esc(r.mistake_reason || r.audit_reason || "No explanation returned yet.")}
+</div>
+
+<div class="recommendation ${rec.cls}" id="recommendation-${i}">
+  ${esc(rec.text)}
+</div>
+
+<div class="sources" id="sources-${i}" ${r.audit_status==="not_audited" ? 'style="display:none"' : ""}>
+  <div class="label">SOURCES</div>
+  <div id="source-content-${i}">
+    ${
+      r.verification_url
+        ? `<a target="_blank" rel="noopener noreferrer" href="${esc(r.verification_url)}">Primary verification source</a>`
+        : `<span class="audit-small">No primary source captured.</span>`
+    }
+    ${
+      r.verification_url_2
+        ? `<br><a target="_blank" rel="noopener noreferrer" href="${esc(r.verification_url_2)}">Second verification source</a>`
+        : ""
+    }
+  </div>
+</div>
+
+<div class="status" id="status-${i}">
+  ${
+    r.audit_status !== "not_audited"
+      ? `<b>${esc(String(r.audit_status).replaceAll("_"," ").toUpperCase())}</b>${r.proposed_summary ? " • " + words(r.proposed_summary) + " proposed words." : ""}<br><b>No live SportsMistakes record was changed.</b>`
+      : ""
+  }
+</div>
 
 <div class="controls">
 
@@ -424,7 +637,7 @@ Audit + Research
 id="approve-${i}"
 class="approve"
 onclick="approveOne(${i})"
-disabled>
+${canApprove ? "" : "disabled"}>
 Approve Description
 </button>
 
@@ -432,7 +645,8 @@ Approve Description
 
 </div>
 
-`).join("");
+`;
+    }).join("");
 }
 
 async function callAuditFunction(body) {
@@ -501,186 +715,73 @@ async function callAuditFunction(body) {
 
 async function auditOne(i) {
 
-  const r =
-    rows[i];
+  const r = rows[i];
+  const btn = document.getElementById("audit-" + i);
+  const approve = document.getElementById("approve-" + i);
+  const st = document.getElementById("status-" + i);
+  const box = document.getElementById("proposal-" + i);
 
-  const btn =
-    document.getElementById(
-      "audit-" + i
-    );
-
-  const approve =
-    document.getElementById(
-      "approve-" + i
-    );
-
-  const st =
-    document.getElementById(
-      "status-" + i
-    );
-
-  const box =
-    document.getElementById(
-      "proposal-" + i
-    );
-
-  const findings =
-    document.getElementById(
-      "findings-" + i
-    );
-
-  btn.disabled =
-    true;
-
-  approve.disabled =
-    true;
-
-  st.textContent =
-    "Researching, verifying, and auditing…";
-
-  box.textContent =
-    "Working…";
+  btn.disabled = true;
+  approve.disabled = true;
+  st.textContent = "Researching, verifying, and auditing…";
+  box.textContent = "Working…";
 
   try {
 
-    const d =
-      await callAuditFunction({
-        action: "audit",
-        mistake_id: r.id
-      });
+    const d = await callAuditFunction({
+      action: "audit",
+      mistake_id: r.id
+    });
 
-    r.audit_status =
-      d.audit_status;
-
-    r.confidence =
-      d.confidence;
-
-    r.proposed_summary =
-      d.proposed_summary || "";
-
-    r.proposed_corrections =
-      d.proposed_corrections || {};
-
-    r.findings =
-      d.findings || {};
-
-    r.verification_url =
-      d.verification_url || "";
-
-    r.verification_url_2 =
-      d.verification_url_2 || "";
-
-    r.audit_reason =
-      d.audit_reason || "";
-
-    document.getElementById(
-      "badge-" + i
-    ).innerHTML =
-      badge(r.audit_status);
-
-    box.textContent =
-      r.proposed_summary ||
-      (
-        r.audit_status === "verified"
-          ? "No usable proposal returned."
-          : "No rewrite proposed — review the audit findings."
+    r.audit_status = d.audit_status;
+    r.confidence = d.confidence;
+    r.proposed_summary = d.proposed_summary || "";
+    r.proposed_corrections = d.proposed_corrections || {};
+    r.findings = d.findings || {};
+    r.verification_url = d.verification_url || "";
+    r.verification_url_2 = d.verification_url_2 || "";
+    r.audit_reason = d.audit_reason || "";
+    r.mistake_assessment =
+      d.mistake_assessment ||
+      d?.findings?.mistake_assessment ||
+      "unclear";
+    r.mistake_reason =
+      d.mistake_reason ||
+      d?.findings?.mistake_reason ||
+      "";
+    r.title_review_recommended =
+      Boolean(
+        d.title_review_recommended ??
+        d?.findings?.title_review_recommended
       );
 
-    findings.innerHTML =
-
-      "<b>Confidence:</b> " +
-      esc(r.confidence) +
-      "%<br>" +
-
-      "<b>Audit:</b> " +
-      esc(r.audit_reason) +
-      "<br>" +
-
-      "<b>Field findings:</b> " +
-      esc(
-        JSON.stringify(
-          r.findings || {}
-        )
-      ) +
-      "<br>" +
-
-      "<b>Possible corrections:</b> " +
-      esc(
-        JSON.stringify(
-          r.proposed_corrections || {}
-        )
-      ) +
-
-      (
-        r.verification_url
-          ? '<br><span class="url"><b>Source:</b> <a target="_blank" href="' +
-            esc(r.verification_url) +
-            '">' +
-            esc(r.verification_url) +
-            "</a></span>"
-          : ""
-      ) +
-
-      (
-        r.verification_url_2
-          ? '<br><span class="url"><b>Second source:</b> <a target="_blank" href="' +
-            esc(r.verification_url_2) +
-            '">' +
-            esc(r.verification_url_2) +
-            "</a></span>"
-          : ""
-      );
-
-    st.innerHTML =
-
-      "<b>" +
-      esc(
-        String(
-          r.audit_status || ""
-        )
-          .replaceAll("_"," ")
-          .toUpperCase()
-      ) +
-      "</b>" +
-
-      (
-        r.proposed_summary
-          ? " • " +
-            words(
-              r.proposed_summary
-            ) +
-            " proposed words."
-          : ""
-      ) +
-
-      "<br><b>No live SportsMistakes record was changed.</b>";
-
-    approve.disabled =
-      !(
-        r.audit_status === "verified" &&
-        r.proposed_summary
-      );
+    // Re-render so all clean V7.2 display elements update together.
+    render();
 
     return true;
-  }
 
-  catch(e) {
+  } catch(e) {
 
-    box.textContent =
-      "Audit failed.";
+    r.audit_status = "not_audited";
+    render();
 
-    st.innerHTML =
-      '<span class="error">' +
-      esc(e.message) +
-      "</span>";
+    const newBox = document.getElementById("proposal-" + i);
+    const newStatus = document.getElementById("status-" + i);
+
+    if (newBox) newBox.textContent = "Audit failed.";
+    if (newStatus) {
+      newStatus.innerHTML =
+        '<span class="error">' +
+        esc(e.message) +
+        "</span>";
+    }
 
     return false;
-  }
 
-  finally {
+  } finally {
 
-    btn.disabled =
-      false;
+    const newBtn = document.getElementById("audit-" + i);
+    if (newBtn) newBtn.disabled = false;
   }
 }
 
@@ -788,8 +889,14 @@ async function approveOne(i) {
         r.summary
       );
 
+    const warning =
+      d.title_review_recommended
+        ? "<br><span class=\"title-warning\">⚠ The description was updated, but this record's title/framing is still flagged for separate review.</span>"
+        : "";
+
     st.innerHTML =
-      '<span class="success"><b>APPROVED.</b> The live factual description was updated. The original remains preserved in the audit table.</span>';
+      '<span class="success"><b>APPROVED.</b> The live factual description was updated. The original remains preserved in the audit table.</span>' +
+      warning;
 
     btn.textContent =
       "Approved";
