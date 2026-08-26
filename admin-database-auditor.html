@@ -1,4 +1,4 @@
-<!doctype html>
+
 <html lang="en">
 <head>
 <meta charset="utf-8">
@@ -277,6 +277,17 @@ button:disabled{opacity:.45;cursor:not-allowed}
   .audit-grid{grid-template-columns:1fr 1fr}
 }
 
+
+.v8-stats{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;margin:18px 0}
+.v8-stat{background:#0b1118;border:1px solid rgba(255,255,255,.13);border-radius:12px;padding:13px}
+.v8-stat .num{font-size:27px;font-weight:900;margin-bottom:4px}
+.v8-stat .lbl{font-size:11px;color:#9fb0c2;text-transform:uppercase;font-weight:900}
+.progress-shell{height:14px;background:#101923;border:1px solid rgba(255,255,255,.12);border-radius:999px;overflow:hidden;margin:9px 0 4px}
+.progress-fill{height:100%;width:0%;background:#1f9d55;transition:width .25s}
+.batch-box{background:#0b1118;border:1px solid rgba(255,255,255,.13);border-radius:12px;padding:14px;margin:14px 0}
+.batch-box select{background:#08101a;color:white;border:1px solid rgba(255,255,255,.18);border-radius:8px;padding:10px;font-weight:800}
+@media(max-width:900px){.v8-stats{grid-template-columns:1fr 1fr}}
+
 </style>
 </head>
 
@@ -296,10 +307,42 @@ A live description changes only when you explicitly click <b>Approve Description
 on a VERIFIED record. Possible year/team/name corrections are never auto-applied.
 </div>
 
-<div class="controls">
-  <button onclick="loadTen()">Load 10 Thin Seed Records</button>
-  <button id="runAll" onclick="runAll()" disabled>Audit Visible 10</button>
-  <button class="secondary" onclick="clearSecret()">Forget Admin Secret</button>
+<div class="v8-stats">
+  <div class="v8-stat"><div class="num" id="stat-total">—</div><div class="lbl">Seeded Records</div></div>
+  <div class="v8-stat"><div class="num" id="stat-audited">—</div><div class="lbl">Audited</div></div>
+  <div class="v8-stat"><div class="num" id="stat-remaining">—</div><div class="lbl">Remaining</div></div>
+  <div class="v8-stat"><div class="num" id="stat-safe">—</div><div class="lbl">Safe Upgrades</div></div>
+  <div class="v8-stat"><div class="num" id="stat-errors">—</div><div class="lbl">Possible Errors</div></div>
+</div>
+
+<div class="batch-box">
+  <b>Full Database Audit — controlled and resumable</b>
+  <div class="progress-shell"><div id="audit-progress" class="progress-fill"></div></div>
+  <div id="progress-label" class="audit-small">Load audit counts to begin.</div>
+
+  <div class="controls">
+    <select id="batchSize">
+      <option value="5">5 records</option>
+      <option value="10" selected>10 records</option>
+      <option value="15">15 records</option>
+      <option value="25">25 records</option>
+    </select>
+    <button onclick="loadNextBatch()">Load Next Unaudited Batch</button>
+    <button id="runAll" onclick="runAll()" disabled>Audit Loaded Batch</button>
+
+    <select id="reviewFilter" onchange="loadReviewFilter()">
+      <option value="">Review audited records…</option>
+      <option value="safe_description_upgrade">Safe Description Upgrades</option>
+      <option value="debatable_interpretation">Debatable Interpretation</option>
+      <option value="possible_error">Possible Errors</option>
+      <option value="event_only">Event Only</option>
+      <option value="unverified">Unverified</option>
+      <option value="title_review">Title Review Recommended</option>
+    </select>
+
+    <button class="secondary" onclick="refreshStats()">Refresh Counts</button>
+    <button class="secondary" onclick="clearSecret()">Forget Admin Secret</button>
+  </div>
 </div>
 
 <div id="overall"></div>
@@ -398,123 +441,104 @@ function badge(status) {
   `;
 }
 
-async function loadTen() {
+async function adminFunction(body) {
+  const secret = getSecret();
+  if (!secret) throw new Error("Admin secret is required.");
 
-  document.getElementById("overall").textContent =
-    "Loading candidates…";
+  const resp = await fetch(`${SUPABASE_URL}/functions/v1/audit-mistake-record`, {
+    method:"POST",
+    headers:{
+      "Content-Type":"application/json",
+      "apikey":SUPABASE_ANON_KEY,
+      "Authorization":`Bearer ${SUPABASE_ANON_KEY}`,
+      "x-admin-secret":secret
+    },
+    body:JSON.stringify(body)
+  });
 
-  const { data, error } =
-    await client
-      .from("mistakes")
-      .select(
-        "id,title,sport,year,league,category,teams_people,key_people,summary,why_it_matters,source_1,source_2,fan_submission_text"
-      )
-      .limit(300);
+  const raw = await resp.text();
+  let data = {};
+  try { data = raw ? JSON.parse(raw) : {}; }
+  catch { data = {success:false,error:"Invalid server response"}; }
 
-  if (error) {
+  if (!resp.ok || !data.success)
+    throw new Error(data.error || data.details || "Request failed");
 
+  return data;
+}
+
+async function refreshStats() {
+  try {
+    const d = await adminFunction({action:"stats"});
+    const s = d.stats || {};
+    document.getElementById("stat-total").textContent = Number(s.total_seeded || 0).toLocaleString();
+    document.getElementById("stat-audited").textContent = Number(s.audited || 0).toLocaleString();
+    document.getElementById("stat-remaining").textContent = Number(s.remaining || 0).toLocaleString();
+    document.getElementById("stat-safe").textContent = Number(s.safe_description_upgrade || 0).toLocaleString();
+    document.getElementById("stat-errors").textContent = Number(s.possible_error || 0).toLocaleString();
+
+    const total = Number(s.total_seeded || 0);
+    const audited = Number(s.audited || 0);
+    const pct = total ? Math.round((audited / total) * 100) : 0;
+    document.getElementById("audit-progress").style.width = pct + "%";
+    document.getElementById("progress-label").textContent =
+      `${audited.toLocaleString()} of ${total.toLocaleString()} seeded records audited (${pct}%). ${Number(s.remaining || 0).toLocaleString()} remaining.`;
+  } catch(e) {
+    document.getElementById("progress-label").innerHTML =
+      '<span class="error">' + esc(e.message) + "</span>";
+  }
+}
+
+async function loadNextBatch() {
+  const size = Number(document.getElementById("batchSize").value || 10);
+  document.getElementById("overall").textContent = "Loading next unaudited batch…";
+
+  try {
+    const d = await adminFunction({action:"next_batch",batch_size:size});
+    rows = (d.rows || []).map(x => ({
+      ...x,
+      wc:x.current_word_count ?? words(x.summary),
+      audit_status:"not_audited",
+      proposed_summary:"",
+      confidence:null,
+      mistake_assessment:"unclear",
+      mistake_reason:"",
+      title_review_recommended:false
+    }));
+    render();
+    document.getElementById("runAll").disabled = rows.length === 0;
+    document.getElementById("overall").innerHTML = rows.length
+      ? `<b>${rows.length}</b> unaudited seeded records loaded.`
+      : "<b>No unaudited seeded records remain.</b>";
+    await refreshStats();
+  } catch(e) {
     document.getElementById("overall").innerHTML =
-      '<span class="error">' +
-      esc(error.message) +
-      "</span>";
-
-    return;
+      '<span class="error">' + esc(e.message) + "</span>";
   }
-
-  rows =
-    (data || [])
-      .filter(x => !x.fan_submission_text)
-      .map(x => ({
-        ...x,
-        wc: words(x.summary),
-        audit_status: "not_audited",
-        proposed_summary: ""
-      }))
-      .sort((a,b) => a.wc - b.wc)
-      .slice(0,10);
-
-  render();
-
-  document.getElementById("runAll").disabled =
-    rows.length === 0;
-
-  document.getElementById("overall").innerHTML =
-    "<b>" +
-    rows.length +
-    "</b> bulk-seeded records loaded. These are prioritized by shortest current description.";
 }
 
-function humanMistakeAssessment(value) {
-  const map = {
-    verified_mistake: "VERIFIED MISTAKE",
-    debatable_interpretation: "DEBATABLE INTERPRETATION",
-    event_only: "EVENT ONLY",
-    unclear: "UNCLEAR"
-  };
-  return map[value] || "NOT ASSESSED";
-}
+async function loadReviewFilter() {
+  const status = document.getElementById("reviewFilter").value;
+  if (!status) return;
+  document.getElementById("overall").textContent = "Loading audited records…";
 
-function mistakeClass(value) {
-  if (value === "verified_mistake") return "mistake-green";
-  if (value === "debatable_interpretation") return "mistake-yellow";
-  if (value === "event_only") return "mistake-red";
-  return "mistake-gray";
-}
-
-function recommendationFor(r) {
-  if (r.audit_status === "possible_error") {
-    return {
-      cls:"rec-red",
-      text:"🔴 DO NOT UPGRADE — the seeded record may contain a factual error. Review the record itself before changing its description."
-    };
+  try {
+    const d = await adminFunction({action:"list_status",status,limit:50});
+    rows = (d.rows || []).map(x => ({
+      ...x,
+      wc:words(x.summary),
+      mistake_assessment:x?.findings?.mistake_assessment || "unclear",
+      mistake_reason:x?.findings?.mistake_reason || "",
+      title_review_recommended:Boolean(x?.findings?.title_review_recommended)
+    }));
+    render();
+    document.getElementById("runAll").disabled = true;
+    document.getElementById("overall").innerHTML =
+      `<b>${rows.length}</b> audited record${rows.length===1?"":"s"} loaded for review.`;
+  } catch(e) {
+    document.getElementById("overall").innerHTML =
+      '<span class="error">' + esc(e.message) + "</span>";
   }
-
-  if (r.audit_status === "unverified") {
-    return {
-      cls:"rec-gray",
-      text:"⚪ HOLD — the specific event could not be verified confidently enough to rewrite."
-    };
-  }
-
-  if (r.audit_status === "partially_verified") {
-    return {
-      cls:"rec-yellow",
-      text:"🟡 HUMAN REVIEW — the event appears real, but one or more important facts remain uncertain."
-    };
-  }
-
-  if (r.audit_status === "verified" && r.mistake_assessment === "event_only") {
-    return {
-      cls:"rec-red",
-      text:"🔴 REVIEW RECORD — the event is real, but the research does not support the specific claimed mistake."
-    };
-  }
-
-  if (r.audit_status === "verified" && r.mistake_assessment === "debatable_interpretation") {
-    return {
-      cls:"rec-yellow",
-      text:"🟡 SAFE FACTUAL DESCRIPTION, BUT REVIEW TITLE/FRAMING — the event is verified, while the 'mistake' label is interpretive."
-    };
-  }
-
-  if (r.audit_status === "verified" && r.mistake_assessment === "verified_mistake" && r.proposed_summary) {
-    return {
-      cls:"rec-green",
-      text:"🟢 SAFE TO UPGRADE DESCRIPTION — the event and the specific mistake are both supported, and a factual replacement is ready."
-    };
-  }
-
-  if (r.audit_status === "verified" && r.proposed_summary) {
-    return {
-      cls:"rec-yellow",
-      text:"🟡 DESCRIPTION READY, CLAIM NEEDS REVIEW — the event is verified but the mistake classification is not fully settled."
-    };
-  }
-
-  return {
-    cls:"rec-gray",
-    text:"⚪ NOT YET READY — run the audit and review its findings."
-  };
 }
 
 function render() {
@@ -586,7 +610,11 @@ ${badge(r.audit_status || "not_audited")}
   <div>
     <div class="label">PROPOSED “THE RECORD”</div>
     <div class="box" id="proposal-${i}">
-      ${esc(r.proposed_summary || "Not audited yet.")}
+      ${esc(r.proposed_summary || (
+          r.audit_status === "not_audited"
+            ? "Not audited yet."
+            : "No description proposed. Review the auditor’s finding before changing this record."
+        ))}
     </div>
   </div>
 
@@ -650,67 +678,7 @@ Approve Description
 }
 
 async function callAuditFunction(body) {
-
-  const secret = getSecret();
-
-  if (!secret)
-    throw new Error(
-      "Admin secret is required."
-    );
-
-  const resp =
-    await fetch(
-      `${SUPABASE_URL}/functions/v1/audit-mistake-record`,
-      {
-        method: "POST",
-
-        headers: {
-          "Content-Type":
-            "application/json",
-
-          "apikey":
-            SUPABASE_ANON_KEY,
-
-          "Authorization":
-            `Bearer ${SUPABASE_ANON_KEY}`,
-
-          "x-admin-secret":
-            secret
-        },
-
-        body:
-          JSON.stringify(body)
-      }
-    );
-
-  const raw =
-    await resp.text();
-
-  let data = {};
-
-  try {
-    data =
-      raw
-        ? JSON.parse(raw)
-        : {};
-  }
-  catch {
-    data = {
-      success:false,
-      error:"Invalid server response"
-    };
-  }
-
-  if (!resp.ok || !data.success) {
-
-    throw new Error(
-      data.error ||
-      data.details ||
-      "Request failed"
-    );
-  }
-
-  return data;
+  return await adminFunction(body);
 }
 
 async function auditOne(i) {
@@ -816,7 +784,9 @@ async function runAll() {
   document.getElementById(
     "overall"
   ).innerHTML =
-    `Finished: <b>${ok}/${rows.length}</b> audit requests completed. Nothing was automatically published.`;
+    `Finished: <b>${ok}/${rows.length}</b> audit requests completed and saved. Nothing was automatically published.`;
+
+  await refreshStats();
 
   b.disabled =
     false;
