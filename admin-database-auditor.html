@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SportsMistakes — Database Auditor</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{--bg:#05080c;--panel:#0b1118;--line:#243140;--text:#f8fafc;--muted:#a8b3c1;--red:#e22424;--green:#1f9d55}
+*{box-sizing:border-box}body{margin:0;font-family:Arial,Helvetica,sans-serif;background:linear-gradient(180deg,#05080c,#091017 45%,#05080c);color:var(--text)}
+.wrap{max-width:1250px;margin:auto;padding:26px 18px 70px}h1{margin:0 0 8px;font-size:38px}p{line-height:1.5}
+.note{padding:14px 16px;border:1px solid rgba(255,255,255,.14);border-radius:10px;background:#0b1118;color:#d7dee8;margin:16px 0}
+.controls{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:18px 0}
+button{border:0;border-radius:8px;padding:11px 14px;font-weight:800;font-size:14px;background:var(--red);color:white;cursor:pointer}
+button.secondary{background:#263443}button.approve{background:var(--green)}button:disabled{opacity:.45;cursor:not-allowed}
+.card{background:var(--panel);border:1px solid rgba(255,255,255,.13);border-radius:13px;padding:18px;margin:14px 0}.card h2{margin:0 0 7px;font-size:21px}
+.meta{color:var(--muted);font-size:13px;margin-bottom:12px}.badge{display:inline-block;border-radius:999px;padding:6px 9px;font-size:11px;font-weight:900;text-transform:uppercase}
+.verified{background:rgba(31,157,85,.16);color:#68d391}.partially_verified{background:rgba(201,139,0,.15);color:#f3c969}.possible_error{background:rgba(201,101,22,.16);color:#ffa15c}.unverified{background:#27313c;color:#c2ccd7}.not_audited{background:#202b36;color:#cbd5e1}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px}.box{border:1px solid rgba(255,255,255,.12);border-radius:9px;padding:13px;white-space:pre-wrap;line-height:1.48;background:#080e15}
+.label{font-size:11px;font-weight:900;letter-spacing:.06em;color:#9fb0c2;margin-bottom:7px;text-transform:uppercase}.findings,.status{font-size:13px;color:#d7dee8;line-height:1.5;margin-top:12px;white-space:pre-wrap}
+.url a{color:#8cc9ff;word-break:break-all}.success{color:#78e49f}.error{color:#ff9696}#overall{margin:10px 0;color:#d7dee8;font-weight:800}
+@media(max-width:850px){.cols{grid-template-columns:1fr}.wrap{padding:18px 12px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>SportsMistakes Database Auditor</h1>
+<p>Research and audit existing seeded records before replacing thin or questionable descriptions.</p>
+
+<div class="note"><b>SAFE MODE:</b> Auditing does not change the live <code>mistakes</code> table. Results are stored separately. A live description changes only when you explicitly click <b>Approve Description</b> on a VERIFIED record. Year/team/name discrepancies are never auto-applied.</div>
+
+<div class="controls">
+  <button onclick="loadBatch()">Load 10 Thin Seed Records</button>
+  <button id="auditAllBtn" onclick="auditVisible()" disabled>Audit Visible 10</button>
+  <button class="secondary" onclick="clearSecret()">Forget Admin Secret</button>
+</div>
+
+<div id="overall">Ready.</div>
+<div id="cards"></div>
+</div>
+
+<script>
+const SUPABASE_URL="https://scwjlljurircxuufhqih.supabase.co";
+const SUPABASE_ANON_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYXNlIiwicmVmIjoic2N3amxsanVyaXJjeHV1ZmhxaWgiLCJyb2xlIjoiYW5vbiIsImlhdCI6MTc4MTI2NTIyNywiZXhwIjoyMDk2ODQxMjI3fQ.WF0HRRb9mAkuOySjabTd8CZXVZRqF0MhMl0N2mafnns";
+const client=supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
+let rows=[];
+
+function esc(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+function words(s){return String(s||"").trim()?String(s).trim().split(/\s+/).length:0}
+function getSecret(){let s=sessionStorage.getItem("sportsmistakes_artwork_admin_secret")||"";if(!s){s=prompt("Enter your ARTWORK_ADMIN_SECRET:")||"";if(s)sessionStorage.setItem("sportsmistakes_artwork_admin_secret",s)}return s}
+function clearSecret(){sessionStorage.removeItem("sportsmistakes_artwork_admin_secret");alert("Admin secret forgotten for this browser session.")}
+function badge(status){const labels={verified:"VERIFIED",partially_verified:"PARTIALLY VERIFIED",possible_error:"POSSIBLE ERROR",unverified:"UNVERIFIED",not_audited:"NOT AUDITED"};return `<span class="badge ${esc(status||"not_audited")}">${esc(labels[status]||"NOT AUDITED")}</span>`}
+
+async function loadBatch(){
+  document.getElementById("overall").textContent="Loading candidate seed records…";
+  const {data,error}=await client.from("mistakes")
+    .select("id,title,sport,year,league,category,teams_people,key_people,summary,why_it_matters,source_1,source_2,fan_submission_text")
+    .is("fan_submission_text",null)
+    .limit(300);
+
+  if(error){document.getElementById("overall").innerHTML='<span class="error">'+esc(error.message)+'</span>';return}
+
+  rows=(data||[]).map(x=>({...x,wc:words(x.summary),audit_status:"not_audited"}))
+    .sort((a,b)=>a.wc-b.wc).slice(0,10);
+
+  render();
+  document.getElementById("auditAllBtn").disabled=rows.length===0;
+  document.getElementById("overall").innerHTML=`<b>${rows.length}</b> seed candidates loaded, prioritized by shortest current description.`;
+}
+
+function render(){
+  document.getElementById("cards").innerHTML=rows.map((r,i)=>`
+  <div class="card">
+    <h2>${i+1}. ${esc(r.title||"Untitled")}</h2>
+    <div class="meta">${esc(r.sport||"")} ${esc(r.year||"")} ${r.league?"• "+esc(r.league):""} • Current description: <b>${r.wc??words(r.summary)} words</b></div>
+    <div id="badge-${i}">${badge(r.audit_status||"not_audited")}</div>
+    <div class="cols">
+      <div><div class="label">Current Live Description</div><div class="box">${esc(r.summary||"(empty)")}</div></div>
+      <div><div class="label">Proposed “The Record”</div><div class="box" id="proposal-${i}">${esc(r.proposed_summary||"Not audited yet.")}</div></div>
+    </div>
+    <div class="findings" id="findings-${i}"></div>
+    <div class="status" id="status-${i}"></div>
+    <div class="controls">
+      <button id="audit-${i}" onclick="auditOne(${i})">Audit + Research</button>
+      <button id="approve-${i}" class="approve" onclick="approveOne(${i})" disabled>Approve Description</button>
+    </div>
+  </div>`).join("");
+}
+
+async function callFn(body){
+  const secret=getSecret();if(!secret)throw new Error("Admin secret is required.");
+  const resp=await fetch(`${SUPABASE_URL}/functions/v1/audit-mistake-record`,{
+    method:"POST",
+    headers:{"Content-Type":"application/json","apikey":SUPABASE_ANON_KEY,"Authorization":`Bearer ${SUPABASE_ANON_KEY}`,"x-admin-secret":secret},
+    body:JSON.stringify(body)
+  });
+  const raw=await resp.text();let data={};try{data=raw?JSON.parse(raw):{}}catch{data={success:false,error:"Invalid server response"}}
+  if(!resp.ok||!data.success)throw new Error(data.error||data.details||"Request failed");
+  return data;
+}
+
+async function auditOne(i){
+  const r=rows[i],btn=document.getElementById("audit-"+i),approve=document.getElementById("approve-"+i),st=document.getElementById("status-"+i),box=document.getElementById("proposal-"+i),findings=document.getElementById("findings-"+i);
+  btn.disabled=true;approve.disabled=true;st.textContent="Researching, verifying, and auditing…";box.textContent="Working…";
+  try{
+    const d=await callFn({action:"audit",mistake_id:r.id});
+    Object.assign(r,{audit_status:d.audit_status,confidence:d.confidence,proposed_summary:d.proposed_summary||"",proposed_corrections:d.proposed_corrections||{},findings:d.findings||{},verification_url:d.verification_url||"",verification_url_2:d.verification_url_2||"",audit_reason:d.audit_reason||""});
+    document.getElementById("badge-"+i).innerHTML=badge(r.audit_status);
+    box.textContent=r.proposed_summary||(r.audit_status==="verified"?"No usable proposal returned.":"No rewrite proposed — review the audit findings.");
+    findings.innerHTML=`<b>Confidence:</b> ${esc(r.confidence)}%<br><b>Audit:</b> ${esc(r.audit_reason)}<br><b>Field findings:</b> ${esc(JSON.stringify(r.findings))}<br><b>Possible corrections:</b> ${esc(JSON.stringify(r.proposed_corrections))}`+
+      (r.verification_url?`<br><span class="url"><b>Source:</b> <a target="_blank" href="${esc(r.verification_url)}">${esc(r.verification_url)}</a></span>`:"")+
+      (r.verification_url_2?`<br><span class="url"><b>Second source:</b> <a target="_blank" href="${esc(r.verification_url_2)}">${esc(r.verification_url_2)}</a></span>`:"");
+    st.innerHTML=`<b>${esc((r.audit_status||"").replaceAll("_"," ").toUpperCase())}</b>${r.proposed_summary?` • ${words(r.proposed_summary)} proposed words.`:""}<br><b>No live SportsMistakes record was changed.</b>`;
+    approve.disabled=!(r.audit_status==="verified"&&r.proposed_summary);
+    return true;
+  }catch(e){box.textContent="Audit failed.";st.innerHTML='<span class="error">'+esc(e.message)+'</span>';return false}
+  finally{btn.disabled=false}
+}
+
+async function auditVisible(){
+  const b=document.getElementById("auditAllBtn");b.disabled=true;let ok=0;
+  for(let i=0;i<rows.length;i++){document.getElementById("overall").textContent=`Auditing ${i+1} of ${rows.length}…`;if(await auditOne(i))ok++}
+  document.getElementById("overall").innerHTML=`Finished <b>${ok}/${rows.length}</b> audit requests. Nothing was automatically published.`;b.disabled=false;
+}
+
+async function approveOne(i){
+  const r=rows[i];if(r.audit_status!=="verified"||!r.proposed_summary)return;
+  const ok=confirm(`Replace the LIVE description for:\n\n${r.title}\n\nCURRENT:\n${r.summary||"(empty)"}\n\nPROPOSED:\n${r.proposed_summary}\n\nThe original remains preserved in the audit table.\n\nApprove?`);
+  if(!ok)return;
+  const b=document.getElementById("approve-"+i),st=document.getElementById("status-"+i);b.disabled=true;st.textContent="Approving description…";
+  try{const d=await callFn({action:"approve_summary",mistake_id:r.id});r.summary=d.new_summary||r.proposed_summary;r.wc=words(r.summary);st.innerHTML='<span class="success"><b>APPROVED.</b> Live factual description updated. Original preserved in audit table.</span>';b.textContent="Approved"}
+  catch(e){st.innerHTML='<span class="error">'+esc(e.message)+'</span>';b.disabled=false}
+}
+
+loadBatch();
+</script>
+</body>
+</html>
