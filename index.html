@@ -1560,6 +1560,16 @@
       .search-hero .tagline{font-size:30px}
     }
 
+
+.hero-search-divider{display:flex;align-items:center;gap:12px;margin:16px 0 11px;color:#8996a6;font-size:10px;font-weight:1000;letter-spacing:1px}
+.hero-search-divider::before,.hero-search-divider::after{content:"";height:1px;background:rgba(255,255,255,.13);flex:1}
+.hero-search-row{display:grid;grid-template-columns:1fr 145px;gap:10px}
+#heroSearchInput{width:100%;min-width:0;padding:15px 17px;border-radius:8px;border:1px solid rgba(255,255,255,.25);background:#fff;color:#111827;font-size:15px;outline:none}
+#heroSearchInput:focus{border-color:#e22424;box-shadow:0 0 0 3px rgba(226,36,36,.16)}
+.hero-search-row button{border:none;border-radius:8px;background:#e22424;color:#fff;font-size:14px;font-weight:1000;text-transform:uppercase;cursor:pointer}
+.hero-search-row button:hover{filter:brightness(1.08);transform:translateY(-1px)}
+@media(max-width:760px){.hero-search-row{grid-template-columns:1fr}.hero-search-row button{min-height:50px}}
+
 </style>
 <script src="sportsmistakes-analytics.js" defer></script>
 </head>
@@ -1613,6 +1623,14 @@
             </div>
 
             <div class="nominate-note">No long form required. Start with the moment you remember.</div>
+
+            <div class="hero-search-divider"><span>OR SEARCH THE RECORD</span></div>
+            <div class="hero-search-row">
+              <input id="heroSearchInput" type="search"
+                placeholder="Search a player, team, mistake, year..."
+                aria-label="Search SportsMistakes">
+              <button type="button" onclick="searchFromHero()">Search It</button>
+            </div>
           </div>
         </div>
 
@@ -2709,6 +2727,30 @@
     function startTodaysFive(){ document.getElementById("todaysFivePanel")?.scrollIntoView({behavior:"smooth",block:"start"}); }
     function openSearchExperience(){ document.querySelector(".search-hero")?.scrollIntoView({behavior:"smooth",block:"start"}); setTimeout(()=>document.getElementById("searchInput")?.focus(),450); }
 
+
+
+    function searchFromHero(){
+      const heroInput=document.getElementById("heroSearchInput");
+      const q=String(heroInput?.value||"").trim();
+      if(!q){ heroInput?.focus(); return; }
+
+      const existingSearch=document.getElementById("searchInput");
+      if(existingSearch){
+        existingSearch.value=q;
+        existingSearch.dispatchEvent(new Event("input",{bubbles:true}));
+        existingSearch.dispatchEvent(new Event("change",{bubbles:true}));
+        const searchSection=existingSearch.closest("section") || existingSearch;
+        searchSection.scrollIntoView({behavior:"smooth",block:"start"});
+        existingSearch.focus();
+      }
+    }
+
+    document.addEventListener("keydown",e=>{
+      if(e.key==="Enter" && document.activeElement?.id==="heroSearchInput"){
+        e.preventDefault();
+        searchFromHero();
+      }
+    });
 
     function nominateFromHome(){
       const input=document.getElementById("nominationInput");
