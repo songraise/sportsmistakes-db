@@ -1570,6 +1570,19 @@
 .hero-search-row button:hover{filter:brightness(1.08);transform:translateY(-1px)}
 @media(max-width:760px){.hero-search-row{grid-template-columns:1fr}.hero-search-row button{min-height:50px}}
 
+
+.nomination-status{display:none;margin-top:12px;padding:11px 12px;border-radius:8px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);color:#d9e2ec;font-size:13px;line-height:1.4}
+.nomination-status.active{display:block}
+.nomination-status.good{border-color:rgba(50,190,100,.42);background:rgba(35,150,80,.10);color:#a9efbf}
+.nomination-status.warn{border-color:rgba(232,174,45,.42);background:rgba(210,151,25,.09);color:#f6d37a}
+.nomination-status.bad{border-color:rgba(226,36,36,.42);background:rgba(226,36,36,.09);color:#ffadad}
+.nomination-result{display:none;margin-top:10px;border:1px solid rgba(255,255,255,.14);border-radius:9px;background:#080e15;padding:12px}
+.nomination-result.active{display:block}
+.nomination-result strong{display:block;color:#fff;font-size:15px;margin-bottom:5px}
+.nomination-result p{margin:0;color:#b7c2cf;font-size:13px;line-height:1.45}
+.nomination-result a{display:inline-flex;margin-top:9px;color:#ff4b4b;font-weight:1000;text-decoration:none;font-size:12px;text-transform:uppercase}
+.nominate-row button:disabled{opacity:.55;cursor:not-allowed;transform:none}
+
 </style>
 <script src="sportsmistakes-analytics.js" defer></script>
 </head>
@@ -1597,7 +1610,7 @@
         <div class="museum-hero-copy">
           <div class="museum-kicker">THE CROWD-SOURCED RECORD OF SPORTS MISTAKES</div>
           <h1>ONE MISTAKE.<br>ONE MOMENT.<br><span>CHANGES EVERYTHING.</span></h1>
-          <p class="museum-subhead">Real fans nominate. We document the facts. Fans judge. History remembers.</p>
+          <p class="museum-subhead">Real fans nominate. SportsMistakes researches the facts. Fans judge. History remembers.</p>
 
           <div class="nominate-card" id="nominate">
             <div class="nominate-title-row">
@@ -1618,11 +1631,13 @@
             <div class="nominate-steps">
               <div><strong>👥 Fans nominate</strong><span>Suggest a moment in seconds.</span></div>
               <div><strong>🔎 We research</strong><span>Facts and sources are checked.</span></div>
-              <div><strong>🛡 We document</strong><span>A neutral factual record is created.</span></div>
+              <div><strong>🛡 We document</strong><span>A neutral factual record is prepared.</span></div>
               <div><strong>⭐ You judge</strong><span>The crowd decides how bad it was.</span></div>
             </div>
 
             <div class="nominate-note">No long form required. Start with the moment you remember.</div>
+            <div id="nominationStatus" class="nomination-status" aria-live="polite"></div>
+            <div id="nominationResult" class="nomination-result"></div>
 
             <div class="hero-search-divider"><span>OR SEARCH THE RECORD</span></div>
             <div class="hero-search-row">
@@ -2752,20 +2767,117 @@
       }
     });
 
-    function nominateFromHome(){
+    function getNominationClientId(){
+      const key="sportsmistakes_autofill_client_id";
+      let value=localStorage.getItem(key);
+      if(!value){
+        value=(crypto&&crypto.randomUUID)
+          ? crypto.randomUUID()
+          : "sm-"+Date.now()+"-"+Math.random().toString(36).slice(2);
+        localStorage.setItem(key,value);
+      }
+      return value;
+    }
+
+    async function nominateFromHome(){
       const input=document.getElementById("nominationInput");
+      const status=document.getElementById("nominationStatus");
+      const result=document.getElementById("nominationResult");
+      const button=input?.closest(".nominate-row")?.querySelector("button");
       const text=String(input?.value||"").trim();
-      if(!text){
+
+      if(text.length<5){
+        status.className="nomination-status active warn";
+        status.textContent="Add a little more detail — a player, team, play, trade, call, or game.";
+        result.className="nomination-result";
         input?.focus();
         return;
       }
-      sessionStorage.setItem("sportsmistakes_nomination_draft",text);
-      localStorage.setItem("sportsmistakes_nomination_draft",text);
-      window.location.href="submit.html?nomination="+encodeURIComponent(text);
+
+      const originalButton=button?.textContent||"Nominate It";
+      if(button){button.disabled=true;button.textContent="Researching…";}
+      status.className="nomination-status active";
+      status.textContent="Checking the nomination, researching the real event, and looking for an existing SportsMistakes record…";
+      result.className="nomination-result";
+      result.innerHTML="";
+
+      try{
+        const resp=await fetch(`${SUPABASE_URL}/functions/v1/nominate-mistake`,{
+          method:"POST",
+          headers:{
+            "Content-Type":"application/json",
+            "apikey":SUPABASE_ANON_KEY,
+            "Authorization":`Bearer ${SUPABASE_ANON_KEY}`
+          },
+          body:JSON.stringify({
+            nomination:text,
+            client_id:getNominationClientId()
+          })
+        });
+
+        const raw=await resp.text();
+        let data={};
+        try{data=raw?JSON.parse(raw):{};}catch{data={success:false,error:"Invalid server response"};}
+
+        if(!resp.ok||!data.success){
+          status.className="nomination-status active bad";
+          status.textContent=data.error||"We could not complete that nomination. Please try again.";
+          if(data.rate_limited){
+            result.className="nomination-result active";
+            result.innerHTML=`<strong>Research limit reached</strong><p>You can still use the detailed submission form without losing your idea.</p><a href="submit.html?nomination=${encodeURIComponent(text)}">Open detailed form →</a>`;
+          }
+          return;
+        }
+
+        if(data.outcome==="existing_record"){
+          status.className="nomination-status active good";
+          status.textContent="Already in the Record — your nomination has been counted.";
+          result.className="nomination-result active";
+          result.innerHTML=`
+            <strong>${escapeHtml(data.title||"Sports mistake")}</strong>
+            <p>${Number(data.nomination_count||1).toLocaleString()} fan nomination${Number(data.nomination_count||1)===1?"":"s"} recorded for this moment.</p>
+            <a href="mistake.html?id=${encodeURIComponent(data.mistake_id)}">Judge this mistake →</a>`;
+          input.value="";
+          return;
+        }
+
+        if(data.outcome==="new_record"){
+          status.className="nomination-status active good";
+          status.textContent="Nomination verified. SportsMistakes prepared the factual record.";
+          result.className="nomination-result active";
+          result.innerHTML=`
+            <strong>${escapeHtml(data.title||text)}</strong>
+            <p>Your exact nomination is preserved as the human contribution. The researched factual record has been prepared for publication.</p>
+            <a href="submit.html?nomination=${encodeURIComponent(text)}">Add optional details →</a>`;
+          input.value="";
+          return;
+        }
+
+        if(data.outcome==="needs_clarification"){
+          status.className="nomination-status active warn";
+          status.textContent="We couldn't confidently identify one specific event yet.";
+          result.className="nomination-result active";
+          result.innerHTML=`
+            <strong>Add one more clue</strong>
+            <p>${escapeHtml(data.verification_note||"Try adding the player, team, opponent, year, or game.")}</p>
+            <a href="submit.html?nomination=${encodeURIComponent(text)}">Add more detail →</a>`;
+          return;
+        }
+
+        status.className="nomination-status active";
+        status.textContent=data.message||"Nomination received.";
+
+      }catch(err){
+        console.error(err);
+        status.className="nomination-status active bad";
+        status.textContent="We couldn't reach the nomination service. Please try again.";
+      }finally{
+        if(button){button.disabled=false;button.textContent=originalButton;}
+      }
     }
 
     document.addEventListener("keydown",e=>{
-      if(e.key==="Enter" && document.activeElement?.id==="nominationInput"){
+      if(e.key==="Enter"&&document.activeElement?.id==="nominationInput"){
         e.preventDefault();
         nominateFromHome();
       }
