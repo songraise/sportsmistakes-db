@@ -1588,22 +1588,19 @@
 .nomination-matches.active{display:block}
 .nomination-match-head{padding:9px 11px;color:#95a2b2;font-size:10px;font-weight:1000;letter-spacing:.8px;text-transform:uppercase;border-bottom:1px solid rgba(255,255,255,.08)}
 .nomination-match{
-  display:grid;grid-template-columns:62px 1fr auto;gap:10px;align-items:center;
-  width:100%;padding:9px;border:0;border-bottom:1px solid rgba(255,255,255,.08);
-  background:transparent;color:#fff;text-align:left;cursor:pointer
+  display:grid;grid-template-columns:1fr auto;gap:14px;align-items:center;
+  width:100%;padding:12px 13px;border:0;border-bottom:1px solid rgba(255,255,255,.08);
+  background:transparent;color:#fff;text-align:left
 }
 .nomination-match:last-child{border-bottom:0}
-.nomination-match:hover,.nomination-match.selected{background:rgba(226,36,36,.10)}
-.nomination-match-art{width:62px;height:50px;border-radius:6px;overflow:hidden;background:#151b23;display:flex;align-items:center;justify-content:center}
-.nomination-match-art img{width:100%;height:100%;object-fit:cover}
+.nomination-match:hover{background:rgba(226,36,36,.10)}
 .nomination-match-title{font-size:13px;font-weight:1000;line-height:1.2}
 .nomination-match-meta{margin-top:3px;color:#95a2b2;font-size:11px}
-.nomination-match-action{color:#ff4b4b;font-size:10px;font-weight:1000;text-transform:uppercase;white-space:nowrap}
+.nomination-match-action{color:#ff4b4b;font-size:11px;font-weight:1000;text-transform:uppercase;white-space:nowrap;text-decoration:none;padding:8px 4px}
 .nomination-existing-note{padding:9px 11px;color:#b9c4d0;font-size:11px;border-top:1px solid rgba(255,255,255,.08)}
 @media(max-width:600px){
-  .nomination-match{grid-template-columns:52px 1fr}
-  .nomination-match-art{width:52px;height:44px}
-  .nomination-match-action{display:none}
+  .nomination-match{grid-template-columns:1fr auto}
+  .nomination-match-action{display:block}
 }
 
 </style>
@@ -2839,34 +2836,18 @@
       box.innerHTML=`
         <div class="nomination-match-head">Already in SportsMistakes?</div>
         ${matches.map(m=>`
-          <button type="button" class="nomination-match" data-id="${escapeHtml(String(m.id))}">
-            <div class="nomination-match-art">${renderArt(m,"search")}</div>
+          <div class="nomination-match" data-id="${escapeHtml(String(m.id))}">
             <div>
               <div class="nomination-match-title">${escapeHtml(m.title||"Untitled Mistake")}</div>
               <div class="nomination-match-meta">${escapeHtml([m.year,m.sport,m.category].filter(Boolean).join(" • "))}</div>
             </div>
-            <div class="nomination-match-action">That's it →</div>
-          </button>
+            <a class="nomination-match-action"
+               href="mistake.html?id=${encodeURIComponent(m.id)}"
+               onclick="event.stopPropagation()">That's it →</a>
+          </div>
         `).join("")}
-        <div class="nomination-existing-note">If you see the moment you mean, click it. Your nomination will be counted without another web research search.</div>`;
+        <div class="nomination-existing-note">If you see the moment you mean, click “That’s it” to open the existing SportsMistakes record.</div>`;
 
-      box.querySelectorAll(".nomination-match").forEach(btn=>{
-        btn.addEventListener("click",()=>{
-          const id=btn.getAttribute("data-id");
-          const match=mistakes.find(m=>String(m.id)===String(id));
-          if(!match) return;
-
-          selectedNominationMistake=match;
-          box.querySelectorAll(".nomination-match").forEach(x=>x.classList.remove("selected"));
-          btn.classList.add("selected");
-
-          const status=document.getElementById("nominationStatus");
-          if(status){
-            status.className="nomination-status active good";
-            status.textContent=`Found it: "${match.title}". Click NOMINATE IT to count your nomination.`;
-          }
-        });
-      });
     }
 
     function getNominationClientId(){
