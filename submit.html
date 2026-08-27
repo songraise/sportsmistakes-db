@@ -1,4 +1,4 @@
-
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -164,8 +164,7 @@ async function nominate(){
       method:"POST",
       headers:{
         "Content-Type":"application/json",
-        "apikey":SUPABASE_ANON_KEY,
-        "Authorization":`Bearer ${SUPABASE_ANON_KEY}`
+        "apikey":SUPABASE_ANON_KEY
       },
       body:JSON.stringify({
         nomination,
@@ -191,6 +190,19 @@ async function nominate(){
       return;
     }
 
+    if(result.outcome==="needs_clarification"){
+      const didYouMean=String(result.did_you_mean||"").trim();
+      const likelySubject=String(result.likely_subject||"").trim();
+      const question=String(result.clarification_question||result.verification_note||"Add one more clue so we can verify the exact event.").trim();
+
+      status.innerHTML=`
+        <strong>${didYouMean ? `Did you mean: ${esc(didYouMean)}?` : "We need one more clue."}</strong><br>
+        ${likelySubject && !didYouMean ? `Likely subject: <strong>${esc(likelySubject)}</strong><br>` : ""}
+        ${esc(question)}
+        <br><br><span style="color:#a8b3c1">We won't invent or substitute a different event just because a similar player or team name exists.</span>`;
+      return;
+    }
+
     if(result.outcome==="possible_existing_record"){
       status.innerHTML=`
         <strong>We're checking for a possible existing record.</strong><br>
@@ -201,6 +213,9 @@ async function nominate(){
     status.innerHTML=`
       <strong>Nomination received.</strong><br>
       ${esc(result.message||"SportsMistakes researched and verified this event. It can now move through the publishing workflow.")}
+      ${result.corrected_nomination && normalize(result.corrected_nomination)!==normalize(nomination)
+        ? `<br><br><span style="color:#a8b3c1">Name/spelling interpreted as: ${esc(result.corrected_nomination)}</span>`
+        : ""}
       <br><br><span style="color:#a8b3c1">Once it is published, the public YES/NO verdict and Sports Court will live on its mistake page.</span>`;
     input.value="";
     document.getElementById("matches").className="matches";
