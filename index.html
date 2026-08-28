@@ -927,6 +927,17 @@
       background:linear-gradient(90deg,#ffcc00,#f59e0b);
       min-width:2px;
     }
+
+    .mini-donut-empty{
+      opacity:.65;
+    }
+    .mini-lesson-empty{
+      opacity:.72;
+    }
+    .mini-lesson-empty .mini-lesson-track{
+      background:rgba(255,255,255,.07);
+    }
+
     .mini-no-data{color:#7f8a98;font-size:9px;font-weight:800}
     .card-stats{
       display:flex;
@@ -2615,45 +2626,46 @@
     }
 
     function renderMiniCommunity(mistakeId, compact=false) {
-      if (!communityStatsLoaded) {
-        return `<div class="mini-community ${compact ? "compact" : ""}"><span class="mini-no-data">Community results loading…</span></div>`;
-      }
-
       const vote = voteStatsByMistake[mistakeId];
       const lesson = lessonStatsByMistake[mistakeId];
 
-      if ((!vote || !vote.total) && !lesson) {
-        return `<div class="mini-community ${compact ? "compact" : ""}"><span class="mini-no-data">No community results yet</span></div>`;
-      }
+      const hasVotes = vote && vote.total;
+      const yesPercent = hasVotes ? Math.round((vote.yes / vote.total) * 100) : 0;
+      const yesDegrees = hasVotes ? Math.round((yesPercent / 100) * 360) : 0;
 
-      let verdictHtml = "";
-      if (vote && vote.total) {
-        const yesPercent = Math.round((vote.yes / vote.total) * 100);
-        const yesDegrees = Math.round((yesPercent / 100) * 360);
-        verdictHtml = `
-          <span class="mini-verdict" title="${yesPercent}% YES / ${100-yesPercent}% NO">
-            <span class="mini-donut" style="background:conic-gradient(#e22424 0deg ${yesDegrees}deg,#64748b ${yesDegrees}deg 360deg)"></span>
-            <span>${yesPercent}% YES</span>
-          </span>`;
-      }
+      const verdictHtml = `
+        <span class="mini-verdict"
+          title="${hasVotes ? `${yesPercent}% YES / ${100-yesPercent}% NO` : "No Fan Verdict votes yet"}">
+          <span class="mini-donut ${hasVotes ? "" : "mini-donut-empty"}"
+            style="${hasVotes
+              ? `background:conic-gradient(#e22424 0deg ${yesDegrees}deg,#64748b ${yesDegrees}deg 360deg)`
+              : `background:conic-gradient(#334155 0deg 360deg)`}">
+          </span>
+          <span>${hasVotes ? `${yesPercent}% YES` : "0 votes"}</span>
+        </span>`;
 
-      let lessonHtml = "";
-      if (lesson) {
-        lessonHtml = `
-          <span class="mini-lesson" title="Top Community Lesson: ${escapeHtml(lesson.name)}">
-            <span class="mini-lesson-head">
-              <span class="mini-lesson-name">💡 <strong>${escapeHtml(lesson.name)}</strong></span>
-              <span>${lesson.percent}%</span>
-            </span>
-            <span class="mini-lesson-track">
-              <span class="mini-lesson-fill" style="width:${lesson.percent}%"></span>
-            </span>
-          </span>`;
-      }
+      const lessonHtml = lesson
+        ? `<span class="mini-lesson" title="Top Community Lesson: ${escapeHtml(lesson.name)}">
+             <span class="mini-lesson-head">
+               <span class="mini-lesson-name">💡 <strong>${escapeHtml(lesson.name)}</strong></span>
+               <span>${lesson.percent}%</span>
+             </span>
+             <span class="mini-lesson-track">
+               <span class="mini-lesson-fill" style="width:${lesson.percent}%"></span>
+             </span>
+           </span>`
+        : `<span class="mini-lesson mini-lesson-empty" title="No Community Lesson votes yet">
+             <span class="mini-lesson-head">
+               <span class="mini-lesson-name">💡 <strong>Be first</strong></span>
+               <span>0%</span>
+             </span>
+             <span class="mini-lesson-track">
+               <span class="mini-lesson-fill" style="width:0%"></span>
+             </span>
+           </span>`;
 
       return `<div class="mini-community ${compact ? "compact" : ""}">${verdictHtml}${lessonHtml}</div>`;
     }
-
 
     function filtersAreActive() {
       return Boolean(
