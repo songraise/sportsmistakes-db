@@ -895,6 +895,57 @@
 
     .lesson-dropdown-panel.open{display:block}
 
+
+    .verdict-combined{
+      display:grid;
+      grid-template-columns:minmax(230px,.7fr) minmax(0,1.3fr);
+      gap:16px;
+      align-items:stretch;
+    }
+
+    .verdict-vote{
+      padding-right:16px;
+      border-right:1px solid rgba(116,185,255,.22);
+    }
+
+    .verdict-learn h2{
+      margin:0;
+      color:var(--gold);
+      font-size:17px;
+    }
+
+    .verdict-learn-head p{
+      margin:3px 0 8px;
+      color:#d8e4f2;
+      font-size:12px;
+    }
+
+    .verdict-learn-grid{
+      display:grid;
+      grid-template-columns:minmax(180px,.72fr) minmax(220px,1.28fr);
+      gap:10px;
+      align-items:start;
+    }
+
+    .verdict-learn .lesson-picker,
+    .verdict-learn .lesson-results{
+      padding:8px;
+    }
+
+    .verdict-learn .lesson-results-title{
+      margin-bottom:5px;
+    }
+
+    .verdict-learn .lesson-result-row{
+      margin-bottom:5px;
+    }
+
+    @media(max-width:1050px){
+      .verdict-combined{grid-template-columns:1fr}
+      .verdict-vote{padding-right:0;padding-bottom:14px;border-right:none;border-bottom:1px solid rgba(116,185,255,.22)}
+      .verdict-learn-grid{grid-template-columns:1fr}
+    }
+
     /* ===== COMPACT ONE-PAGE DESKTOP DASHBOARD ===== */
     @media(min-width:1051px){
       .container{
@@ -1072,22 +1123,6 @@
       .court-form button{margin-top:8px;padding:8px 10px;font-size:11px}
       .court-message{font-size:11px;margin-top:6px}
 
-      .learning-card{
-        padding:15px 17px;
-      }
-      .learning-card h2{
-        font-size:17px;
-        margin-bottom:4px;
-      }
-      .learning-intro{
-        font-size:12px;
-        line-height:1.35;
-        margin-bottom:10px;
-      }
-      .learning-grid{
-        grid-template-columns:300px minmax(0,1fr);
-        gap:12px;
-      }
       .lesson-picker,.lesson-results{padding:11px}
       .lesson-picker-title,.lesson-results-title{font-size:13px;margin-bottom:6px}
       .lesson-picker-note{font-size:10px;margin-bottom:7px}
@@ -1232,18 +1267,45 @@ async function loadMistake(){
         <p class="hero-subtitle">${escapeHtml(getShortDeck(data))}</p>
         <div class="hero-views">👁 ${newViewCount} view${newViewCount===1?"":"s"}</div>
 
-        <div class="vote-box">
-          <div class="vote-head">
-            <div>
-              <h2>Fan Verdict</h2>
-              <p>Was this actually a mistake?</p>
+        <div class="vote-box verdict-combined">
+          <div class="verdict-vote">
+            <div class="vote-head">
+              <div>
+                <h2>Fan Verdict</h2>
+                <p>Was this actually a mistake?</p>
+              </div>
+            </div>
+            <div class="vote-buttons">
+              <button class="yes-btn" onclick="submitVote('yes')">YES — Mistake</button>
+              <button class="no-btn" onclick="submitVote('no')">NO — Not a Mistake</button>
+            </div>
+            <div id="voteResults">Loading votes...</div>
+          </div>
+          <div class="verdict-learn">
+            <div class="verdict-learn-head">
+              <div>
+                <h2>💡 Learn From This Mistake</h2>
+                <p>What are the biggest lessons? Choose up to 3.</p>
+              </div>
+            </div>
+            <div class="verdict-learn-grid">
+              <div class="lesson-picker compact-picker">
+                <button class="lesson-dropdown-toggle" type="button" onclick="toggleLessonDropdown()">
+                  Choose up to 3 lessons <span id="lessonDropdownSummary">▾</span>
+                </button>
+                <div id="lessonDropdownPanel" class="lesson-dropdown-panel">
+                  <div class="lesson-picker-note">Choose up to 3. You can update your choices later on this device.</div>
+                  <div id="lessonOptions" class="lesson-options">Loading lesson choices...</div>
+                  <button id="lessonSubmitBtn" class="lesson-submit" onclick="submitLessonVotes()">Save My Lessons</button>
+                </div>
+                <div id="lessonMessage" class="lesson-message"></div>
+              </div>
+              <div class="lesson-results verdict-lesson-results">
+                <div class="lesson-results-title">Community Lessons</div>
+                <div id="lessonResults"><div class="lesson-empty">Loading community lesson votes...</div></div>
+              </div>
             </div>
           </div>
-          <div class="vote-buttons">
-            <button class="yes-btn" onclick="submitVote('yes')">YES — Mistake</button>
-            <button class="no-btn" onclick="submitVote('no')">NO — Not a Mistake</button>
-          </div>
-          <div id="voteResults">Loading votes...</div>
         </div>
 
         <div class="share-row">
@@ -1298,33 +1360,6 @@ async function loadMistake(){
 
           <button onclick="submitCourtArgument()">Submit Argument</button>
           <div id="courtMessage" class="court-message"></div>
-        </div>
-      </div>
-    </section>
-
-    <section class="learning-card">
-      <h2>💡 Learn From This Mistake</h2>
-      <p class="learning-intro">
-        What are the biggest lessons from this moment? Choose up to 3. Your selections are combined with other fans to show what the SportsMistakes community thinks matters most.
-      </p>
-
-      <div class="learning-grid">
-        <div class="lesson-picker compact-picker">
-          <div class="lesson-picker-title">What can fans learn?</div>
-          <button class="lesson-dropdown-toggle" type="button" onclick="toggleLessonDropdown()">
-            Choose up to 3 lessons <span id="lessonDropdownSummary">▾</span>
-          </button>
-          <div id="lessonDropdownPanel" class="lesson-dropdown-panel">
-            <div class="lesson-picker-note">Choose up to 3. You can update your choices later on this device.</div>
-            <div id="lessonOptions" class="lesson-options">Loading lesson choices...</div>
-            <button id="lessonSubmitBtn" class="lesson-submit" onclick="submitLessonVotes()">Save My Lessons</button>
-          </div>
-          <div id="lessonMessage" class="lesson-message"></div>
-        </div>
-
-        <div class="lesson-results">
-          <div class="lesson-results-title">Community Lessons</div>
-          <div id="lessonResults"><div class="lesson-empty">Loading community lesson votes...</div></div>
         </div>
       </div>
     </section>
