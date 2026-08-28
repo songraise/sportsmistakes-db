@@ -159,39 +159,34 @@ function renderMatches(){
 }
 
 
-function findAiExistingMatch(result){
-  const directId =
+let pendingAiSuggestion="";
+
+function explicitExistingMistakeId(result){
+  return String(
     result?.mistake_id ||
     result?.existing_mistake_id ||
     result?.matched_mistake_id ||
     result?.match_id ||
-    "";
+    ""
+  ).trim();
+}
 
-  if(directId){
-    return mistakes.find(m=>String(m.id)===String(directId)) || {id:directId,title:result?.title||result?.did_you_mean||"Sports mistake"};
+function confirmAiSuggestionOnSubmit(){
+  const input=document.getElementById("nominationInput");
+  if(!input)return;
+
+  const original=String(input.value||"").trim();
+  const suggestion=String(pendingAiSuggestion||"").trim();
+
+  if(suggestion){
+    const originalNorm=normalize(original);
+    const suggestionNorm=normalize(suggestion);
+    if(!originalNorm.includes(suggestionNorm)){
+      input.value=`${original} — ${suggestion}`;
+    }
   }
 
-  const candidates=[
-    result?.title,
-    result?.existing_title,
-    result?.matched_title,
-    result?.possible_existing_title,
-    result?.did_you_mean,
-    result?.likely_subject
-  ].map(v=>normalize(v)).filter(Boolean);
-
-  for(const q of candidates){
-    const exact=mistakes.find(m=>normalize(m.title||"")===q);
-    if(exact)return exact;
-
-    const close=mistakes.find(m=>{
-      const blob=normalize(`${m.title||""} ${m.teams_people||""} ${m.key_people||""}`);
-      return blob.includes(q)||q.includes(normalize(m.title||""));
-    });
-    if(close)return close;
-  }
-
-  return null;
+  nominate();
 }
 
 function rejectAiSuggestionOnSubmit(){
@@ -257,27 +252,43 @@ async function nominate(){
     if(result.outcome==="needs_clarification"){
       const didYouMean=String(result.did_you_mean||"").trim();
       const likelySubject=String(result.likely_subject||"").trim();
-      const question=String(result.clarification_question||result.verification_note||"Add one more clue so we can verify the exact event.").trim();
-      const aiMatch=findAiExistingMatch(result);
+      const question=String(
+        result.clarification_question||
+        result.verification_note||
+        "Add one more clue so we can verify the exact event."
+      ).trim();
 
-      status.innerHTML=`
-        <strong>${didYouMean ? `Did you mean: ${esc(didYouMean)}?` : "We need one more clue."}</strong><br>
-        ${likelySubject && !didYouMean ? `Likely subject: <strong>${esc(likelySubject)}</strong><br>` : ""}
-        ${esc(question)}
-        <div class="result-actions">
-          ${aiMatch ? `<a href="mistake.html?id=${encodeURIComponent(aiMatch.id)}">That's it →</a>` : ""}
-          <button class="secondary-action" type="button" onclick="rejectAiSuggestionOnSubmit()">No — different mistake</button>
-        </div>`;
+      const existingId=explicitExistingMistakeId(result);
+      pendingAiSuggestion=didYouMean||likelySubject||"";
+
+      if(existingId){
+        status.innerHTML=`
+          <strong>${didYouMean ? `Did you mean: ${esc(didYouMean)}?` : "Possible existing mistake"}</strong><br>
+          ${esc(question)}
+          <div class="result-actions">
+            <a href="mistake.html?id=${encodeURIComponent(existingId)}">That's it →</a>
+            <button class="secondary-action" type="button" onclick="rejectAiSuggestionOnSubmit()">No — different mistake</button>
+          </div>`;
+      }else{
+        status.innerHTML=`
+          <strong>${didYouMean ? `Did you mean: ${esc(didYouMean)}?` : "Is this the event you mean?"}</strong><br>
+          ${likelySubject && !didYouMean ? `Likely subject: <strong>${esc(likelySubject)}</strong><br>` : ""}
+          ${esc(question)}
+          <div class="result-actions">
+            <button class="nominate-btn" type="button" onclick="confirmAiSuggestionOnSubmit()">Yes — that's the event</button>
+            <button class="secondary-action" type="button" onclick="rejectAiSuggestionOnSubmit()">No — different mistake</button>
+          </div>`;
+      }
       return;
     }
 
     if(result.outcome==="possible_existing_record"){
-      const aiMatch=findAiExistingMatch(result);
+      const existingId=explicitExistingMistakeId(result);
       status.innerHTML=`
         <strong>Possible existing record.</strong><br>
         ${esc(result.message||"This may already be in SportsMistakes.")}
         <div class="result-actions">
-          ${aiMatch ? `<a href="mistake.html?id=${encodeURIComponent(aiMatch.id)}">That's it →</a>` : ""}
+          ${existingId ? `<a href="mistake.html?id=${encodeURIComponent(existingId)}">That's it →</a>` : ""}
           <button class="secondary-action" type="button" onclick="rejectAiSuggestionOnSubmit()">No — different mistake</button>
         </div>`;
       return;
@@ -290,6 +301,7 @@ async function nominate(){
         ? `<br><br><span style="color:#a8b3c1">Name/spelling interpreted as: ${esc(result.corrected_nomination)}</span>`
         : ""}
       <br><br><span style="color:#a8b3c1">Once it is published, the public YES/NO verdict and Sports Court will live on its mistake page.</span>`;
+    pendingAiSuggestion="";
     input.value="";
     document.getElementById("matches").className="matches";
     document.getElementById("matches").innerHTML="";
