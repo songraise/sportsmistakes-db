@@ -3539,32 +3539,32 @@ function formatNumber(n) {
             "Try adding the player, team, opponent, year, or game."
           ).trim();
 
-          const existingId=explicitExistingMistakeId(data);
-          pendingAiSuggestion=didYouMean||likelySubject||"";
+          const concreteSuggestion=didYouMean||likelySubject;
+          pendingAiSuggestion=concreteSuggestion;
 
           status.className="nomination-status active warn";
-          status.textContent=didYouMean
-            ? `Did you mean: ${didYouMean}?`
-            : "We need one more clue.";
 
-          result.className="nomination-result active";
+          if(concreteSuggestion){
+            status.textContent=didYouMean
+              ? `Did you mean: ${didYouMean}?`
+              : `Possible event: ${likelySubject}`;
 
-          if(existingId){
+            result.className="nomination-result active";
             result.innerHTML=`
-              <strong>${didYouMean ? `Did you mean: ${escapeHtml(didYouMean)}?` : "Possible existing mistake"}</strong>
-              <p>${escapeHtml(question)}</p>
-              <div class="nomination-choice-actions">
-                <a class="choice-yes" href="mistake.html?id=${encodeURIComponent(existingId)}">✓ That's it — open mistake</a>
-                <button class="choice-no" type="button" onclick="rejectAiSuggestion()">No — different mistake</button>
-              </div>`;
-          }else{
-            result.innerHTML=`
-              <strong>${didYouMean ? `Did you mean: ${escapeHtml(didYouMean)}?` : "Is this the event you mean?"}</strong>
-              ${likelySubject && !didYouMean ? `<p>Likely subject: <strong>${escapeHtml(likelySubject)}</strong></p>` : ""}
+              <strong>${didYouMean ? `Did you mean: ${escapeHtml(didYouMean)}?` : `Possible event: ${escapeHtml(likelySubject)}`}</strong>
               <p>${escapeHtml(question)}</p>
               <div class="nomination-choice-actions">
                 <button class="choice-yes" type="button" onclick="confirmAiSuggestion()">✓ Yes — that's the event</button>
                 <button class="choice-no" type="button" onclick="rejectAiSuggestion()">No — different mistake</button>
+              </div>`;
+          }else{
+            status.textContent="We need one more clue.";
+            result.className="nomination-result active";
+            result.innerHTML=`
+              <strong>Add one more clue</strong>
+              <p>${escapeHtml(question)}</p>
+              <div class="nomination-choice-actions">
+                <button class="choice-yes" type="button" onclick="rejectAiSuggestion()">Add more detail</button>
               </div>`;
           }
           return;
