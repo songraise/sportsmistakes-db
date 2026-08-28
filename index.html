@@ -1603,6 +1603,94 @@
   .nomination-match-action{display:block}
 }
 
+
+    /* =========================================================
+       ACTION-FIRST HOMEPAGE — AUG 28 2026
+       Search + Today's 5 appear before large visual content.
+       ========================================================= */
+    .home-fast-intro{
+      text-align:center;
+      padding:22px 12px 12px;
+      max-width:980px;
+      margin:0 auto;
+    }
+    .home-fast-intro h1{
+      margin:8px auto 14px;
+      max-width:900px;
+      font-size:46px;
+      line-height:1.02;
+      letter-spacing:-1.5px;
+      text-transform:none;
+    }
+    .home-fast-intro h1 span{color:#e22424}
+    .home-three-actions{
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+    .home-three-actions a,.home-three-actions button{
+      min-width:118px;
+      min-height:42px;
+      padding:10px 18px;
+      border-radius:8px;
+      border:1px solid rgba(255,255,255,.18);
+      font:900 13px Arial,Helvetica,sans-serif;
+      text-transform:uppercase;
+      letter-spacing:.55px;
+      cursor:pointer;
+      text-decoration:none;
+      color:#fff;
+      background:#121a23;
+    }
+    .home-three-actions a{background:linear-gradient(135deg,#e22424,#b91313)}
+    .home-three-actions button:hover,.home-three-actions a:hover{filter:brightness(1.1)}
+    .top-search{
+      margin:10px 0 14px;
+      padding:18px 16px 20px;
+      border:1px solid rgba(255,255,255,.13);
+      border-radius:14px;
+      background:rgba(7,11,16,.90);
+    }
+    .search-topline{text-align:left;max-width:1060px;margin:0 auto 12px}
+    .search-topline h2{margin:4px 0 3px;font-size:25px;text-transform:uppercase}
+    .search-topline p{margin:0;color:#b9c4d0;font-size:14px}
+    .today-museum{margin-top:14px!important}
+    @media(max-width:760px){
+      .page-shell{padding-top:8px!important}
+      .home-fast-intro{padding:12px 4px 8px}
+      .home-fast-intro .museum-kicker{font-size:10px}
+      .home-fast-intro h1{font-size:29px;line-height:1.03;margin:6px auto 11px}
+      .home-three-actions{gap:7px}
+      .home-three-actions a,.home-three-actions button{
+        flex:1 1 30%;min-width:0;min-height:38px;padding:8px 6px;font-size:11px
+      }
+      .top-search{padding:13px 10px 14px;margin:6px 0 10px}
+      .search-topline{margin-bottom:9px}
+      .search-topline h2{font-size:19px}
+      .search-topline p{font-size:12px}
+      .top-search .search-row{min-height:46px}
+      .top-search #searchInput{padding:13px 0;font-size:16px}
+      .top-search .filter-row{margin-top:9px;gap:8px;grid-template-columns:1fr 1fr}
+      .top-search .filter-row select{padding:11px 9px;font-size:13px}
+      .top-search .filter-row button{min-height:42px}
+      .top-search .popular{display:none}
+      .today-museum{margin-top:10px!important;padding:14px!important}
+      .today-museum .museum-section-head{margin-bottom:10px}
+      .today-museum .museum-section-head p{display:none}
+      .today-museum .museum-section-head h2{font-size:21px}
+      .museum-today-grid{grid-template-columns:1fr!important}
+      .museum-today-grid .today-card{grid-template-columns:76px 1fr!important}
+      .museum-today-grid .today-art{height:64px!important}
+      .judge-museum-wrap{margin-top:10px!important}
+      .judge-hero{grid-template-columns:118px 1fr!important;min-height:0!important}
+      .judge-art{min-height:0!important;height:100%!important;max-height:none!important}
+      .judge-copy{padding:16px 13px!important}
+      .judge-copy h2{font-size:23px!important}
+      .judge-summary{font-size:14px!important;line-height:1.35}
+    }
+
 </style>
 <script src="sportsmistakes-analytics.js" defer></script>
 </head>
@@ -1618,7 +1706,7 @@
       <a href="rankings.html">Rankings</a>
       <a href="collections.html">Collections</a>
       <a href="hall-of-fame.html">Hall of Fame</a>
-      <a class="nav-nominate" href="#nominate">Nominate</a>
+      <a class="nav-nominate" href="submit.html">Nominate</a>
     </div>
   </nav>
 
@@ -1626,151 +1714,21 @@
 
     <section class="museum-home" aria-label="SportsMistakes community homepage">
 
-      <section class="museum-hero">
-        <div class="museum-hero-copy">
-          <div class="museum-kicker">THE CROWD-SOURCED RECORD OF SPORTS MISTAKES</div>
-          <h1>ONE MISTAKE.<br>ONE MOMENT.<br><span>CHANGES EVERYTHING.</span></h1>
-          <p class="museum-subhead">Real fans nominate. SportsMistakes researches the facts. Fans judge. History remembers.</p>
-
-          <div class="nominate-card" id="nominate">
-            <div class="nominate-title-row">
-              <div class="nominate-icon">✎</div>
-              <div>
-                <h2>Nominate a Sports Mistake</h2>
-                <p>What mistake belongs in the record?</p>
-              </div>
-            </div>
-
-            <div class="nominate-row">
-              <input id="nominationInput" type="text" maxlength="180"
-                placeholder="e.g. Buckner lets ball pass through his legs"
-                aria-label="Nominate a sports mistake">
-              <button type="button" onclick="nominateFromHome()">Nominate It</button>
-            </div>
-            <div id="nominationMatches" class="nomination-matches" aria-live="polite"></div>
-
-            <div class="nominate-steps">
-              <div><strong>👥 Fans nominate</strong><span>Suggest a moment in seconds.</span></div>
-              <div><strong>🔎 We research</strong><span>Facts and sources are checked.</span></div>
-              <div><strong>🛡 We document</strong><span>A neutral factual record is prepared.</span></div>
-              <div><strong>⭐ You judge</strong><span>The crowd decides how bad it was.</span></div>
-            </div>
-
-            <div class="nominate-note">No long form required. Start with the moment you remember.</div>
-            <div id="nominationStatus" class="nomination-status" aria-live="polite"></div>
-            <div id="nominationResult" class="nomination-result"></div>
-
-            <div class="hero-search-divider"><span>OR SEARCH THE RECORD</span></div>
-            <div class="hero-search-row">
-              <input id="heroSearchInput" type="search"
-                placeholder="Search a player, team, mistake, year..."
-                aria-label="Search SportsMistakes">
-              <button type="button" onclick="searchFromHero()">Search It</button>
-            </div>
-          </div>
-        </div>
-
-        <div class="museum-hero-art" id="museumHeroArt">
-          <div class="museum-art-placeholder">SPORTS<br><span>MISTAKES</span></div>
+      <section class="home-fast-intro">
+        <div class="museum-kicker">THE CROWD-SOURCED RECORD OF SPORTS MISTAKES</div>
+        <h1>Learn from History's Biggest <span>Sports Mistakes</span></h1>
+        <div class="home-three-actions">
+          <a href="submit.html">Nominate</a>
+          <button type="button" onclick="startTodaysFive()">Judge</button>
+          <button type="button" onclick="openSearchExperience()">Learn</button>
         </div>
       </section>
 
-      <section class="museum-section today-museum" id="todaysFivePanel">
-        <div class="museum-section-head">
-          <div>
-            <div class="section-kicker">🔥 TODAY'S 5</div>
-            <h2>Judge today's mistakes</h2>
-            <p>Five moments. Make your call. Compare with other fans.</p>
-          </div>
-          <button class="text-link-button" onclick="startTodaysFive()">Start judging →</button>
-        </div>
-        <div class="today-grid museum-today-grid" id="todaysFiveGrid"></div>
-      </section>
-
-      <section class="judge-museum-wrap">
-        <div class="museum-section-head compact">
-          <div>
-            <div class="section-kicker">JUDGE · LEARN · COMPARE</div>
-            <h2>Make the call</h2>
-          </div>
-        </div>
-        <section class="judge-hero" id="judgeHero">
-          <div class="judge-art"><div class="featured-placeholder">🏆</div></div>
-          <div class="judge-copy"><div class="judge-label">Today's Sports Mistake</div><h2>Loading...</h2></div>
-        </section>
-      </section>
-
-      <section class="museum-two-col">
-        <div class="museum-feature-panel battle-panel">
-          <div class="panel-title-row">
-            <div>
-              <div class="section-kicker">⚔️ MISTAKE BATTLE</div>
-              <h2>Which was worse?</h2>
-            </div>
-            <a href="rankings.html">View rankings →</a>
-          </div>
-          <div class="battle-grid" id="museumBattle"></div>
-        </div>
-
-        <div class="museum-feature-panel rankings-panel">
-          <div class="panel-title-row">
-            <div>
-              <div class="section-kicker">📊 RANKINGS</div>
-              <h2>How mistakes stack up</h2>
-            </div>
-            <a href="rankings.html">View all →</a>
-          </div>
-          <div class="museum-ranking-list" id="museumRankings"></div>
-        </div>
-      </section>
-
-      <section class="museum-section hall-panel">
-        <div class="museum-section-head">
-          <div>
-            <div class="section-kicker">🏆 HALL OF FAME</div>
-            <h2>The mistakes the community remembers</h2>
-            <p>A visual gallery of the most debated moments in the record.</p>
-          </div>
-          <a class="museum-link" href="hall-of-fame.html">View Hall of Fame →</a>
-        </div>
-        <div class="hall-grid" id="museumHallGrid"></div>
-      </section>
-
-      <section class="how-it-works">
-        <div class="museum-section-head compact">
-          <div>
-            <div class="section-kicker">HOW IT WORKS</div>
-            <h2>People build the record. The crowd decides the verdict.</h2>
-          </div>
-        </div>
-        <div class="how-grid">
-          <div class="how-step"><div class="how-num">1</div><strong>Nominate</strong><span>Anyone can suggest a sports mistake in seconds.</span></div>
-          <div class="how-step"><div class="how-num">2</div><strong>Research</strong><span>SportsMistakes checks the event, facts and sources.</span></div>
-          <div class="how-step"><div class="how-num">3</div><strong>Document</strong><span>The Record presents a neutral factual account.</span></div>
-          <div class="how-step"><div class="how-num">4</div><strong>Judge</strong><span>Fans decide whether it was a mistake and compare opinions.</span></div>
-          <div class="how-step"><div class="how-num">5</div><strong>Remember</strong><span>Rankings and the Hall of Fame preserve the moments that endure.</span></div>
-        </div>
-      </section>
-
-      <section class="museum-stats" aria-label="SportsMistakes statistics">
-        <div><strong id="museumMistakeCount">—</strong><span>Mistakes in the Record</span></div>
-        <div><strong id="museumJudgmentCount">—</strong><span>Fan Judgments</span></div>
-        <div><strong id="museumSportCount">—</strong><span>Sports & Leagues</span></div>
-        <div><strong>EVERY SPORT.</strong><span>Every level. Every mistake.</span></div>
-      </section>
-
-      <div class="engage-divider">Search and explore the complete record</div>
-    </section>
-
-    <section class="search-hero">
-      <h1 class="tagline">The Internet's Largest Crowdsourced Database of <span class="red">Sports Mistakes</span></h1>
-      <div class="tagline-sub">
-        <strong>Discover. Debate. Learn. Add to the Record.</strong>
-      </div>
-
-      <div class="hero-participate">
-        <span>Think we missed one?</span>
-        <a href="submit.html">Add a Sports Mistake <span aria-hidden="true">›</span></a>
+      <section class="search-hero top-search">
+      <div class="search-topline">
+        <div class="engage-kicker">SEARCH THE RECORD</div>
+        <h2>Find a Sports Mistake</h2>
+        <p>Search by moment, athlete, team, sport, year or lesson.</p>
       </div>
 
       <div class="search-row">
@@ -1956,6 +1914,93 @@
         </div>
         <div class="search-results-list" id="searchResultsList"></div>
       </div>
+      </section>
+
+
+      <section class="museum-section today-museum" id="todaysFivePanel">
+        <div class="museum-section-head">
+          <div>
+            <div class="section-kicker">🔥 TODAY'S 5</div>
+            <h2>Judge today's mistakes</h2>
+            <p>Five moments. Make your call. Compare with other fans.</p>
+          </div>
+          <button class="text-link-button" onclick="startTodaysFive()">Start judging →</button>
+        </div>
+        <div class="today-grid museum-today-grid" id="todaysFiveGrid"></div>
+      </section>
+
+      <section class="judge-museum-wrap">
+        <div class="museum-section-head compact">
+          <div>
+            <div class="section-kicker">JUDGE · LEARN · COMPARE</div>
+            <h2>Make the call</h2>
+          </div>
+        </div>
+        <section class="judge-hero" id="judgeHero">
+          <div class="judge-art"><div class="featured-placeholder">🏆</div></div>
+          <div class="judge-copy"><div class="judge-label">Today's Sports Mistake</div><h2>Loading...</h2></div>
+        </section>
+      </section>
+
+      <section class="museum-two-col">
+        <div class="museum-feature-panel battle-panel">
+          <div class="panel-title-row">
+            <div>
+              <div class="section-kicker">⚔️ MISTAKE BATTLE</div>
+              <h2>Which was worse?</h2>
+            </div>
+            <a href="rankings.html">View rankings →</a>
+          </div>
+          <div class="battle-grid" id="museumBattle"></div>
+        </div>
+
+        <div class="museum-feature-panel rankings-panel">
+          <div class="panel-title-row">
+            <div>
+              <div class="section-kicker">📊 RANKINGS</div>
+              <h2>How mistakes stack up</h2>
+            </div>
+            <a href="rankings.html">View all →</a>
+          </div>
+          <div class="museum-ranking-list" id="museumRankings"></div>
+        </div>
+      </section>
+
+      <section class="museum-section hall-panel">
+        <div class="museum-section-head">
+          <div>
+            <div class="section-kicker">🏆 HALL OF FAME</div>
+            <h2>The mistakes the community remembers</h2>
+            <p>A visual gallery of the most debated moments in the record.</p>
+          </div>
+          <a class="museum-link" href="hall-of-fame.html">View Hall of Fame →</a>
+        </div>
+        <div class="hall-grid" id="museumHallGrid"></div>
+      </section>
+
+      <section class="how-it-works">
+        <div class="museum-section-head compact">
+          <div>
+            <div class="section-kicker">HOW IT WORKS</div>
+            <h2>People build the record. The crowd decides the verdict.</h2>
+          </div>
+        </div>
+        <div class="how-grid">
+          <div class="how-step"><div class="how-num">1</div><strong>Nominate</strong><span>Anyone can suggest a sports mistake in seconds.</span></div>
+          <div class="how-step"><div class="how-num">2</div><strong>Research</strong><span>SportsMistakes checks the event, facts and sources.</span></div>
+          <div class="how-step"><div class="how-num">3</div><strong>Document</strong><span>The Record presents a neutral factual account.</span></div>
+          <div class="how-step"><div class="how-num">4</div><strong>Judge</strong><span>Fans decide whether it was a mistake and compare opinions.</span></div>
+          <div class="how-step"><div class="how-num">5</div><strong>Remember</strong><span>Rankings and the Hall of Fame preserve the moments that endure.</span></div>
+        </div>
+      </section>
+
+      <section class="museum-stats" aria-label="SportsMistakes statistics">
+        <div><strong id="museumMistakeCount">—</strong><span>Mistakes in the Record</span></div>
+        <div><strong id="museumJudgmentCount">—</strong><span>Fan Judgments</span></div>
+        <div><strong id="museumSportCount">—</strong><span>Sports & Leagues</span></div>
+        <div><strong>EVERY SPORT.</strong><span>Every level. Every mistake.</span></div>
+      </section>
+
     </section>
 
     <section class="featured-hero" id="featuredHero">
