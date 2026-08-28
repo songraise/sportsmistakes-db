@@ -3408,21 +3408,8 @@ function formatNumber(n) {
     }
 
     function confirmAiSuggestion(){
-      const input=document.getElementById("nominationInput");
       const status=document.getElementById("nominationStatus");
       const result=document.getElementById("nominationResult");
-      if(!input)return;
-
-      const original=String(input.value||"").trim();
-      const suggestion=String(pendingAiSuggestion||"").trim();
-
-      if(suggestion){
-        const originalNorm=normalize(original);
-        const suggestionNorm=normalize(suggestion);
-        if(!originalNorm.includes(suggestionNorm)){
-          input.value=`${original} — ${suggestion}`;
-        }
-      }
 
       if(status){
         status.className="nomination-status active good";
@@ -3432,7 +3419,7 @@ function formatNumber(n) {
         result.className="nomination-result active";
         result.innerHTML=`
           <strong>Thanks!</strong>
-          <p>We are now adding your nomination to the SportsMistakes database.</p>`;
+          <p>We are now adding your nomination to the SportsMistakes review queue.</p>`;
       }
 
       nominateFromHome(true);
@@ -3493,7 +3480,9 @@ function formatNumber(n) {
           body:JSON.stringify({
             nomination:text,
             client_id:getNominationClientId(),
-            existing_mistake_id:selectedNominationMistake ? String(selectedNominationMistake.id) : ""
+            existing_mistake_id:selectedNominationMistake ? String(selectedNominationMistake.id) : "",
+            confirmed_event:confirmedEvent === true,
+            confirmed_subject:confirmedEvent ? String(pendingAiSuggestion||"") : ""
           })
         });
 
@@ -3528,7 +3517,7 @@ function formatNumber(n) {
 
         if(data.outcome==="new_record"){
           status.className="nomination-status active good";
-          status.textContent="Nomination verified. SportsMistakes prepared the factual record.";
+          status.textContent="Nomination verified and added to the admin review queue.";
           result.className="nomination-result active";
           result.innerHTML=`
             <strong>${escapeHtml(data.title||text)}</strong>
