@@ -176,8 +176,8 @@ function confirmAiSuggestionOnSubmit(){
 
   status.className="status active good";
   status.innerHTML=`
-    <strong>Thanks!</strong><br>
-    We identified the event. We are now adding your nomination to the SportsMistakes review queue.`;
+    <strong>Thanks — event confirmed.</strong><br>
+    Finalizing the nomination and adding it to the SportsMistakes review queue…`;
 
   nominate(true);
 }
@@ -243,6 +243,19 @@ async function nominate(confirmedEvent=false){
         <div class="result-actions">
           <a href="mistake.html?id=${encodeURIComponent(result.mistake_id)}">Go to Sports Court →</a>
         </div>`;
+      return;
+    }
+
+    if(result.outcome==="new_record"){
+      pendingAiSuggestion="";
+      status.className="status active good";
+      status.innerHTML=`
+        <strong>Thanks! ${esc(result.title||nomination)}</strong><br>
+        Your nomination was successfully saved as a pending submission and is now in the SportsMistakes admin review queue.
+        ${result.submission_id ? `<br><br><span style="color:#a8b3c1">Submission ID: ${esc(String(result.submission_id))}</span>` : ""}`;
+      input.value="";
+      document.getElementById("matches").className="matches";
+      document.getElementById("matches").innerHTML="";
       return;
     }
 
