@@ -1,4 +1,4 @@
-
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -34,6 +34,22 @@ a{color:inherit}
 .explain{margin-top:22px;padding-top:20px;border-top:1px solid rgba(255,255,255,.1);color:#aeb9c6;font-size:13px;line-height:1.55}
 footer{margin-top:30px;padding-top:22px;border-top:1px solid rgba(255,255,255,.1);color:#a8b3c1;font-size:13px;display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap}footer a{text-decoration:none;margin-right:16px}
 @media(max-width:700px){.top-nav{align-items:flex-start;flex-direction:column}.nav-links{gap:13px}.shell{padding:30px 14px 50px}.hero h1{font-size:39px}.process{grid-template-columns:1fr}.card{padding:21px}.nom-row{grid-template-columns:1fr}.nominate-btn{min-height:50px}.match{grid-template-columns:1fr auto}}
+
+.secondary-action{
+  display:inline-flex;
+  padding:11px 14px;
+  border:0;
+  border-radius:8px;
+  text-decoration:none;
+  font-size:12px;
+  font-weight:1000;
+  text-transform:uppercase;
+  background:#202a36;
+  color:#fff;
+  cursor:pointer;
+  font-family:Arial,Helvetica,sans-serif;
+}
+
 </style>
 </head>
 <body>
@@ -132,23 +148,28 @@ function renderMatches(){
   box.innerHTML=`
     <div class="matches-head">Already in the Record?</div>
     ${found.map(m=>`
-      <div class="match" role="link" tabindex="0"
-        onclick="location.href='mistake.html?id=${encodeURIComponent(m.id)}'"
-        onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();location.href='mistake.html?id=${encodeURIComponent(m.id)}'}"
-        style="cursor:pointer">
+      <div class="match">
         <div>
           <div class="match-title">${esc(m.title||"Untitled Mistake")}</div>
           <div class="match-meta">${esc([m.year,m.sport,m.category].filter(Boolean).join(" • "))}</div>
         </div>
-        <a href="mistake.html?id=${encodeURIComponent(m.id)}" onclick="event.stopPropagation()">Open Mistake →</a>
+        <a href="mistake.html?id=${encodeURIComponent(m.id)}">That's it →</a>
       </div>`).join("")}
     <div class="match-note">If you see the moment you mean, click “That's it” to open the existing record, vote YES/NO and join Sports Court. If none is correct, click NOMINATE IT and we'll research it.</div>`;
 }
 
 
-function findLocalExistingId(result){
-  const direct=result?.mistake_id||result?.existing_mistake_id||result?.match_id||result?.existing_id||result?.matched_mistake_id;
-  if(direct)return direct;
+function findAiExistingMatch(result){
+  const directId =
+    result?.mistake_id ||
+    result?.existing_mistake_id ||
+    result?.matched_mistake_id ||
+    result?.match_id ||
+    "";
+
+  if(directId){
+    return mistakes.find(m=>String(m.id)===String(directId)) || {id:directId,title:result?.title||result?.did_you_mean||"Sports mistake"};
+  }
 
   const candidates=[
     result?.title,
@@ -160,12 +181,29 @@ function findLocalExistingId(result){
   ].map(v=>normalize(v)).filter(Boolean);
 
   for(const q of candidates){
-    const exact=mistakes.find(m=>normalize(m.title)===q);
-    if(exact)return exact.id;
-    const close=mistakes.find(m=>normalize(m.title).includes(q)||q.includes(normalize(m.title)));
-    if(close)return close.id;
+    const exact=mistakes.find(m=>normalize(m.title||"")===q);
+    if(exact)return exact;
+
+    const close=mistakes.find(m=>{
+      const blob=normalize(`${m.title||""} ${m.teams_people||""} ${m.key_people||""}`);
+      return blob.includes(q)||q.includes(normalize(m.title||""));
+    });
+    if(close)return close;
   }
-  return "";
+
+  return null;
+}
+
+function rejectAiSuggestionOnSubmit(){
+  const input=document.getElementById("nominationInput");
+  const status=document.getElementById("status");
+  status.className="status active";
+  status.innerHTML=`<strong>Different mistake?</strong><br>Add one more clue to your wording, then click <strong>Nominate It</strong> again.`;
+  input?.focus();
+  if(input){
+    const len=input.value.length;
+    input.setSelectionRange(len,len);
+  }
 }
 
 async function nominate(){
@@ -220,26 +258,28 @@ async function nominate(){
       const didYouMean=String(result.did_you_mean||"").trim();
       const likelySubject=String(result.likely_subject||"").trim();
       const question=String(result.clarification_question||result.verification_note||"Add one more clue so we can verify the exact event.").trim();
+      const aiMatch=findAiExistingMatch(result);
 
       status.innerHTML=`
         <strong>${didYouMean ? `Did you mean: ${esc(didYouMean)}?` : "We need one more clue."}</strong><br>
         ${likelySubject && !didYouMean ? `Likely subject: <strong>${esc(likelySubject)}</strong><br>` : ""}
         ${esc(question)}
-        <br><br><span style="color:#a8b3c1">We won't invent or substitute a different event just because a similar player or team name exists.</span>`;
+        <div class="result-actions">
+          ${aiMatch ? `<a href="mistake.html?id=${encodeURIComponent(aiMatch.id)}">That's it →</a>` : ""}
+          <button class="secondary-action" type="button" onclick="rejectAiSuggestionOnSubmit()">No — different mistake</button>
+        </div>`;
       return;
     }
 
     if(result.outcome==="possible_existing_record"){
-      const existingId=findLocalExistingId(result);
-      const existingTitle=result.title||result.existing_title||result.matched_title||result.possible_existing_title||"This mistake";
+      const aiMatch=findAiExistingMatch(result);
       status.innerHTML=`
-        <strong>We found a possible match in the Record.</strong><br>
-        ${esc(result.message||`${existingTitle} may already be a SportsMistakes entry.`)}
-        ${existingId ? `
-          <div class="result-actions">
-            <a href="mistake.html?id=${encodeURIComponent(existingId)}">Open This Mistake →</a>
-          </div>` : `
-          <br><br><span style="color:#a8b3c1">Try the matching title shown above in the box. Existing Record matches are clickable as you type.</span>`}`;
+        <strong>Possible existing record.</strong><br>
+        ${esc(result.message||"This may already be in SportsMistakes.")}
+        <div class="result-actions">
+          ${aiMatch ? `<a href="mistake.html?id=${encodeURIComponent(aiMatch.id)}">That's it →</a>` : ""}
+          <button class="secondary-action" type="button" onclick="rejectAiSuggestionOnSubmit()">No — different mistake</button>
+        </div>`;
       return;
     }
 
