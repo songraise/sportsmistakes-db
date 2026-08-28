@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -132,14 +132,40 @@ function renderMatches(){
   box.innerHTML=`
     <div class="matches-head">Already in the Record?</div>
     ${found.map(m=>`
-      <div class="match">
+      <div class="match" role="link" tabindex="0"
+        onclick="location.href='mistake.html?id=${encodeURIComponent(m.id)}'"
+        onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();location.href='mistake.html?id=${encodeURIComponent(m.id)}'}"
+        style="cursor:pointer">
         <div>
           <div class="match-title">${esc(m.title||"Untitled Mistake")}</div>
           <div class="match-meta">${esc([m.year,m.sport,m.category].filter(Boolean).join(" • "))}</div>
         </div>
-        <a href="mistake.html?id=${encodeURIComponent(m.id)}">That's it →</a>
+        <a href="mistake.html?id=${encodeURIComponent(m.id)}" onclick="event.stopPropagation()">Open Mistake →</a>
       </div>`).join("")}
     <div class="match-note">If you see the moment you mean, click “That's it” to open the existing record, vote YES/NO and join Sports Court. If none is correct, click NOMINATE IT and we'll research it.</div>`;
+}
+
+
+function findLocalExistingId(result){
+  const direct=result?.mistake_id||result?.existing_mistake_id||result?.match_id||result?.existing_id||result?.matched_mistake_id;
+  if(direct)return direct;
+
+  const candidates=[
+    result?.title,
+    result?.existing_title,
+    result?.matched_title,
+    result?.possible_existing_title,
+    result?.did_you_mean,
+    result?.likely_subject
+  ].map(v=>normalize(v)).filter(Boolean);
+
+  for(const q of candidates){
+    const exact=mistakes.find(m=>normalize(m.title)===q);
+    if(exact)return exact.id;
+    const close=mistakes.find(m=>normalize(m.title).includes(q)||q.includes(normalize(m.title)));
+    if(close)return close.id;
+  }
+  return "";
 }
 
 async function nominate(){
@@ -204,9 +230,16 @@ async function nominate(){
     }
 
     if(result.outcome==="possible_existing_record"){
+      const existingId=findLocalExistingId(result);
+      const existingTitle=result.title||result.existing_title||result.matched_title||result.possible_existing_title||"This mistake";
       status.innerHTML=`
-        <strong>We're checking for a possible existing record.</strong><br>
-        ${esc(result.message||"We won't create a duplicate automatically.")}`;
+        <strong>We found a possible match in the Record.</strong><br>
+        ${esc(result.message||`${existingTitle} may already be a SportsMistakes entry.`)}
+        ${existingId ? `
+          <div class="result-actions">
+            <a href="mistake.html?id=${encodeURIComponent(existingId)}">Open This Mistake →</a>
+          </div>` : `
+          <br><br><span style="color:#a8b3c1">Try the matching title shown above in the box. Existing Record matches are clickable as you type.</span>`}`;
       return;
     }
 
