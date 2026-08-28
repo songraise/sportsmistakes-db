@@ -401,16 +401,6 @@
       margin:0;
     }
 
-    .lesson-section{
-      background:rgba(255,204,0,.055);
-      border:1px solid rgba(255,204,0,.18);
-      border-radius:12px;
-      padding:18px;
-      margin-top:4px;
-    }
-
-    .lesson-section h2{color:var(--gold)}
-
     .team-pill{
       display:inline-block;
       background:rgba(30,144,255,.12);
@@ -540,6 +530,165 @@
       font-size:14px;
       white-space:pre-wrap;
       font-weight:900;
+    }
+
+
+    .learning-card{
+      background:linear-gradient(180deg,rgba(13,27,46,.96),rgba(6,16,29,.94));
+      border:1px solid rgba(255,204,0,.28);
+      border-radius:16px;
+      padding:26px 28px;
+      box-shadow:0 14px 34px rgba(0,0,0,.28);
+    }
+
+    .learning-card h2{
+      margin:0 0 8px;
+      color:var(--gold);
+      font-size:24px;
+      text-transform:uppercase;
+    }
+
+    .learning-intro{
+      margin:0 0 18px;
+      color:#edf5ff;
+      line-height:1.55;
+      font-size:16px;
+    }
+
+    .learning-grid{
+      display:grid;
+      grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);
+      gap:24px;
+      align-items:start;
+    }
+
+    .lesson-picker{
+      background:rgba(3,10,20,.5);
+      border:1px solid rgba(255,255,255,.12);
+      border-radius:12px;
+      padding:16px;
+    }
+
+    .lesson-picker-title{
+      color:#fff;
+      font-weight:900;
+      margin-bottom:6px;
+      font-size:17px;
+    }
+
+    .lesson-picker-note{
+      color:#b7c7d9;
+      font-size:13px;
+      margin-bottom:14px;
+    }
+
+    .lesson-options{
+      display:grid;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+      gap:9px;
+    }
+
+    .lesson-option{
+      display:flex;
+      align-items:center;
+      gap:9px;
+      padding:10px 11px;
+      border:1px solid rgba(255,255,255,.12);
+      border-radius:9px;
+      background:rgba(255,255,255,.045);
+      color:#edf5ff;
+      cursor:pointer;
+      font-size:14px;
+      font-weight:800;
+    }
+
+    .lesson-option:hover{
+      border-color:rgba(255,204,0,.42);
+    }
+
+    .lesson-option input{
+      accent-color:#ffcc00;
+      width:17px;
+      height:17px;
+      flex:0 0 auto;
+    }
+
+    .lesson-submit{
+      margin-top:14px;
+      background:var(--gold);
+      color:#111;
+      border:none;
+      border-radius:8px;
+      padding:11px 15px;
+      font-weight:900;
+      cursor:pointer;
+    }
+
+    .lesson-submit:disabled{
+      opacity:.55;
+      cursor:not-allowed;
+    }
+
+    .lesson-message{
+      margin-top:10px;
+      color:var(--gold);
+      font-size:13px;
+      font-weight:900;
+      min-height:18px;
+    }
+
+    .lesson-results{
+      background:rgba(3,10,20,.5);
+      border:1px solid rgba(255,255,255,.12);
+      border-radius:12px;
+      padding:16px;
+    }
+
+    .lesson-results-title{
+      color:#fff;
+      font-size:17px;
+      font-weight:900;
+      margin-bottom:12px;
+    }
+
+    .lesson-result-row{
+      margin-bottom:13px;
+    }
+
+    .lesson-result-row:last-child{
+      margin-bottom:0;
+    }
+
+    .lesson-result-top{
+      display:flex;
+      justify-content:space-between;
+      gap:12px;
+      color:#edf5ff;
+      font-size:13px;
+      font-weight:900;
+      margin-bottom:6px;
+    }
+
+    .lesson-bar-track{
+      width:100%;
+      height:11px;
+      border-radius:999px;
+      overflow:hidden;
+      background:rgba(255,255,255,.09);
+      border:1px solid rgba(255,255,255,.08);
+    }
+
+    .lesson-bar-fill{
+      height:100%;
+      border-radius:999px;
+      background:linear-gradient(90deg,#ffcc00,#f59e0b);
+      min-width:2px;
+    }
+
+    .lesson-empty{
+      color:#b7c7d9;
+      font-size:14px;
+      line-height:1.45;
     }
 
     .sources-card,.related-card-wrap{
@@ -739,7 +888,9 @@
       .hero-title{font-size:34px}
       .hero-subtitle{font-size:18px}
       .court-grid{grid-template-columns:1fr}
-      .story-panel,.court-panel,.sources-card,.related-card-wrap{padding:20px}
+      .story-panel,.court-panel,.sources-card,.related-card-wrap,.learning-card{padding:20px}
+      .learning-grid{grid-template-columns:1fr}
+      .lesson-options{grid-template-columns:1fr}
     }
   </style>
 </head>
@@ -851,7 +1002,7 @@ async function loadMistake(){
         ${data.teams_people?`<div class="story-section"><h2>Teams / People</h2><p><span class="team-pill">${escapeHtml(data.teams_people)}</span></p></div>`:""}
         <div class="story-section"><h2>The Story</h2><p>${escapeHtml(data.summary||"No summary added yet.")}</p></div>
         ${data.why_it_matters?`<div class="story-section"><h2>Why This Changed Sports</h2><p>${escapeHtml(data.why_it_matters)}</p></div>`:""}
-        ${data.lessons_learned?`<div class="story-section lesson-section"><h2>💡 What Can Be Learned?</h2><p>${escapeHtml(data.lessons_learned)}</p></div>`:""}
+        ${data.lessons_learned?`<div class="story-section"><h2>💡 What Can Be Learned?</h2><p>${escapeHtml(data.lessons_learned)}</p></div>`:""}
       </div>
 
       <div class="court-panel">
@@ -889,6 +1040,28 @@ async function loadMistake(){
       </div>
     </section>
 
+    <section class="learning-card">
+      <h2>💡 Learn From This Mistake</h2>
+      <p class="learning-intro">
+        What are the biggest lessons from this moment? Choose up to 3. Your selections are combined with other fans to show what the SportsMistakes community thinks matters most.
+      </p>
+
+      <div class="learning-grid">
+        <div class="lesson-picker">
+          <div class="lesson-picker-title">Choose up to 3 lessons</div>
+          <div class="lesson-picker-note">You can update your choices later on this device.</div>
+          <div id="lessonOptions" class="lesson-options">Loading lesson choices...</div>
+          <button id="lessonSubmitBtn" class="lesson-submit" onclick="submitLessonVotes()">Save My Lessons</button>
+          <div id="lessonMessage" class="lesson-message"></div>
+        </div>
+
+        <div class="lesson-results">
+          <div class="lesson-results-title">Community Lessons</div>
+          <div id="lessonResults"><div class="lesson-empty">Loading community lesson votes...</div></div>
+        </div>
+      </div>
+    </section>
+
     <section class="sources-card sources">
       <h2>Sources</h2>
       ${data.source_1?`<a href="${escapeHtml(data.source_1)}" target="_blank">Source 1</a>`:""}
@@ -922,6 +1095,7 @@ async function loadMistake(){
 
   await loadVotes();
   await loadCourtArguments();
+  await loadLessonCategoriesAndVotes();
   await loadRelatedMistakes();
 }
 
@@ -1156,6 +1330,149 @@ async function upvoteArgument(argumentId){
     console.error("Sports Court upvote request failed:",error);
     alert("The upvote service could not be reached.");
   }
+}
+
+
+let lessonCategories=[];
+
+function getLessonVoterId(){
+  let voterId=localStorage.getItem("sportsmistakes_lesson_voter_id");
+  if(!voterId){
+    voterId=crypto.randomUUID();
+    localStorage.setItem("sportsmistakes_lesson_voter_id",voterId);
+  }
+  return voterId;
+}
+
+function selectedLessonCategoryIds(){
+  return [...document.querySelectorAll('.lesson-option input[type="checkbox"]:checked')]
+    .map(el=>Number(el.value))
+    .filter(Number.isFinite);
+}
+
+function enforceLessonSelectionLimit(){
+  const checked=selectedLessonCategoryIds();
+  const boxes=[...document.querySelectorAll('.lesson-option input[type="checkbox"]')];
+  boxes.forEach(box=>{
+    if(!box.checked) box.disabled=checked.length>=3;
+  });
+  const msg=document.getElementById("lessonMessage");
+  if(msg) msg.innerText=checked.length>=3?"Maximum 3 selected.":"";
+}
+
+async function loadLessonCategoriesAndVotes(){
+  const optionsBox=document.getElementById("lessonOptions");
+  const resultsBox=document.getElementById("lessonResults");
+  if(!optionsBox||!resultsBox||!id)return;
+
+  const {data:categories,error:catError}=await client
+    .from("lesson_categories")
+    .select("id,name,display_order")
+    .eq("active",true)
+    .order("display_order",{ascending:true});
+
+  if(catError){
+    console.error(catError);
+    optionsBox.innerHTML='<div class="lesson-empty">Could not load lesson categories.</div>';
+    return;
+  }
+
+  lessonCategories=categories||[];
+  const voterId=getLessonVoterId();
+
+  const [{data:allVotes,error:voteError},{data:myVotes,error:myVoteError}] = await Promise.all([
+    client.from("mistake_lesson_votes").select("lesson_category_id").eq("mistake_id",id),
+    client.from("mistake_lesson_votes").select("lesson_category_id").eq("mistake_id",id).eq("voter_id",voterId)
+  ]);
+
+  if(voteError) console.error(voteError);
+  if(myVoteError) console.error(myVoteError);
+
+  const mySet=new Set((myVotes||[]).map(v=>Number(v.lesson_category_id)));
+
+  optionsBox.innerHTML=lessonCategories.map(cat=>`
+    <label class="lesson-option">
+      <input type="checkbox" value="${cat.id}" ${mySet.has(Number(cat.id))?"checked":""} onchange="enforceLessonSelectionLimit()">
+      <span>${escapeHtml(cat.name)}</span>
+    </label>
+  `).join("");
+
+  enforceLessonSelectionLimit();
+  renderLessonResults(allVotes||[]);
+}
+
+function renderLessonResults(votes){
+  const box=document.getElementById("lessonResults");
+  if(!box)return;
+
+  const totalVotersByCategory=new Map();
+  for(const vote of votes||[]){
+    const key=Number(vote.lesson_category_id);
+    totalVotersByCategory.set(key,(totalVotersByCategory.get(key)||0)+1);
+  }
+
+  const ranked=lessonCategories
+    .map(cat=>({id:Number(cat.id),name:cat.name,count:totalVotersByCategory.get(Number(cat.id))||0}))
+    .filter(row=>row.count>0)
+    .sort((a,b)=>b.count-a.count||a.name.localeCompare(b.name));
+
+  const totalSelections=ranked.reduce((sum,row)=>sum+row.count,0);
+
+  if(!totalSelections){
+    box.innerHTML='<div class="lesson-empty">No community lesson votes yet. Be the first to choose what this mistake teaches.</div>';
+    return;
+  }
+
+  box.innerHTML=ranked.map(row=>{
+    const pct=Math.round((row.count/totalSelections)*100);
+    return `
+      <div class="lesson-result-row">
+        <div class="lesson-result-top">
+          <span>${escapeHtml(row.name)}</span>
+          <span>${pct}% · ${row.count}</span>
+        </div>
+        <div class="lesson-bar-track">
+          <div class="lesson-bar-fill" style="width:${pct}%"></div>
+        </div>
+      </div>
+    `;
+  }).join("");
+}
+
+async function submitLessonVotes(){
+  const msg=document.getElementById("lessonMessage");
+  const btn=document.getElementById("lessonSubmitBtn");
+  const categoryIds=selectedLessonCategoryIds();
+
+  if(categoryIds.length<1){
+    msg.innerText="Choose at least 1 lesson.";
+    return;
+  }
+  if(categoryIds.length>3){
+    msg.innerText="Choose no more than 3 lessons.";
+    return;
+  }
+
+  const voterId=getLessonVoterId();
+  btn.disabled=true;
+  msg.innerText="Saving your lessons...";
+
+  const {data,error}=await client.rpc("submit_mistake_lesson_votes",{
+    p_mistake_id:id,
+    p_voter_id:voterId,
+    p_category_ids:categoryIds
+  });
+
+  btn.disabled=false;
+
+  if(error){
+    console.error(error);
+    msg.innerText="Could not save your lessons. Please try again.";
+    return;
+  }
+
+  msg.innerText="Your lesson choices were saved.";
+  await loadLessonCategoriesAndVotes();
 }
 
 async function loadRelatedMistakes(){
