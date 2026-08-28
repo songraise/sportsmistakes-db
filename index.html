@@ -3418,8 +3418,8 @@ function formatNumber(n) {
       if(result){
         result.className="nomination-result active";
         result.innerHTML=`
-          <strong>Thanks!</strong>
-          <p>We are now adding your nomination to the SportsMistakes review queue.</p>`;
+          <strong>Thanks — event confirmed.</strong>
+          <p>Finalizing the nomination and adding it to the SportsMistakes review queue…</p>`;
       }
 
       nominateFromHome(true);
@@ -3520,8 +3520,9 @@ function formatNumber(n) {
           status.textContent="Nomination verified and added to the admin review queue.";
           result.className="nomination-result active";
           result.innerHTML=`
-            <strong>${escapeHtml(data.title||text)}</strong>
-            <p>Your exact nomination is preserved as the human contribution. The researched factual record has been prepared for publication.</p>
+            <strong>Thanks! ${escapeHtml(data.title||text)}</strong>
+            <p>Your nomination was successfully saved as a pending submission and is now in the SportsMistakes admin review queue.</p>
+            ${data.submission_id ? `<p style="color:#8fa0b2;font-size:11px">Submission ID: ${escapeHtml(String(data.submission_id))}</p>` : ""}
             <a href="submit.html?nomination=${encodeURIComponent(text)}">Add optional details →</a>`;
           input.value="";
           selectedNominationMistake=null;
