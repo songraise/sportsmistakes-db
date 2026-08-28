@@ -869,6 +869,32 @@
     }
 
 
+
+    .lesson-dropdown-toggle{
+      width:100%;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:12px;
+      background:#07111f;
+      color:#fff;
+      border:1px solid rgba(255,204,0,.32);
+      border-radius:9px;
+      padding:10px 12px;
+      font-weight:900;
+      cursor:pointer;
+      text-align:left;
+    }
+
+    .lesson-dropdown-panel{
+      display:none;
+      margin-top:8px;
+      padding-top:8px;
+      border-top:1px solid rgba(255,255,255,.10);
+    }
+
+    .lesson-dropdown-panel.open{display:block}
+
     /* ===== COMPACT ONE-PAGE DESKTOP DASHBOARD ===== */
     @media(min-width:1051px){
       .container{
@@ -907,14 +933,15 @@
       .hero-info{
         padding:4px 0;
         display:grid;
-        grid-template-columns:1fr auto;
+        grid-template-columns:minmax(0,1fr) 220px;
         grid-template-areas:
           "kicker score"
           "title score"
-          "subtitle subtitle"
-          "views views"
-          "vote share";
-        column-gap:18px;
+          "subtitle share"
+          "views share"
+          "vote vote";
+        column-gap:16px;
+        row-gap:4px;
         align-content:center;
       }
 
@@ -957,8 +984,8 @@
       .share-row{
         grid-area:share;
         justify-content:flex-end;
-        align-self:end;
-        margin:0;
+        align-self:start;
+        margin:2px 0 0;
       }
       .share-label{font-size:12px}
       .share-buttons button,.share-buttons a{
@@ -1058,7 +1085,7 @@
         margin-bottom:10px;
       }
       .learning-grid{
-        grid-template-columns:minmax(0,1fr) minmax(0,1fr);
+        grid-template-columns:300px minmax(0,1fr);
         gap:12px;
       }
       .lesson-picker,.lesson-results{padding:11px}
@@ -1282,11 +1309,16 @@ async function loadMistake(){
       </p>
 
       <div class="learning-grid">
-        <div class="lesson-picker">
-          <div class="lesson-picker-title">Choose up to 3 lessons</div>
-          <div class="lesson-picker-note">You can update your choices later on this device.</div>
-          <div id="lessonOptions" class="lesson-options">Loading lesson choices...</div>
-          <button id="lessonSubmitBtn" class="lesson-submit" onclick="submitLessonVotes()">Save My Lessons</button>
+        <div class="lesson-picker compact-picker">
+          <div class="lesson-picker-title">What can fans learn?</div>
+          <button class="lesson-dropdown-toggle" type="button" onclick="toggleLessonDropdown()">
+            Choose up to 3 lessons <span id="lessonDropdownSummary">▾</span>
+          </button>
+          <div id="lessonDropdownPanel" class="lesson-dropdown-panel">
+            <div class="lesson-picker-note">Choose up to 3. You can update your choices later on this device.</div>
+            <div id="lessonOptions" class="lesson-options">Loading lesson choices...</div>
+            <button id="lessonSubmitBtn" class="lesson-submit" onclick="submitLessonVotes()">Save My Lessons</button>
+          </div>
           <div id="lessonMessage" class="lesson-message"></div>
         </div>
 
@@ -1570,6 +1602,19 @@ async function upvoteArgument(argumentId){
 
 let lessonCategories=[];
 
+
+function toggleLessonDropdown(){
+  const panel=document.getElementById("lessonDropdownPanel");
+  if(panel) panel.classList.toggle("open");
+}
+
+function updateLessonDropdownSummary(){
+  const summary=document.getElementById("lessonDropdownSummary");
+  if(!summary) return;
+  const checked=[...document.querySelectorAll('.lesson-option input[type="checkbox"]:checked')];
+  summary.textContent=checked.length ? `${checked.length} selected ▾` : "▾";
+}
+
 function getLessonVoterId(){
   let voterId=localStorage.getItem("sportsmistakes_lesson_voter_id");
   if(!voterId){
@@ -1593,6 +1638,7 @@ function enforceLessonSelectionLimit(){
   });
   const msg=document.getElementById("lessonMessage");
   if(msg) msg.innerText=checked.length>=3?"Maximum 3 selected.":"";
+  updateLessonDropdownSummary();
 }
 
 async function loadLessonCategoriesAndVotes(){
@@ -1707,6 +1753,8 @@ async function submitLessonVotes(){
   }
 
   msg.innerText="Your lesson choices were saved.";
+  const panel=document.getElementById("lessonDropdownPanel");
+  if(panel) panel.classList.remove("open");
   await loadLessonCategoriesAndVotes();
 }
 
