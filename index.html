@@ -3395,38 +3395,34 @@ function formatNumber(n) {
     }
 
 
-    function findNominationMatchFromAi(data){
-      const directId =
+    let pendingAiSuggestion="";
+
+    function explicitExistingMistakeId(data){
+      return String(
         data?.mistake_id ||
         data?.existing_mistake_id ||
         data?.matched_mistake_id ||
         data?.match_id ||
-        "";
+        ""
+      ).trim();
+    }
 
-      if(directId){
-        return mistakes.find(m=>String(m.id)===String(directId)) || {id:directId,title:data?.title||data?.did_you_mean||"Sports mistake"};
+    function confirmAiSuggestion(){
+      const input=document.getElementById("nominationInput");
+      if(!input)return;
+
+      const original=String(input.value||"").trim();
+      const suggestion=String(pendingAiSuggestion||"").trim();
+
+      if(suggestion){
+        const originalNorm=normalize(original);
+        const suggestionNorm=normalize(suggestion);
+        if(!originalNorm.includes(suggestionNorm)){
+          input.value=`${original} — ${suggestion}`;
+        }
       }
 
-      const candidates=[
-        data?.title,
-        data?.existing_title,
-        data?.matched_title,
-        data?.possible_existing_title,
-        data?.did_you_mean,
-        data?.likely_subject
-      ].map(v=>normalize(v)).filter(Boolean);
-
-      for(const q of candidates){
-        const exact=mistakes.find(m=>normalize(m.title||"")===q);
-        if(exact) return exact;
-
-        const close=mistakes.find(m=>{
-          const blob=normalize(`${m.title||""} ${m.teams_people||""} ${m.key_people||""}`);
-          return blob.includes(q) || q.includes(normalize(m.title||""));
-        });
-        if(close) return close;
-      }
-      return null;
+      nominateFromHome();
     }
 
     function rejectAiSuggestion(){
@@ -3510,6 +3506,7 @@ function formatNumber(n) {
             <a href="mistake.html?id=${encodeURIComponent(data.mistake_id)}">Judge this mistake →</a>`;
           input.value="";
           selectedNominationMistake=null;
+          pendingAiSuggestion="";
           document.getElementById("nominationMatches")?.classList.remove("active");
           return;
         }
@@ -3524,6 +3521,7 @@ function formatNumber(n) {
             <a href="submit.html?nomination=${encodeURIComponent(text)}">Add optional details →</a>`;
           input.value="";
           selectedNominationMistake=null;
+          pendingAiSuggestion="";
           document.getElementById("nominationMatches")?.classList.remove("active");
           return;
         }
@@ -3537,7 +3535,8 @@ function formatNumber(n) {
             "Try adding the player, team, opponent, year, or game."
           ).trim();
 
-          const aiMatch=findNominationMatchFromAi(data);
+          const existingId=explicitExistingMistakeId(data);
+          pendingAiSuggestion=didYouMean||likelySubject||"";
 
           status.className="nomination-status active warn";
           status.textContent=didYouMean
@@ -3545,14 +3544,25 @@ function formatNumber(n) {
             : "We need one more clue.";
 
           result.className="nomination-result active";
-          result.innerHTML=`
-            <strong>${didYouMean ? `Did you mean: ${escapeHtml(didYouMean)}?` : "Possible match"}</strong>
-            ${likelySubject && !didYouMean ? `<p>Likely subject: <strong>${escapeHtml(likelySubject)}</strong></p>` : ""}
-            <p>${escapeHtml(question)}</p>
-            <div class="nomination-choice-actions">
-              ${aiMatch ? `<a class="choice-yes" href="mistake.html?id=${encodeURIComponent(aiMatch.id)}">✓ That's it — open mistake</a>` : ""}
-              <button class="choice-no" type="button" onclick="rejectAiSuggestion()">No — different mistake</button>
-            </div>`;
+
+          if(existingId){
+            result.innerHTML=`
+              <strong>${didYouMean ? `Did you mean: ${escapeHtml(didYouMean)}?` : "Possible existing mistake"}</strong>
+              <p>${escapeHtml(question)}</p>
+              <div class="nomination-choice-actions">
+                <a class="choice-yes" href="mistake.html?id=${encodeURIComponent(existingId)}">✓ That's it — open mistake</a>
+                <button class="choice-no" type="button" onclick="rejectAiSuggestion()">No — different mistake</button>
+              </div>`;
+          }else{
+            result.innerHTML=`
+              <strong>${didYouMean ? `Did you mean: ${escapeHtml(didYouMean)}?` : "Is this the event you mean?"}</strong>
+              ${likelySubject && !didYouMean ? `<p>Likely subject: <strong>${escapeHtml(likelySubject)}</strong></p>` : ""}
+              <p>${escapeHtml(question)}</p>
+              <div class="nomination-choice-actions">
+                <button class="choice-yes" type="button" onclick="confirmAiSuggestion()">✓ Yes — that's the event</button>
+                <button class="choice-no" type="button" onclick="rejectAiSuggestion()">No — different mistake</button>
+              </div>`;
+          }
           return;
         }
 
