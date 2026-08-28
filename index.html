@@ -856,6 +856,82 @@
       margin-bottom:10px;
     }
 
+
+    .mini-community{
+      display:flex;
+      align-items:center;
+      gap:9px;
+      flex-wrap:wrap;
+      margin-top:7px;
+      color:#e5e7eb;
+      font-size:10px;
+      font-weight:900;
+    }
+    .mini-community.compact{gap:7px;margin-top:5px}
+    .mini-verdict{
+      display:flex;
+      align-items:center;
+      gap:5px;
+      white-space:nowrap;
+    }
+    .mini-donut{
+      width:25px;
+      height:25px;
+      flex:0 0 25px;
+      border-radius:50%;
+      position:relative;
+      border:1px solid rgba(255,255,255,.15);
+      background:#29425f;
+    }
+    .mini-donut::after{
+      content:"";
+      position:absolute;
+      inset:6px;
+      border-radius:50%;
+      background:#0d1620;
+    }
+    .mini-lesson{
+      flex:1 1 110px;
+      min-width:90px;
+      max-width:190px;
+    }
+    .mini-lesson-head{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:6px;
+      margin-bottom:3px;
+      color:#eef2f7;
+      line-height:1.1;
+    }
+    .mini-lesson-name{
+      overflow:hidden;
+      text-overflow:ellipsis;
+      white-space:nowrap;
+    }
+    .mini-lesson-track{
+      height:5px;
+      border-radius:999px;
+      overflow:hidden;
+      background:rgba(255,255,255,.09);
+    }
+    .mini-lesson-fill{
+      height:100%;
+      border-radius:999px;
+      background:linear-gradient(90deg,#ffcc00,#f59e0b);
+      min-width:2px;
+    }
+    .mini-no-data{color:#7f8a98;font-size:9px;font-weight:800}
+    .today-body .mini-community{margin-top:6px}
+    .row-extra + .mini-community{margin-top:5px}
+    .search-result-score + .mini-community{margin-top:6px}
+    @media(max-width:760px){
+      .mini-donut{width:22px;height:22px;flex-basis:22px}
+      .mini-donut::after{inset:5px}
+      .mini-community{font-size:9px;gap:6px}
+      .mini-lesson{min-width:82px;max-width:none}
+    }
+
     .card-stats {
       display:flex;
       flex-wrap:wrap;
@@ -2079,6 +2155,9 @@
     let mistakes = [];
     let selectedNominationMistake = null;
     let voteStatsByMistake = {};
+    let lessonStatsByMistake = {};
+    let lessonCategoryNames = {};
+    let communityStatsLoaded = false;
     let currentSortMode = "default";
     let visibleCardLimit = INITIAL_CARD_LIMIT;
     let voteStatsLoaded = false;
@@ -2118,31 +2197,79 @@
 
     async function loadVoteStatsInBackground() {
       try {
-        const { data, error } = await client
-          .from("mistake_votes")
-          .select("mistake_id,vote");
+        const [
+          { data:voteRows, error:voteError },
+          { data:lessonRows, error:lessonError },
+          { data:lessonCategories, error:categoryError }
+        ] = await Promise.all([
+          client.from("mistake_votes").select("mistake_id,vote"),
+          client.from("mistake_lesson_votes").select("mistake_id,lesson_category_id"),
+          client.from("lesson_categories").select("id,name").eq("active",true)
+        ]);
 
-        if (error) throw error;
+        if (voteError) throw voteError;
+        if (lessonError) console.error("Community lesson statistics could not be loaded:", lessonError);
+        if (categoryError) console.error("Lesson category names could not be loaded:", categoryError);
 
         voteStatsByMistake = {};
+        lessonStatsByMistake = {};
+        lessonCategoryNames = {};
 
-        (data || []).forEach(v => {
+        (lessonCategories || []).forEach(c => {
+          lessonCategoryNames[Number(c.id)] = c.name || "Lesson";
+        });
+
+        (voteRows || []).forEach(v => {
           if (!voteStatsByMistake[v.mistake_id]) {
             voteStatsByMistake[v.mistake_id] = { yes:0, no:0, total:0 };
           }
-
           if (v.vote === "yes") voteStatsByMistake[v.mistake_id].yes++;
           if (v.vote === "no") voteStatsByMistake[v.mistake_id].no++;
           voteStatsByMistake[v.mistake_id].total++;
         });
 
+        const countsByMistake = {};
+        (lessonRows || []).forEach(v => {
+          const mistakeId = v.mistake_id;
+          const categoryId = Number(v.lesson_category_id);
+          if (!mistakeId || !Number.isFinite(categoryId)) return;
+          if (!countsByMistake[mistakeId]) countsByMistake[mistakeId] = {};
+          countsByMistake[mistakeId][categoryId] =
+            (countsByMistake[mistakeId][categoryId] || 0) + 1;
+        });
+
+        Object.entries(countsByMistake).forEach(([mistakeId, counts]) => {
+          const entries = Object.entries(counts)
+            .map(([categoryId, count]) => ({
+              categoryId:Number(categoryId),
+              count:Number(count)
+            }))
+            .sort((a,b) => b.count - a.count);
+
+          const totalSelections = entries.reduce((sum,x) => sum + x.count, 0);
+          const top = entries[0];
+
+          if (top && totalSelections) {
+            lessonStatsByMistake[mistakeId] = {
+              name:lessonCategoryNames[top.categoryId] || "Lesson",
+              count:top.count,
+              totalSelections,
+              percent:Math.round((top.count / totalSelections) * 100)
+            };
+          }
+        });
+
         voteStatsLoaded = true;
+        communityStatsLoaded = true;
+
         renderDashboardLists();
         renderMistakes();
+        renderLiveSearchResults();
+        renderTodaysFive();
         if (currentQuickMistake) renderQuickPlay(currentQuickMistake);
         renderMuseumExtras();
       } catch (error) {
-        console.error("Vote statistics could not be loaded:", error);
+        console.error("Community statistics could not be loaded:", error);
       }
     }
 
@@ -2293,6 +2420,7 @@
             <div class="row-title">${escapeHtml(m.title || "Untitled Mistake")}</div>
             <div class="row-meta">${escapeHtml([m.year, m.sport, m.category].filter(Boolean).join(", "))}</div>
             <div class="row-extra">${escapeHtml(extraFn(m))}</div>
+            ${renderMiniCommunity(m.id, true)}
           </div>
         </a>
       `).join("");
@@ -2336,6 +2464,47 @@
         </div>
       `;
     }
+
+    function renderMiniCommunity(mistakeId, compact=false) {
+      if (!communityStatsLoaded) {
+        return `<div class="mini-community ${compact ? "compact" : ""}"><span class="mini-no-data">Community results loading…</span></div>`;
+      }
+
+      const vote = voteStatsByMistake[mistakeId];
+      const lesson = lessonStatsByMistake[mistakeId];
+
+      if ((!vote || !vote.total) && !lesson) {
+        return `<div class="mini-community ${compact ? "compact" : ""}"><span class="mini-no-data">No community results yet</span></div>`;
+      }
+
+      let verdictHtml = "";
+      if (vote && vote.total) {
+        const yesPercent = Math.round((vote.yes / vote.total) * 100);
+        const yesDegrees = Math.round((yesPercent / 100) * 360);
+        verdictHtml = `
+          <span class="mini-verdict" title="${yesPercent}% YES / ${100-yesPercent}% NO">
+            <span class="mini-donut" style="background:conic-gradient(#e22424 0deg ${yesDegrees}deg,#64748b ${yesDegrees}deg 360deg)"></span>
+            <span>${yesPercent}% YES</span>
+          </span>`;
+      }
+
+      let lessonHtml = "";
+      if (lesson) {
+        lessonHtml = `
+          <span class="mini-lesson" title="Top Community Lesson: ${escapeHtml(lesson.name)}">
+            <span class="mini-lesson-head">
+              <span class="mini-lesson-name">💡 ${escapeHtml(lesson.name)}</span>
+              <span>${lesson.percent}%</span>
+            </span>
+            <span class="mini-lesson-track">
+              <span class="mini-lesson-fill" style="width:${lesson.percent}%"></span>
+            </span>
+          </span>`;
+      }
+
+      return `<div class="mini-community ${compact ? "compact" : ""}">${verdictHtml}${lessonHtml}</div>`;
+    }
+
 
     function filtersAreActive() {
       return Boolean(
@@ -2440,6 +2609,7 @@
               <div class="search-result-title">${escapeHtml(m.title || "Untitled Mistake")}</div>
               <div class="search-result-meta">${escapeHtml(meta)}</div>
               <div class="search-result-score">${escapeHtml(m.controversy_score || 0)}/100 controversy</div>
+              ${renderMiniCommunity(m.id, true)}
             </div>
             <div class="search-result-read">Read →</div>
           </a>
@@ -2477,6 +2647,7 @@
               <span>👁 ${formatNumber(m.views || 0)}</span>
               <span>🔥 ${m.controversy_score || 0}/100</span>
             </div>
+            ${renderMiniCommunity(m.id)}
             ${renderFanVerdict(m.id)}
             <div class="summary">${escapeHtml(m.summary || "No summary added yet.")}</div>
           </div>
@@ -2796,7 +2967,7 @@
       const grid=document.getElementById("todaysFiveGrid"); if(!grid) return;
       const five=getQuickPlayPool().slice(0,5);
       grid.innerHTML=five.map((m,i)=>`<a class="today-card" href="#judgeHero" onclick="quickPlayIndex=${i};renderQuickPlay(getQuickPlayPool()[${i}]);return true;">
-        <div class="today-art">${renderArt(m,"card")}</div><div class="today-body"><div class="today-title">${escapeHtml(m.title||"Untitled Mistake")}</div><div class="today-meta">${escapeHtml([m.year,m.sport].filter(Boolean).join(" • "))}</div></div></a>`).join("");
+        <div class="today-art">${renderArt(m,"card")}</div><div class="today-body"><div class="today-title">${escapeHtml(m.title||"Untitled Mistake")}</div><div class="today-meta">${escapeHtml([m.year,m.sport].filter(Boolean).join(" • "))}</div>${renderMiniCommunity(m.id,true)}</div></a>`).join("");
     }
 
     function startTodaysFive(){ document.getElementById("todaysFivePanel")?.scrollIntoView({behavior:"smooth",block:"start"}); }
@@ -3100,9 +3271,3 @@
     loadMistakes().catch(err => {
       console.error(err);
       const stats = document.getElementById("stats");
-      if (stats) stats.innerText = "Error loading page: " + (err?.message || err);
-    });
-  </script>
-
-</body>
-</html>
