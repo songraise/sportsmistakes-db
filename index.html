@@ -2008,6 +2008,39 @@
       }
     }
 
+
+    .nomination-choice-actions{
+      display:flex;
+      gap:9px;
+      flex-wrap:wrap;
+      margin-top:12px;
+    }
+    .nomination-choice-actions a,
+    .nomination-choice-actions button{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      min-height:40px;
+      padding:9px 13px;
+      border-radius:8px;
+      font-size:11px;
+      font-weight:1000;
+      text-transform:uppercase;
+      text-decoration:none;
+      cursor:pointer;
+      font-family:Arial,Helvetica,sans-serif;
+    }
+    .nomination-choice-actions .choice-yes{
+      border:0;
+      background:#e22424;
+      color:#fff;
+    }
+    .nomination-choice-actions .choice-no{
+      border:1px solid rgba(255,255,255,.22);
+      background:#202a36;
+      color:#fff;
+    }
+
 </style>
 <script src="sportsmistakes-analytics.js" defer></script>
 </head>
@@ -3361,6 +3394,61 @@ function formatNumber(n) {
       return value;
     }
 
+
+    function findNominationMatchFromAi(data){
+      const directId =
+        data?.mistake_id ||
+        data?.existing_mistake_id ||
+        data?.matched_mistake_id ||
+        data?.match_id ||
+        "";
+
+      if(directId){
+        return mistakes.find(m=>String(m.id)===String(directId)) || {id:directId,title:data?.title||data?.did_you_mean||"Sports mistake"};
+      }
+
+      const candidates=[
+        data?.title,
+        data?.existing_title,
+        data?.matched_title,
+        data?.possible_existing_title,
+        data?.did_you_mean,
+        data?.likely_subject
+      ].map(v=>normalize(v)).filter(Boolean);
+
+      for(const q of candidates){
+        const exact=mistakes.find(m=>normalize(m.title||"")===q);
+        if(exact) return exact;
+
+        const close=mistakes.find(m=>{
+          const blob=normalize(`${m.title||""} ${m.teams_people||""} ${m.key_people||""}`);
+          return blob.includes(q) || q.includes(normalize(m.title||""));
+        });
+        if(close) return close;
+      }
+      return null;
+    }
+
+    function rejectAiSuggestion(){
+      const input=document.getElementById("nominationInput");
+      const status=document.getElementById("nominationStatus");
+      const result=document.getElementById("nominationResult");
+
+      if(status){
+        status.className="nomination-status active";
+        status.textContent="No problem — add one more clue so SportsMistakes can research your different nomination.";
+      }
+      if(result){
+        result.className="nomination-result active";
+        result.innerHTML=`<strong>Different mistake?</strong><p>Keep your wording, then add a player, team, opponent, year, game, trade, call, or play that separates it from the suggested event.</p>`;
+      }
+      input?.focus();
+      if(input){
+        const len=input.value.length;
+        input.setSelectionRange(len,len);
+      }
+    }
+
     async function nominateFromHome(){
       const input=document.getElementById("nominationInput");
       const status=document.getElementById("nominationStatus");
@@ -3449,17 +3537,22 @@ function formatNumber(n) {
             "Try adding the player, team, opponent, year, or game."
           ).trim();
 
+          const aiMatch=findNominationMatchFromAi(data);
+
           status.className="nomination-status active warn";
           status.textContent=didYouMean
-            ? `Possible match: ${didYouMean}`
+            ? `Did you mean: ${didYouMean}?`
             : "We need one more clue.";
 
           result.className="nomination-result active";
           result.innerHTML=`
-            <strong>${didYouMean ? `Did you mean: ${escapeHtml(didYouMean)}?` : "Add one more clue"}</strong>
+            <strong>${didYouMean ? `Did you mean: ${escapeHtml(didYouMean)}?` : "Possible match"}</strong>
             ${likelySubject && !didYouMean ? `<p>Likely subject: <strong>${escapeHtml(likelySubject)}</strong></p>` : ""}
             <p>${escapeHtml(question)}</p>
-            <a href="submit.html?nomination=${encodeURIComponent(text)}">Add more detail →</a>`;
+            <div class="nomination-choice-actions">
+              ${aiMatch ? `<a class="choice-yes" href="mistake.html?id=${encodeURIComponent(aiMatch.id)}">✓ That's it — open mistake</a>` : ""}
+              <button class="choice-no" type="button" onclick="rejectAiSuggestion()">No — different mistake</button>
+            </div>`;
           return;
         }
 
