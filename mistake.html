@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -400,6 +400,16 @@
       font-size:17px;
       margin:0;
     }
+
+    .lesson-section{
+      background:rgba(255,204,0,.055);
+      border:1px solid rgba(255,204,0,.18);
+      border-radius:12px;
+      padding:18px;
+      margin-top:4px;
+    }
+
+    .lesson-section h2{color:var(--gold)}
 
     .team-pill{
       display:inline-block;
@@ -841,6 +851,7 @@ async function loadMistake(){
         ${data.teams_people?`<div class="story-section"><h2>Teams / People</h2><p><span class="team-pill">${escapeHtml(data.teams_people)}</span></p></div>`:""}
         <div class="story-section"><h2>The Story</h2><p>${escapeHtml(data.summary||"No summary added yet.")}</p></div>
         ${data.why_it_matters?`<div class="story-section"><h2>Why This Changed Sports</h2><p>${escapeHtml(data.why_it_matters)}</p></div>`:""}
+        ${data.lessons_learned?`<div class="story-section lesson-section"><h2>💡 What Can Be Learned?</h2><p>${escapeHtml(data.lessons_learned)}</p></div>`:""}
       </div>
 
       <div class="court-panel">
