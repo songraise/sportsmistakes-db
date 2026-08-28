@@ -868,6 +868,241 @@
       letter-spacing:.35px;
     }
 
+
+    /* ===== COMPACT ONE-PAGE DESKTOP DASHBOARD ===== */
+    @media(min-width:1051px){
+      .container{
+        max-width:1440px;
+        margin:14px auto 34px;
+        padding:0 18px;
+      }
+
+      .detail-shell{gap:12px}
+      .back-link{margin:0;font-size:13px}
+
+      .museum-hero{
+        grid-template-columns:minmax(300px,.72fr) minmax(0,1.28fr);
+        gap:24px;
+        padding:4px 0 2px;
+        align-items:stretch;
+      }
+
+      .gallery-side{
+        min-height:315px;
+      }
+
+      .frame-wrap{max-width:420px}
+      .art-frame{padding:11px}
+      .art-inner{min-height:265px;max-height:300px}
+      .plaque{
+        width:70%;
+        min-width:210px;
+        margin-top:6px;
+        padding:6px 8px;
+        font-size:10px;
+      }
+      .museum-ropes{display:none}
+      .spotlight{height:100px;top:-10px}
+
+      .hero-info{
+        padding:4px 0;
+        display:grid;
+        grid-template-columns:1fr auto;
+        grid-template-areas:
+          "kicker score"
+          "title score"
+          "subtitle subtitle"
+          "views views"
+          "vote share";
+        column-gap:18px;
+        align-content:center;
+      }
+
+      .hero-kicker{grid-area:kicker;margin:0 0 7px;font-size:13px}
+      .score-box{
+        grid-area:score;
+        align-self:start;
+        margin:0;
+        padding:10px 13px;
+      }
+      .score-box .score-number{font-size:22px}
+      .hero-title{
+        grid-area:title;
+        font-size:40px;
+        line-height:1.02;
+        margin:0 0 8px;
+      }
+      .hero-subtitle{
+        grid-area:subtitle;
+        font-size:16px;
+        line-height:1.35;
+        margin:0 0 6px;
+        max-width:none;
+      }
+      .hero-views{
+        grid-area:views;
+        font-size:12px;
+        margin:0 0 9px;
+      }
+      .vote-box{
+        grid-area:vote;
+        max-width:none;
+        padding:11px 13px;
+      }
+      .vote-head h2{font-size:17px}
+      .vote-head p{font-size:12px;margin-top:2px}
+      .vote-buttons{margin-top:8px}
+      .vote-buttons button{padding:8px 10px;font-size:12px}
+      #voteResults{font-size:12px;margin-top:7px}
+      .share-row{
+        grid-area:share;
+        justify-content:flex-end;
+        align-self:end;
+        margin:0;
+      }
+      .share-label{font-size:12px}
+      .share-buttons button,.share-buttons a{
+        min-width:34px;
+        height:34px;
+        font-size:12px;
+      }
+      .share-message{grid-area:share;font-size:11px}
+
+      .content-grid{
+        grid-template-columns:minmax(0,1.25fr) minmax(440px,.75fr);
+      }
+
+      .story-panel,.court-panel{padding:17px}
+
+      .story-panel{
+        display:grid;
+        grid-template-columns:repeat(3,minmax(0,1fr));
+        gap:10px;
+        align-content:start;
+      }
+
+      .story-section{
+        margin:0;
+        padding:12px;
+        border:1px solid rgba(216,224,234,.14);
+        border-radius:10px;
+        background:rgba(255,255,255,.035);
+        min-width:0;
+      }
+
+      .story-section:last-child{
+        padding:12px;
+        margin:0;
+        border:1px solid rgba(255,204,0,.22);
+      }
+
+      .story-section h2,.court-panel h2,.sources-card h2,.related-card-wrap h2{
+        font-size:15px;
+        margin-bottom:7px;
+      }
+
+      .story-section p,.court-intro{
+        font-size:13px;
+        line-height:1.42;
+      }
+
+      .team-pill{padding:8px 9px;font-size:12px}
+
+      .court-panel h2{margin-bottom:5px}
+      .court-intro{font-size:12px;line-height:1.35}
+      .court-grid{gap:8px;margin-top:10px}
+      .court-side{padding:10px}
+      .court-side h3{font-size:13px;margin-bottom:7px}
+      .argument{
+        padding:8px;
+        margin-bottom:6px;
+      }
+      .argument:nth-child(n+3){display:none}
+      .argument-text{
+        font-size:12px;
+        line-height:1.35;
+        display:-webkit-box;
+        -webkit-line-clamp:3;
+        -webkit-box-orient:vertical;
+        overflow:hidden;
+      }
+      .argument-meta{font-size:10px;margin-top:5px}
+      .argument-actions{margin-top:5px}
+      .upvote-btn,.argument-report-btn{padding:5px 7px;font-size:10px}
+
+      .court-form{
+        margin-top:10px;
+        padding:10px;
+      }
+      .court-form h3{font-size:14px}
+      .court-form label{font-size:11px;margin-top:7px}
+      .court-form select,.court-form textarea,.court-form input{
+        margin-top:4px;
+        padding:7px 8px;
+        font-size:12px;
+      }
+      .court-form textarea{min-height:55px}
+      .court-form button{margin-top:8px;padding:8px 10px;font-size:11px}
+      .court-message{font-size:11px;margin-top:6px}
+
+      .learning-card{
+        padding:15px 17px;
+      }
+      .learning-card h2{
+        font-size:17px;
+        margin-bottom:4px;
+      }
+      .learning-intro{
+        font-size:12px;
+        line-height:1.35;
+        margin-bottom:10px;
+      }
+      .learning-grid{
+        grid-template-columns:minmax(0,1fr) minmax(0,1fr);
+        gap:12px;
+      }
+      .lesson-picker,.lesson-results{padding:11px}
+      .lesson-picker-title,.lesson-results-title{font-size:13px;margin-bottom:6px}
+      .lesson-picker-note{font-size:10px;margin-bottom:7px}
+      .lesson-options{
+        grid-template-columns:repeat(3,minmax(0,1fr));
+        gap:5px;
+      }
+      .lesson-option{
+        padding:6px 7px;
+        font-size:10px;
+        gap:5px;
+      }
+      .lesson-option input{width:13px;height:13px}
+      .lesson-submit{margin-top:8px;padding:7px 10px;font-size:11px}
+      .lesson-message{font-size:10px;margin-top:5px;min-height:12px}
+      .lesson-result-row{margin-bottom:7px}
+      .lesson-result-top{font-size:10px;margin-bottom:3px}
+      .lesson-bar-track{height:7px}
+
+      .sources-card{
+        padding:11px 17px;
+      }
+      .sources-card h2{display:inline-block;margin-right:10px}
+      .sources a{font-size:11px;margin:0 10px 0 0}
+      .report-btn{margin-top:6px;padding:7px 9px;font-size:10px}
+
+      .related-card-wrap{
+        padding:12px 17px;
+      }
+      .related-card-wrap h2{margin-bottom:7px}
+      .related-grid{
+        grid-template-columns:repeat(6,minmax(0,1fr));
+        gap:8px;
+        margin-top:6px;
+      }
+      .related-art{height:70px;font-size:18px}
+      .related-body{padding:8px}
+      .related-card h3{font-size:12px;margin:3px 0 4px}
+      .related-meta,.related-stats,.related-read{font-size:9px}
+      .related-read{margin-top:5px}
+    }
+
     @media(max-width:1050px){
       .museum-hero{grid-template-columns:1fr;gap:20px}
       .gallery-side{min-height:auto}
