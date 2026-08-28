@@ -896,6 +896,65 @@
     .lesson-dropdown-panel.open{display:block}
 
 
+
+    .interaction-flow{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      flex-wrap:wrap;
+      margin:2px 0 7px;
+      color:#8fa0b2;
+      font-size:10px;
+      font-weight:1000;
+      letter-spacing:.8px;
+    }
+    .interaction-flow span{
+      padding:4px 7px;
+      border:1px solid rgba(255,255,255,.10);
+      border-radius:999px;
+      background:rgba(255,255,255,.035);
+    }
+    .interaction-flow span.active{
+      color:#fff;
+      border-color:rgba(226,36,36,.5);
+      background:rgba(226,36,36,.12);
+    }
+    .interaction-flow b{color:#536477;font-size:10px}
+
+    .court-step-label{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      margin-bottom:5px;
+      color:#ffcc00;
+      font-size:10px;
+      font-weight:1000;
+      letter-spacing:.9px;
+    }
+    .court-step-label span{
+      color:#8190a0;
+      font-weight:800;
+      letter-spacing:0;
+      text-transform:none;
+    }
+
+    /* Sports Court is the optional long-form layer, not the primary action. */
+    .court-panel{
+      border-color:rgba(255,255,255,.10)!important;
+      background:linear-gradient(180deg,rgba(9,18,30,.82),rgba(5,12,22,.78))!important;
+      box-shadow:none!important;
+    }
+    .court-panel > h2{font-size:17px!important;color:#dbe6f2!important}
+    .court-intro{color:#91a1b2!important}
+    .court-side{
+      background:rgba(255,255,255,.025)!important;
+      border-color:rgba(255,255,255,.08)!important;
+    }
+    .court-form{
+      background:rgba(255,255,255,.025)!important;
+      border-color:rgba(255,255,255,.08)!important;
+    }
+
     .verdict-combined{
       display:grid;
       grid-template-columns:minmax(300px,.8fr) minmax(520px,1.2fr);
@@ -968,6 +1027,11 @@
     }
 
     @media(max-width:1050px){
+
+      .interaction-flow{justify-content:center;gap:5px;margin-bottom:6px}
+      .interaction-flow span{font-size:9px;padding:3px 5px}
+      .interaction-flow b{font-size:8px}
+
       .verdict-combined{grid-template-columns:1fr}
       .verdict-vote{padding-right:0;padding-bottom:14px;border-right:none;border-bottom:1px solid rgba(116,185,255,.22)}
       .verdict-learn-grid{grid-template-columns:1fr}
@@ -1296,12 +1360,15 @@ async function loadMistake(){
         <p class="hero-subtitle">${escapeHtml(getShortDeck(data))}</p>
         <div class="hero-views">👁 ${newViewCount} view${newViewCount===1?"":"s"}</div>
 
+        <div class="interaction-flow" aria-label="Mistake interaction flow">
+          <span class="active">1 JUDGE</span><b>→</b><span>2 WHY</span><b>→</b><span>3 DEBATE</span><b>→</b><span>4 LEARN</span>
+        </div>
         <div class="vote-box verdict-combined">
           <div class="verdict-vote">
             <div class="vote-head">
               <div>
-                <h2>Fan Verdict</h2>
-                <p>Was this actually a mistake?</p>
+                <h2>1. Judge</h2>
+                <p>Was this a mistake?</p>
               </div>
             </div>
             <div class="vote-buttons">
@@ -1316,8 +1383,8 @@ async function loadMistake(){
           <div class="verdict-learn">
             <div class="verdict-learn-head">
               <div>
-                <h2>💡 If YES, Why?</h2>
-                <p>Choose up to 3 lessons.</p>
+                <h2>2. Why Was It a Mistake?</h2>
+                <p>Choose up to 3.</p>
               </div>
             </div>
             <div class="verdict-learn-grid">
@@ -1358,11 +1425,11 @@ async function loadMistake(){
         ${data.teams_people?`<div class="story-section"><h2>Teams / People</h2><p><span class="team-pill">${escapeHtml(data.teams_people)}</span></p></div>`:""}
         <div class="story-section"><h2>The Story</h2><p>${escapeHtml(data.summary||"No summary added yet.")}</p></div>
         ${data.why_it_matters?`<div class="story-section"><h2>Why This Changed Sports</h2><p>${escapeHtml(data.why_it_matters)}</p></div>`:""}
-        ${data.lessons_learned?`<div class="story-section"><h2>💡 What Can Be Learned?</h2><p>${escapeHtml(data.lessons_learned)}</p></div>`:""}
+        ${data.lessons_learned?`<div class="story-section"><h2>4. Learn — What Can Be Learned?</h2><p>${escapeHtml(data.lessons_learned)}</p></div>`:""}
       </div>
 
       <div class="court-panel">
-        <h2>⚖️ Sports Court</h2>
+        <div class="court-step-label">3. DEBATE <span>Optional deeper discussion</span></div><h2>⚖️ Sports Court</h2>
         <p class="court-intro">Make the case. Choose Prosecution if you believe this WAS a mistake. Choose Defense if you believe it was NOT a mistake or is overblown.</p>
 
         <div class="court-grid">
