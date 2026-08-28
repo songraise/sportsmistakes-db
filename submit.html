@@ -255,25 +255,23 @@ async function nominate(confirmedEvent=false){
         "Add one more clue so we can verify the exact event."
       ).trim();
 
-      const existingId=explicitExistingMistakeId(result);
-      pendingAiSuggestion=didYouMean||likelySubject||"";
+      const concreteSuggestion=didYouMean||likelySubject;
+      pendingAiSuggestion=concreteSuggestion;
 
-      if(existingId){
+      if(concreteSuggestion){
         status.innerHTML=`
-          <strong>${didYouMean ? `Did you mean: ${esc(didYouMean)}?` : "Possible existing mistake"}</strong><br>
-          ${esc(question)}
-          <div class="result-actions">
-            <a href="mistake.html?id=${encodeURIComponent(existingId)}">That's it →</a>
-            <button class="secondary-action" type="button" onclick="rejectAiSuggestionOnSubmit()">No — different mistake</button>
-          </div>`;
-      }else{
-        status.innerHTML=`
-          <strong>${didYouMean ? `Did you mean: ${esc(didYouMean)}?` : "Is this the event you mean?"}</strong><br>
-          ${likelySubject && !didYouMean ? `Likely subject: <strong>${esc(likelySubject)}</strong><br>` : ""}
+          <strong>${didYouMean ? `Did you mean: ${esc(didYouMean)}?` : `Possible event: ${esc(likelySubject)}`}</strong><br>
           ${esc(question)}
           <div class="result-actions">
             <button class="nominate-btn" type="button" onclick="confirmAiSuggestionOnSubmit()">Yes — that's the event</button>
             <button class="secondary-action" type="button" onclick="rejectAiSuggestionOnSubmit()">No — different mistake</button>
+          </div>`;
+      }else{
+        status.innerHTML=`
+          <strong>We need one more clue.</strong><br>
+          ${esc(question)}
+          <div class="result-actions">
+            <button class="nominate-btn" type="button" onclick="rejectAiSuggestionOnSubmit()">Add more detail</button>
           </div>`;
       }
       return;
