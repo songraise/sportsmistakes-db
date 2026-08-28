@@ -1,4 +1,4 @@
-
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -9,7 +9,9 @@
     body{margin:0;font-family:Arial,sans-serif;background:#07111f;color:#fff}
     .top-nav{display:flex;justify-content:space-between;align-items:center;background:#0d1b2e;border-bottom:1px solid #203852;padding:14px 20px}
     .nav-brand{font-weight:bold;font-size:20px;color:#fff;cursor:pointer}
-    .nav-links a{color:#74b9ff;text-decoration:none;font-weight:bold;margin-left:18px}
+    .nav-brand span{color:#ffcc00}
+    .nav-links{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+    .nav-links a{color:#74b9ff;text-decoration:none;font-weight:bold}
     .nav-links a:hover{color:#ffcc00}
     .container{max-width:1150px;margin:36px auto 70px;padding:0 20px}
     h1{font-size:38px;margin:0 0 8px}
@@ -24,21 +26,21 @@
     .count{font-size:34px;font-weight:bold;color:#ffcc00;margin:14px 0 4px}
     .label{font-size:13px;color:#9fb2c7}
     .button{display:inline-block;margin-top:14px;background:#1e90ff;color:white;text-decoration:none;border-radius:8px;padding:10px 13px;font-weight:bold}
-    .danger{background:#8b1e1e}.green{background:#166534}.gold{background:#6b5b1e}
-    .kill-switch{background:#0d1b2e;border:2px solid #203852;border-radius:16px;padding:22px;margin:0 0 22px;display:flex;justify-content:space-between;align-items:center;gap:24px}
-    .kill-switch.open{border-color:#22c55e}.kill-switch.paused{border-color:#ef4444;background:#241014}
-    .kill-title{font-size:22px;font-weight:bold;margin-bottom:6px}.kill-desc{color:#b7c7d9;line-height:1.45}.kill-state{font-weight:bold;margin-top:8px}.kill-state.open{color:#4ade80}.kill-state.paused{color:#f87171}
-    .switch{position:relative;display:inline-block;width:68px;height:38px;flex:0 0 auto}.switch input{opacity:0;width:0;height:0}.slider{position:absolute;cursor:pointer;inset:0;background:#7f1d1d;border-radius:999px;transition:.2s}.slider:before{content:"";position:absolute;height:30px;width:30px;left:4px;bottom:4px;background:white;border-radius:50%;transition:.2s}.switch input:checked+.slider{background:#15803d}.switch input:checked+.slider:before{transform:translateX(30px)}.switch input:disabled+.slider{cursor:wait;opacity:.6}
-    .logout{background:#444;color:white;border:none;border-radius:8px;padding:9px 12px;font-weight:bold;cursor:pointer;margin-left:14px}
-    @media(max-width:760px){.nav-links a{margin-left:10px;font-size:14px}h1{font-size:32px}}
+    .danger{background:#8b1e1e}.green{background:#166534}.gold{background:#6b5b1e}.purple{background:#5b21b6}.orange{background:#b45309}
+    .logout{background:#444;color:white;border:none;border-radius:8px;padding:9px 12px;font-weight:bold;cursor:pointer}
+    @media(max-width:760px){.top-nav{align-items:flex-start;flex-direction:column}.nav-links{gap:12px}.nav-links a{font-size:14px}h1{font-size:32px}}
   </style>
 </head>
 <body>
 <nav class="top-nav">
-  <div class="nav-brand" onclick="window.location.href='admin-dashboard.html'">SportsMistakes Admin</div>
+  <div class="nav-brand" onclick="window.location.href='admin-dashboard.html'">Sports<span>Mistakes</span> Admin</div>
   <div class="nav-links">
+    <a href="admin-dashboard.html">Dashboard</a>
     <a href="index.html">Public Site</a>
     <a href="admin-submissions.html">Submissions</a>
+    <a href="admin-ai-review.html">AI Review</a>
+    <a href="admin-bulk-artwork.html">Bulk Artwork</a>
+    <a href="admin-content-studio.html">Content Studio</a>
     <a href="admin-reports.html">Reports</a>
     <a href="admin-mistakes.html">Mistakes</a>
     <button class="logout" onclick="logout()">Log Out</button>
@@ -47,20 +49,8 @@
 
 <div class="container">
   <h1>Admin Dashboard</h1>
-  <p class="sub">Your command center for reviewing submissions, fixing reports, finding duplicates, importing new records, and managing the SportsMistakes database.</p>
+  <p class="sub">Your command center for reviewing submissions, AI moderation, artwork generation, fixing reports, finding duplicates, importing new records, and managing the SportsMistakes database.</p>
   <div id="status" class="status">Checking admin access...</div>
-
-  <section id="killSwitchPanel" class="kill-switch">
-    <div>
-      <div class="kill-title">Accept Public Submissions</div>
-      <div class="kill-desc">Emergency control for the public Submit a Mistake form. Turning this off immediately blocks new submissions while the rest of SportsMistakes remains online.</div>
-      <div id="killSwitchState" class="kill-state">Loading current setting...</div>
-    </div>
-    <label class="switch" aria-label="Accept public submissions">
-      <input id="publicSubmissionsToggle" type="checkbox" disabled onchange="changePublicSubmissionSetting()">
-      <span class="slider"></span>
-    </label>
-  </section>
 
   <div class="grid">
     <div class="card" onclick="window.location.href='admin-dashboard.html'">
@@ -77,18 +67,33 @@
       <span class="button">Review Submissions</span>
     </div>
 
+    <div class="card" onclick="window.location.href='admin-ai-review.html'">
+      <div class="icon">🤖</div><div class="title">AI Review</div>
+      <div class="desc">Use AI fields to detect duplicates, spam, safety issues, and approval recommendations.</div>
+      <div class="count" id="aiReviewCount">—</div><div class="label">Not AI reviewed</div>
+      <span class="button purple">Open AI Review</span>
+    </div>
+
+    <div class="card" onclick="window.location.href='admin-bulk-artwork.html'">
+      <div class="icon">🖼️</div><div class="title">Bulk Artwork</div>
+      <div class="desc">Generate artwork for existing published mistakes in safe batches.</div>
+      <div class="count" id="missingArtworkCount">—</div><div class="label">Missing artwork</div>
+      <span class="button orange">Generate Artwork</span>
+    </div>
+
+
+    <div class="card" onclick="window.location.href='admin-content-studio.html'">
+      <div class="icon">🎬</div><div class="title">Content AI Studio</div>
+      <div class="desc">Turn every published mistake into scripts, social posts, Reddit copy, and a newsletter feature.</div>
+      <div class="count" id="contentReadyCount">—</div><div class="label">Content packages created</div>
+      <span class="button green">Open Content Studio</span>
+    </div>
+
     <div class="card" onclick="window.location.href='admin-reports.html'">
       <div class="icon">⚠️</div><div class="title">Reports</div>
       <div class="desc">Review user reports about wrong facts, duplicates, typos, or broken links.</div>
       <div class="count" id="reportCount">—</div><div class="label">Open reports</div>
       <span class="button gold">Review Reports</span>
-    </div>
-
-    <div class="card" onclick="window.location.href='admin-database-auditor.html'">
-      <div class="icon">🧪</div><div class="title">Database Quality</div>
-      <div class="desc">Audit seeded records, verify factual claims, flag possible errors, and review proposed “The Record” upgrades.</div>
-      <div class="count">Audit</div><div class="label">Database quality control</div>
-      <span class="button green">Open Database Auditor</span>
     </div>
 
     <div class="card" onclick="window.location.href='duplicate-finder.html'">
@@ -136,78 +141,35 @@ async function requireSportsMistakesAdminInline(){
   return true;
 }
 
-async function loadPublicSubmissionSetting(){
-  const toggle=document.getElementById("publicSubmissionsToggle");
-  const state=document.getElementById("killSwitchState");
-  const panel=document.getElementById("killSwitchPanel");
-
-  const {data,error}=await client
-    .from("app_settings")
-    .select("public_submissions_enabled,updated_at")
-    .eq("id","public_submissions")
-    .single();
-
-  if(error||!data){
-    console.error(error);
-    state.innerText="Could not load the submission setting.";
-    state.className="kill-state paused";
-    toggle.disabled=true;
-    return;
-  }
-
-  const enabled=data.public_submissions_enabled===true;
-  toggle.checked=enabled;
-  toggle.disabled=false;
-  panel.className="kill-switch "+(enabled?"open":"paused");
-  state.className="kill-state "+(enabled?"open":"paused");
-  state.innerText=enabled
-    ? "OPEN — the public can submit mistakes."
-    : "PAUSED — all new public mistake submissions are blocked.";
-}
-
-async function changePublicSubmissionSetting(){
-  const toggle=document.getElementById("publicSubmissionsToggle");
-  const desired=toggle.checked;
-  const wording=desired?"turn public submissions ON":"PAUSE all new public submissions";
-
-  if(!confirm(`Are you sure you want to ${wording}?`)){
-    toggle.checked=!desired;
-    return;
-  }
-
-  toggle.disabled=true;
-  const {data:sessionData}=await client.auth.getSession();
-  const userId=sessionData?.session?.user?.id||null;
-  const {error}=await client
-    .from("app_settings")
-    .update({public_submissions_enabled:desired,updated_by:userId})
-    .eq("id","public_submissions");
-
-  if(error){
-    console.error(error);
-    alert("The submission setting could not be changed.");
-    toggle.checked=!desired;
-  }
-
-  await loadPublicSubmissionSetting();
-}
-
 async function loadDashboardCounts(){
   const status=document.getElementById("status");
   status.innerText="Loading dashboard...";
-  const [mistakesResult,submissionsResult,reportsResult]=await Promise.all([
+
+  const [mistakesResult,submissionsResult,aiReviewResult,reportsResult,missingArtworkResult,contentReadyResult]=await Promise.all([
     client.from("mistakes").select("id",{count:"exact",head:true}),
     client.from("mistake_submissions").select("id",{count:"exact",head:true}).eq("status","pending"),
-    client.from("mistake_reports").select("id",{count:"exact",head:true}).eq("status","open")
+    client.from("mistake_submissions").select("id",{count:"exact",head:true}).eq("status","pending").eq("ai_status","not_reviewed"),
+    client.from("mistake_reports").select("id",{count:"exact",head:true}).eq("status","open"),
+    client.from("mistakes").select("id",{count:"exact",head:true}).is("artwork_url", null),
+    client.from("content_assets").select("id",{count:"exact",head:true})
   ]);
+
   if(mistakesResult.error) console.error(mistakesResult.error);
   if(submissionsResult.error) console.error(submissionsResult.error);
+  if(aiReviewResult.error) console.error(aiReviewResult.error);
   if(reportsResult.error) console.error(reportsResult.error);
+  if(missingArtworkResult.error) console.error(missingArtworkResult.error);
+  if(contentReadyResult.error) console.warn("Content assets table may not be installed yet:",contentReadyResult.error);
+
   const mistakeCount=mistakesResult.count ?? 0;
   document.getElementById("mistakeCount").innerText=mistakeCount;
   document.getElementById("manageCount").innerText=mistakeCount;
   document.getElementById("submissionCount").innerText=submissionsResult.count ?? 0;
+  document.getElementById("aiReviewCount").innerText=aiReviewResult.count ?? 0;
   document.getElementById("reportCount").innerText=reportsResult.count ?? 0;
+  document.getElementById("missingArtworkCount").innerText=missingArtworkResult.count ?? 0;
+  document.getElementById("contentReadyCount").innerText=contentReadyResult.count ?? 0;
+
   status.innerText="Admin access confirmed.";
 }
 
@@ -216,11 +178,7 @@ async function logout(){
   window.location.href="admin-login.html";
 }
 
-requireSportsMistakesAdminInline().then(async ok=>{
-  if(ok){
-    await Promise.all([loadDashboardCounts(),loadPublicSubmissionSetting()]);
-  }
-});
+requireSportsMistakesAdminInline().then(ok=>{if(ok)loadDashboardCounts();});
 </script>
 </body>
 </html>
