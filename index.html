@@ -3409,6 +3409,8 @@ function formatNumber(n) {
 
     function confirmAiSuggestion(){
       const input=document.getElementById("nominationInput");
+      const status=document.getElementById("nominationStatus");
+      const result=document.getElementById("nominationResult");
       if(!input)return;
 
       const original=String(input.value||"").trim();
@@ -3422,7 +3424,18 @@ function formatNumber(n) {
         }
       }
 
-      nominateFromHome();
+      if(status){
+        status.className="nomination-status active good";
+        status.textContent="Thanks! We identified the event.";
+      }
+      if(result){
+        result.className="nomination-result active";
+        result.innerHTML=`
+          <strong>Thanks!</strong>
+          <p>We are now adding your nomination to the SportsMistakes database.</p>`;
+      }
+
+      nominateFromHome(true);
     }
 
     function rejectAiSuggestion(){
@@ -3445,7 +3458,7 @@ function formatNumber(n) {
       }
     }
 
-    async function nominateFromHome(){
+    async function nominateFromHome(confirmedEvent=false){
       const input=document.getElementById("nominationInput");
       const status=document.getElementById("nominationStatus");
       const result=document.getElementById("nominationResult");
@@ -3462,10 +3475,12 @@ function formatNumber(n) {
 
       const originalButton=button?.textContent||"Nominate It";
       if(button){button.disabled=true;button.textContent="Researching…";}
-      status.className="nomination-status active";
-      status.textContent="Checking the nomination, researching the real event, and looking for an existing SportsMistakes record…";
-      result.className="nomination-result";
-      result.innerHTML="";
+      if(!confirmedEvent){
+        status.className="nomination-status active";
+        status.textContent="Checking the nomination, researching the real event, and looking for an existing SportsMistakes record…";
+        result.className="nomination-result";
+        result.innerHTML="";
+      }
 
       try{
         const resp=await fetch(`${SUPABASE_URL}/functions/v1/nominate-mistake`,{
