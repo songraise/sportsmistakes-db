@@ -898,14 +898,41 @@
 
     .verdict-combined{
       display:grid;
-      grid-template-columns:minmax(230px,.7fr) minmax(0,1.3fr);
-      gap:16px;
+      grid-template-columns:minmax(300px,.8fr) minmax(520px,1.2fr);
+      gap:20px;
       align-items:stretch;
     }
 
     .verdict-vote{
       padding-right:16px;
       border-right:1px solid rgba(116,185,255,.22);
+    }
+
+    .verdict-results-wrap{
+      display:flex;
+      align-items:center;
+      gap:14px;
+      margin-top:10px;
+    }
+
+    .vote-pie{
+      width:86px;
+      height:86px;
+      flex:0 0 86px;
+      border-radius:50%;
+      background:conic-gradient(#1e90ff 0deg 0deg,#444 0deg 360deg);
+      border:3px solid rgba(255,255,255,.14);
+      box-shadow:0 8px 18px rgba(0,0,0,.28);
+      position:relative;
+    }
+
+    .vote-pie::after{
+      content:"";
+      position:absolute;
+      inset:24px;
+      border-radius:50%;
+      background:#0a192a;
+      border:1px solid rgba(255,255,255,.08);
     }
 
     .verdict-learn h2{
@@ -922,8 +949,8 @@
 
     .verdict-learn-grid{
       display:grid;
-      grid-template-columns:minmax(180px,.72fr) minmax(220px,1.28fr);
-      gap:10px;
+      grid-template-columns:minmax(260px,.9fr) minmax(300px,1.1fr);
+      gap:14px;
       align-items:start;
     }
 
@@ -944,6 +971,8 @@
       .verdict-combined{grid-template-columns:1fr}
       .verdict-vote{padding-right:0;padding-bottom:14px;border-right:none;border-bottom:1px solid rgba(116,185,255,.22)}
       .verdict-learn-grid{grid-template-columns:1fr}
+      .vote-pie{width:74px;height:74px;flex-basis:74px}
+      .vote-pie::after{inset:20px}
     }
 
     /* ===== COMPACT ONE-PAGE DESKTOP DASHBOARD ===== */
@@ -1127,13 +1156,13 @@
       .lesson-picker-title,.lesson-results-title{font-size:13px;margin-bottom:6px}
       .lesson-picker-note{font-size:10px;margin-bottom:7px}
       .lesson-options{
-        grid-template-columns:repeat(3,minmax(0,1fr));
-        gap:5px;
+        grid-template-columns:repeat(2,minmax(0,1fr));
+        gap:7px;
       }
       .lesson-option{
-        padding:6px 7px;
-        font-size:10px;
-        gap:5px;
+        padding:8px 9px;
+        font-size:12px;
+        gap:7px;
       }
       .lesson-option input{width:13px;height:13px}
       .lesson-submit{margin-top:8px;padding:7px 10px;font-size:11px}
@@ -1279,13 +1308,16 @@ async function loadMistake(){
               <button class="yes-btn" onclick="submitVote('yes')">YES — Mistake</button>
               <button class="no-btn" onclick="submitVote('no')">NO — Not a Mistake</button>
             </div>
-            <div id="voteResults">Loading votes...</div>
+            <div class="verdict-results-wrap">
+              <div id="votePie" class="vote-pie" aria-label="Fan verdict pie chart"></div>
+              <div id="voteResults">Loading votes...</div>
+            </div>
           </div>
           <div class="verdict-learn">
             <div class="verdict-learn-head">
               <div>
-                <h2>💡 Learn From This Mistake</h2>
-                <p>What are the biggest lessons? Choose up to 3.</p>
+                <h2>💡 If YES, Why?</h2>
+                <p>Choose up to 3 lessons.</p>
               </div>
             </div>
             <div class="verdict-learn-grid">
@@ -1438,8 +1470,22 @@ async function loadVotes(){
   const{data,error}=await client.from("mistake_votes").select("vote").eq("mistake_id",id);
   if(error){box.innerText="Could not load votes.";console.error(error);return}
   const votes=data||[],total=votes.length,yes=votes.filter(v=>v.vote==="yes").length,no=votes.filter(v=>v.vote==="no").length;
-  if(total===0){box.innerHTML="No votes yet. Be the first to vote.";return}
+  if(total===0){
+    const pie=document.getElementById("votePie");
+    if(pie){
+      pie.style.background="conic-gradient(#29425f 0deg 360deg)";
+      pie.setAttribute("title","No votes yet");
+    }
+    box.innerHTML="No votes yet. Be the first to vote.";
+    return;
+  }
   const yesPercent=Math.round((yes/total)*100),noPercent=Math.round((no/total)*100);
+  const pie=document.getElementById("votePie");
+  if(pie){
+    const yesDegrees=Math.round((yes/total)*360);
+    pie.style.background=`conic-gradient(#1e90ff 0deg ${yesDegrees}deg,#444 ${yesDegrees}deg 360deg)`;
+    pie.setAttribute("title",`${yesPercent}% YES / ${noPercent}% NO`);
+  }
   const locked=localStorage.getItem("sportsmistakes_vote_"+id)?"<br><span style=\"color:#a8b3c1;font-size:13px\">Your vote is locked for this mistake.</span>":"";
   box.innerHTML=`<strong>${yesPercent}% YES</strong> / ${noPercent}% NO<br>${total} total vote${total===1?"":"s"}${locked}`;
 }
