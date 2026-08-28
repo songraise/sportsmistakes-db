@@ -1832,6 +1832,49 @@
       .battle-vote-btn{padding:9px 10px;font-size:11px}
     }
 
+
+    /* ===== HOMEPAGE CLEANUP — AUG 28 ===== */
+    .search-title-row{
+      display:flex;
+      gap:13px;
+      align-items:center;
+      text-align:left;
+    }
+    .search-title-icon{
+      width:42px;
+      height:42px;
+      border-radius:50%;
+      display:grid;
+      place-items:center;
+      color:#fff;
+      background:#e22424;
+      font-size:21px;
+      flex:0 0 auto;
+    }
+
+    .top-search .search-row{
+      background:#fff !important;
+      border:1px solid rgba(255,255,255,.25) !important;
+    }
+    .top-search .search-icon{
+      color:#111827 !important;
+    }
+    .top-search #searchInput{
+      background:#fff !important;
+      color:#111827 !important;
+    }
+    .top-search #searchInput::placeholder{
+      color:#6b7280 !important;
+    }
+
+    @media(max-width:760px){
+      .search-title-icon{
+        width:38px;
+        height:38px;
+        font-size:19px;
+      }
+    }
+
 </style>
 <script src="sportsmistakes-analytics.js" defer></script>
 </head>
@@ -1883,9 +1926,14 @@
 
       <section class="search-hero top-search">
       <div class="search-topline">
-        <div class="engage-kicker">SEARCH THE RECORD</div>
-        <h2>Find a Sports Mistake</h2>
-        <p>Search by moment, athlete, team, sport, year or lesson.</p>
+        <div class="search-title-row">
+          <div class="search-title-icon">🔍</div>
+          <div>
+            <div class="engage-kicker">SEARCH THE RECORD</div>
+            <h2>Find a Sports Mistake</h2>
+            <p>Search by moment, athlete, team, sport, year or lesson.</p>
+          </div>
+        </div>
       </div>
 
       <div class="search-row">
@@ -2085,32 +2133,8 @@
         </div>
         <div class="today-grid museum-today-grid" id="todaysFiveGrid"></div>
       </section>
-<section class="judge-museum-wrap">
-        <div class="museum-section-head compact">
-          <div>
-            <div class="section-kicker">JUDGE · LEARN · COMPARE</div>
-            <h2>Make the call</h2>
-          </div>
-        </div>
-        <section class="judge-hero" id="judgeHero">
-          <div class="judge-art"><div class="featured-placeholder">🏆</div></div>
-          <div class="judge-copy"><div class="judge-label">Today's Sports Mistake</div><h2>Loading...</h2></div>
-        </section>
-      </section>
-
-      <section class="museum-two-col">
-        <div class="museum-feature-panel battle-panel">
-          <div class="panel-title-row">
-            <div>
-              <div class="section-kicker">⚔️ MISTAKE BATTLE</div>
-              <h2>Which was worse?</h2>
-            </div>
-            <a href="rankings.html">View rankings →</a>
-          </div>
-          <div class="battle-grid" id="museumBattle"></div>
-        </div>
-
-        <div class="museum-feature-panel rankings-panel">
+<section class="museum-two-col">
+<div class="museum-feature-panel rankings-panel">
           <div class="panel-title-row">
             <div>
               <div class="section-kicker">📊 RANKINGS</div>
@@ -3282,29 +3306,10 @@ function formatNumber(n) {
       if(!mistakes.length) return;
 
       const featured=findFeaturedMistake();
-      const heroArt=document.getElementById("museumHeroArt");
-      if(heroArt && featured){
-        heroArt.innerHTML=renderArt(featured,"featured");
-      }
+
 
       const pool=getQuickPlayPool();
-      const battle=pool.slice(0,2);
-      const battleBox=document.getElementById("museumBattle");
-      if(battleBox && battle.length===2){
-        const card=(m)=>`
-          <a class="battle-card" href="mistake.html?id=${encodeURIComponent(m.id)}">
-            <div class="battle-art">${renderArt(m,"card")}</div>
-            <div class="battle-copy">
-              <strong>${escapeHtml(m.title||"Untitled Mistake")}</strong>
-              <span>${escapeHtml([m.year,m.sport].filter(Boolean).join(" • "))}</span>
-            </div>
-          </a>`;
-        battleBox.innerHTML=`
-          ${card(battle[0])}
-          <div class="battle-vs">VS.</div>
-          ${card(battle[1])}
-          <div class="battle-footer">Open either moment, judge it, then see where it ranks with fans.</div>`;
-      }
+
 
       const ranked=[...mistakes]
         .sort((a,b)=>{
