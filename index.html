@@ -1755,6 +1755,15 @@
     }
     .home-three-actions a{background:linear-gradient(135deg,#e22424,#b91313)}
     .home-three-actions button:hover,.home-three-actions a:hover{filter:brightness(1.1)}
+    .homepage-nominate-card{
+      max-width:1060px;
+      margin:10px auto 12px;
+      padding:16px 18px;
+    }
+    .homepage-nominate-card .nominate-title-row{margin-bottom:10px}
+    .homepage-nominate-card .nominate-note,
+    .homepage-nominate-card .nominate-steps{display:none}
+
     .top-search{
       margin:10px 0 14px;
       padding:18px 16px 20px;
@@ -1775,6 +1784,11 @@
       .home-three-actions a,.home-three-actions button{
         flex:1 1 30%;min-width:0;min-height:38px;padding:8px 6px;font-size:11px
       }
+      .homepage-nominate-card{margin:6px 0 8px;padding:13px 11px}
+      .homepage-nominate-card .nominate-title-row h2{font-size:17px}
+      .homepage-nominate-card .nominate-title-row p{font-size:12px}
+      .homepage-nominate-card .nominate-row{grid-template-columns:1fr}
+      .homepage-nominate-card .nominate-row button{min-height:44px}
       .top-search{padding:13px 10px 14px;margin:6px 0 10px}
       .search-topline{margin-bottom:9px}
       .search-topline h2{font-size:19px}
@@ -1844,11 +1858,27 @@
       <section class="home-fast-intro">
         <div class="museum-kicker">THE CROWD-SOURCED RECORD OF SPORTS MISTAKES</div>
         <h1>Learn from History's Biggest <span>Sports Mistakes</span></h1>
-        <div class="home-three-actions">
-          <a href="submit.html">Nominate</a>
-          <button type="button" onclick="startTodaysFive()">Judge</button>
-          <button type="button" onclick="openSearchExperience()">Learn</button>
+      </section>
+
+      <section class="nominate-card homepage-nominate-card" id="nominate">
+        <div class="nominate-title-row">
+          <div class="nominate-icon">✎</div>
+          <div>
+            <h2>Nominate a Sports Mistake</h2>
+            <p>What mistake belongs in the record?</p>
+          </div>
         </div>
+
+        <div class="nominate-row">
+          <input id="nominationInput" type="text" maxlength="180"
+            placeholder="e.g. Buckner lets ball pass through his legs"
+            aria-label="Nominate a sports mistake">
+          <button type="button" onclick="nominateFromHome()">Nominate It</button>
+        </div>
+
+        <div id="nominationMatches" class="nomination-matches" aria-live="polite"></div>
+        <div id="nominationStatus" class="nomination-status" aria-live="polite"></div>
+        <div id="nominationResult" class="nomination-result"></div>
       </section>
 
       <section class="search-hero top-search">
