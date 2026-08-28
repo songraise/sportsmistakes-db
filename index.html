@@ -3271,3 +3271,9 @@
     loadMistakes().catch(err => {
       console.error(err);
       const stats = document.getElementById("stats");
+      if (stats) stats.innerText = "Error loading page: " + (err?.message || err);
+    });
+  </script>
+
+</body>
+</html>
