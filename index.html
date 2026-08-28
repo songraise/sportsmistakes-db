@@ -3098,22 +3098,70 @@ function formatNumber(n) {
       const q=normalize(query).trim();
       if(!q) return [];
 
+      const aliases={
+        "habs":["canadiens","montreal canadiens","montreal"],
+        "leafs":["maple leafs","toronto maple leafs","toronto"],
+        "bruins":["boston bruins","boston"],
+        "habsroy":["patrick roy","roy","canadiens","montreal"]
+      };
+
+      const rawTokens=q.split(/\s+/).filter(Boolean);
+      const expandedTokens=[];
+
+      rawTokens.forEach(token=>{
+        expandedTokens.push(token);
+        (aliases[token]||[]).forEach(alias=>{
+          normalize(alias).split(/\s+/).filter(Boolean).forEach(t=>expandedTokens.push(t));
+        });
+      });
+
+      const uniqueTokens=[...new Set(expandedTokens)];
+
       return mistakes
-        .filter(m=>{
-          const text=normalize(
-            `${m.title||""} ${m.sport||""} ${m.category||""} ${m.subcategory||""} `+
+        .map(m=>{
+          const haystack=normalize(
+            `${m.title||""} ${m.sport||""} ${m.league||""} ${m.category||""} ${m.subcategory||""} `+
             `${m.teams_people||""} ${m.key_people||""} ${m.summary||""} ${m.why_it_matters||""}`
           );
-          return text.includes(q);
+
+          const title=normalize(m.title||"");
+          let score=0;
+
+          if(haystack.includes(q)) score+=100;
+          if(title===q) score+=120;
+          else if(title.startsWith(q)) score+=90;
+          else if(title.includes(q)) score+=70;
+
+          let matchedOriginal=0;
+          rawTokens.forEach(token=>{
+            if(haystack.includes(token)){
+              matchedOriginal++;
+              score+=28;
+            }else{
+              const aliasMatches=(aliases[token]||[]).some(a=>haystack.includes(normalize(a)));
+              if(aliasMatches){
+                matchedOriginal++;
+                score+=22;
+              }
+            }
+          });
+
+          uniqueTokens.forEach(token=>{
+            if(haystack.includes(token)) score+=3;
+          });
+
+          // Require every original idea to be represented for short searches like "Habs Roy".
+          if(rawTokens.length>1 && matchedOriginal<rawTokens.length) return null;
+          if(rawTokens.length===1 && matchedOriginal===0 && !haystack.includes(q)) return null;
+
+          return {m,score};
         })
+        .filter(Boolean)
         .sort((a,b)=>{
-          const at=normalize(a.title);
-          const bt=normalize(b.title);
-          const aRank=at===q?0:at.startsWith(q)?1:at.includes(q)?2:3;
-          const bRank=bt===q?0:bt.startsWith(q)?1:bt.includes(q)?2:3;
-          if(aRank!==bRank) return aRank-bRank;
-          return Number(b.controversy_score||0)-Number(a.controversy_score||0);
-        });
+          if(b.score!==a.score) return b.score-a.score;
+          return Number(b.m.controversy_score||0)-Number(a.m.controversy_score||0);
+        })
+        .map(x=>x.m);
     }
 
     function renderNominationMatches(){
@@ -3247,12 +3295,24 @@ function formatNumber(n) {
         }
 
         if(data.outcome==="needs_clarification"){
+          const didYouMean=String(data.did_you_mean||"").trim();
+          const likelySubject=String(data.likely_subject||"").trim();
+          const question=String(
+            data.clarification_question||
+            data.verification_note||
+            "Try adding the player, team, opponent, year, or game."
+          ).trim();
+
           status.className="nomination-status active warn";
-          status.textContent="We couldn't confidently identify one specific event yet.";
+          status.textContent=didYouMean
+            ? `Possible match: ${didYouMean}`
+            : "We need one more clue.";
+
           result.className="nomination-result active";
           result.innerHTML=`
-            <strong>Add one more clue</strong>
-            <p>${escapeHtml(data.verification_note||"Try adding the player, team, opponent, year, or game.")}</p>
+            <strong>${didYouMean ? `Did you mean: ${escapeHtml(didYouMean)}?` : "Add one more clue"}</strong>
+            ${likelySubject && !didYouMean ? `<p>Likely subject: <strong>${escapeHtml(likelySubject)}</strong></p>` : ""}
+            <p>${escapeHtml(question)}</p>
             <a href="submit.html?nomination=${encodeURIComponent(text)}">Add more detail →</a>`;
           return;
         }
