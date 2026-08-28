@@ -860,24 +860,30 @@
     .mini-community{
       display:flex;
       align-items:center;
-      gap:9px;
-      flex-wrap:wrap;
-      margin-top:7px;
+      gap:10px;
+      flex-wrap:nowrap;
+      margin-top:0;
       color:#e5e7eb;
       font-size:10px;
       font-weight:900;
+      min-width:0;
     }
-    .mini-community.compact{gap:7px;margin-top:5px}
+    .mini-community.compact{
+      gap:8px;
+      margin-top:0;
+      flex-wrap:nowrap;
+    }
     .mini-verdict{
       display:flex;
       align-items:center;
       gap:5px;
       white-space:nowrap;
+      flex:0 0 auto;
     }
     .mini-donut{
-      width:25px;
-      height:25px;
-      flex:0 0 25px;
+      width:24px;
+      height:24px;
+      flex:0 0 24px;
       border-radius:50%;
       position:relative;
       border:1px solid rgba(255,255,255,.15);
@@ -891,9 +897,9 @@
       background:#0d1620;
     }
     .mini-lesson{
-      flex:1 1 110px;
-      min-width:90px;
-      max-width:190px;
+      flex:1 1 auto;
+      min-width:105px;
+      max-width:180px;
     }
     .mini-lesson-head{
       display:flex;
@@ -922,14 +928,30 @@
       min-width:2px;
     }
     .mini-no-data{color:#7f8a98;font-size:9px;font-weight:800}
-    .today-body .mini-community{margin-top:6px}
-    .row-extra + .mini-community{margin-top:5px}
-    .search-result-score + .mini-community{margin-top:6px}
+    .card-stats{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      flex-wrap:nowrap;
+    }
+    .card-stats .mini-community{
+      margin-left:auto;
+    }
+    .today-meta-line,
+    .search-meta-line,
+    .row-meta-line{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      flex-wrap:nowrap;
+      min-width:0;
+    }
     @media(max-width:760px){
       .mini-donut{width:22px;height:22px;flex-basis:22px}
       .mini-donut::after{inset:5px}
       .mini-community{font-size:9px;gap:6px}
-      .mini-lesson{min-width:82px;max-width:none}
+      .mini-lesson{min-width:90px;max-width:150px}
+      .card-stats{gap:7px}
     }
 
     .card-stats {
@@ -2419,8 +2441,10 @@
           <div>
             <div class="row-title">${escapeHtml(m.title || "Untitled Mistake")}</div>
             <div class="row-meta">${escapeHtml([m.year, m.sport, m.category].filter(Boolean).join(", "))}</div>
-            <div class="row-extra">${escapeHtml(extraFn(m))}</div>
-            ${renderMiniCommunity(m.id, true)}
+            <div class="row-meta-line">
+              <div class="row-extra">${escapeHtml(extraFn(m))}</div>
+              ${renderMiniCommunity(m.id, true)}
+            </div>
           </div>
         </a>
       `).join("");
@@ -2493,7 +2517,7 @@
         lessonHtml = `
           <span class="mini-lesson" title="Top Community Lesson: ${escapeHtml(lesson.name)}">
             <span class="mini-lesson-head">
-              <span class="mini-lesson-name">💡 ${escapeHtml(lesson.name)}</span>
+              <span class="mini-lesson-name">💡 <strong>${escapeHtml(lesson.name)}</strong></span>
               <span>${lesson.percent}%</span>
             </span>
             <span class="mini-lesson-track">
@@ -2608,8 +2632,11 @@
             <div>
               <div class="search-result-title">${escapeHtml(m.title || "Untitled Mistake")}</div>
               <div class="search-result-meta">${escapeHtml(meta)}</div>
+              <div class="search-meta-line">
+                <span>👁 ${formatNumber(m.views||0)}</span>
+                ${renderMiniCommunity(m.id, true)}
+              </div>
               <div class="search-result-score">${escapeHtml(m.controversy_score || 0)}/100 controversy</div>
-              ${renderMiniCommunity(m.id, true)}
             </div>
             <div class="search-result-read">Read →</div>
           </a>
@@ -2645,9 +2672,9 @@
             <div class="meta">${escapeHtml([m.year, m.category].filter(Boolean).join(" • "))}</div>
             <div class="card-stats">
               <span>👁 ${formatNumber(m.views || 0)}</span>
+              ${renderMiniCommunity(m.id)}
               <span>🔥 ${m.controversy_score || 0}/100</span>
             </div>
-            ${renderMiniCommunity(m.id)}
             ${renderFanVerdict(m.id)}
             <div class="summary">${escapeHtml(m.summary || "No summary added yet.")}</div>
           </div>
@@ -2967,7 +2994,7 @@
       const grid=document.getElementById("todaysFiveGrid"); if(!grid) return;
       const five=getQuickPlayPool().slice(0,5);
       grid.innerHTML=five.map((m,i)=>`<a class="today-card" href="#judgeHero" onclick="quickPlayIndex=${i};renderQuickPlay(getQuickPlayPool()[${i}]);return true;">
-        <div class="today-art">${renderArt(m,"card")}</div><div class="today-body"><div class="today-title">${escapeHtml(m.title||"Untitled Mistake")}</div><div class="today-meta">${escapeHtml([m.year,m.sport].filter(Boolean).join(" • "))}</div>${renderMiniCommunity(m.id,true)}</div></a>`).join("");
+        <div class="today-art">${renderArt(m,"card")}</div><div class="today-body"><div class="today-title">${escapeHtml(m.title||"Untitled Mistake")}</div><div class="today-meta">${escapeHtml([m.year,m.sport].filter(Boolean).join(" • "))}</div><div class="today-meta-line"><span>👁 ${formatNumber(m.views||0)}</span>${renderMiniCommunity(m.id,true)}</div></div></a>`).join("");
     }
 
     function startTodaysFive(){ document.getElementById("todaysFivePanel")?.scrollIntoView({behavior:"smooth",block:"start"}); }
