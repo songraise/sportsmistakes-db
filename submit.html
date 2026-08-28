@@ -172,21 +172,14 @@ function explicitExistingMistakeId(result){
 }
 
 function confirmAiSuggestionOnSubmit(){
-  const input=document.getElementById("nominationInput");
-  if(!input)return;
+  const status=document.getElementById("status");
 
-  const original=String(input.value||"").trim();
-  const suggestion=String(pendingAiSuggestion||"").trim();
+  status.className="status active good";
+  status.innerHTML=`
+    <strong>Thanks!</strong><br>
+    We identified the event. We are now adding your nomination to the SportsMistakes review queue.`;
 
-  if(suggestion){
-    const originalNorm=normalize(original);
-    const suggestionNorm=normalize(suggestion);
-    if(!originalNorm.includes(suggestionNorm)){
-      input.value=`${original} — ${suggestion}`;
-    }
-  }
-
-  nominate();
+  nominate(true);
 }
 
 function rejectAiSuggestionOnSubmit(){
@@ -201,7 +194,7 @@ function rejectAiSuggestionOnSubmit(){
   }
 }
 
-async function nominate(){
+async function nominate(confirmedEvent=false){
   const input=document.getElementById("nominationInput");
   const button=document.getElementById("nominateButton");
   const status=document.getElementById("status");
@@ -214,9 +207,11 @@ async function nominate(){
   }
 
   button.disabled=true;
-  button.textContent="Researching…";
-  status.className="status active";
-  status.textContent="Checking the Record and researching this nomination…";
+  button.textContent=confirmedEvent ? "Adding…" : "Researching…";
+  if(!confirmedEvent){
+    status.className="status active";
+    status.textContent="Checking the Record and researching this nomination…";
+  }
 
   try{
     const response=await fetch(`${SUPABASE_URL}/functions/v1/nominate-mistake`,{
@@ -227,7 +222,9 @@ async function nominate(){
       },
       body:JSON.stringify({
         nomination,
-        client_id:getClientId()
+        client_id:getClientId(),
+        confirmed_event:confirmedEvent === true,
+        confirmed_subject:confirmedEvent ? String(pendingAiSuggestion||"") : ""
       })
     });
 
