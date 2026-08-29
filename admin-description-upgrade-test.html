@@ -1,887 +1,1574 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
+
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 
-  <title>SportsMistakes — Description Upgrade Test</title>
+<title>SportsMistakes — AI Database Upgrade Test</title>
 
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-  <style>
-    * {
-      box-sizing: border-box;
-    }
+<style>
 
-    body {
-      margin: 0;
-      background: #07111f;
-      color: #f4f7fb;
-      font-family: Arial, Helvetica, sans-serif;
-    }
+* {
+  box-sizing: border-box;
+}
 
-    .top-nav {
-      background: #0c1a2c;
-      border-bottom: 1px solid #203852;
-      padding: 15px 24px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 20px;
-      position: sticky;
-      top: 0;
-      z-index: 100;
-    }
+body {
+  margin: 0;
+  background: #07111f;
+  color: #f4f7fb;
+  font-family: Arial, Helvetica, sans-serif;
+}
 
-    .brand {
-      font-size: 20px;
-      font-weight: 800;
-      cursor: pointer;
-    }
+/* ============================================================
+   TOP NAV
+   ============================================================ */
 
-    .brand span {
-      color: #ff4d4d;
-    }
+.top-nav {
+  background: #0c1a2c;
+  border-bottom: 1px solid #203852;
+  padding: 15px 24px;
 
-    .nav-links {
-      display: flex;
-      gap: 12px;
-      align-items: center;
-      flex-wrap: wrap;
-    }
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
 
-    .nav-links a,
-    .nav-links button {
-      color: white;
-      background: transparent;
-      border: 0;
-      text-decoration: none;
-      cursor: pointer;
-      font-size: 14px;
-    }
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
 
-    .nav-links button {
-      border: 1px solid #41536a;
-      border-radius: 7px;
-      padding: 7px 11px;
-    }
+.brand {
+  font-size: 20px;
+  font-weight: 800;
+  cursor: pointer;
+}
 
-    .container {
-      max-width: 1500px;
-      margin: 0 auto;
-      padding: 28px 20px 80px;
-    }
+.brand span {
+  color: #ff4d4d;
+}
 
-    h1 {
-      margin: 0 0 8px;
-      font-size: 34px;
-    }
+.nav-links {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  flex-wrap: wrap;
+}
 
-    .subtitle {
-      color: #aebed0;
-      line-height: 1.5;
-      max-width: 950px;
-      margin-bottom: 20px;
-    }
+.nav-links a,
+.nav-links button {
+  color: white;
+  background: transparent;
+  border: 0;
+  text-decoration: none;
+  cursor: pointer;
+  font-size: 14px;
+}
 
-    .warning {
-      background: #182535;
-      border: 1px solid #3e5875;
-      border-radius: 12px;
-      padding: 15px 18px;
-      margin: 18px 0;
-      line-height: 1.5;
-    }
+.nav-links button {
+  border: 1px solid #41536a;
+  border-radius: 7px;
+  padding: 7px 11px;
+}
 
-    .warning strong {
-      color: #77d8a8;
-    }
+/* ============================================================
+   PAGE
+   ============================================================ */
 
-    .controls {
-      background: #0d1b2e;
-      border: 1px solid #203852;
-      border-radius: 14px;
-      padding: 20px;
-      margin: 20px 0;
-    }
+.container {
+  max-width: 1500px;
+  margin: 0 auto;
+  padding: 28px 20px 80px;
+}
 
-    .main-button {
-      appearance: none;
-      border: 0;
-      border-radius: 10px;
-      background: #d84040;
-      color: white;
-      font-size: 17px;
-      font-weight: bold;
-      padding: 14px 22px;
-      cursor: pointer;
-      min-width: 280px;
-    }
+h1 {
+  font-size: 34px;
+  margin: 0 0 8px;
+}
 
-    .main-button:hover {
-      background: #ed5151;
-    }
+.subtitle {
+  max-width: 1000px;
+  color: #aebed0;
+  line-height: 1.55;
+  margin-bottom: 20px;
+}
 
-    .main-button:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-    }
+.safety {
+  background: #13281f;
+  border: 1px solid #35654b;
+  color: #c9f0da;
+  border-radius: 12px;
+  padding: 15px 18px;
+  line-height: 1.55;
+  margin-bottom: 20px;
+}
 
-    .secondary-button {
-      appearance: none;
-      border: 1px solid #41536a;
-      border-radius: 10px;
-      background: #182638;
-      color: white;
-      font-size: 15px;
-      font-weight: bold;
-      padding: 12px 18px;
-      cursor: pointer;
-      margin-left: 8px;
-    }
+.safety strong {
+  color: #83e6ae;
+}
 
-    .status {
-      margin-top: 15px;
-      color: #b8c6d8;
-      line-height: 1.5;
-    }
+/* ============================================================
+   CONTROLS
+   ============================================================ */
 
-    .progress-wrap {
-      width: 100%;
-      background: #162437;
-      height: 14px;
-      border-radius: 20px;
-      overflow: hidden;
-      margin-top: 15px;
-      display: none;
-    }
+.controls {
+  background: #0d1b2e;
+  border: 1px solid #203852;
+  border-radius: 14px;
+  padding: 20px;
+  margin-bottom: 20px;
+}
 
-    .progress {
-      width: 0%;
-      height: 100%;
-      background: #4ba873;
-      transition: width 0.25s ease;
-    }
+.button-row {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
 
-    .summary-bar {
-      display: none;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 12px;
-      margin: 20px 0;
-    }
+button {
+  font-family: inherit;
+}
 
-    .summary-box {
-      background: #0d1b2e;
-      border: 1px solid #203852;
-      border-radius: 12px;
-      padding: 16px;
-    }
+.main-button {
+  border: 0;
+  border-radius: 10px;
+  background: #d84040;
+  color: white;
 
-    .summary-number {
-      font-size: 28px;
-      font-weight: 800;
-      margin-bottom: 4px;
-    }
+  padding: 14px 21px;
 
-    .summary-label {
-      color: #9fb0c4;
-      font-size: 13px;
-    }
+  font-size: 16px;
+  font-weight: 800;
 
-    #results {
-      display: flex;
-      flex-direction: column;
-      gap: 22px;
-    }
+  cursor: pointer;
+}
 
-    .record {
-      background: #0d1b2e;
-      border: 1px solid #203852;
-      border-radius: 15px;
-      overflow: hidden;
-    }
+.main-button:hover {
+  background: #ec5050;
+}
 
-    .record-header {
-      padding: 17px 20px;
-      background: #111f32;
-      border-bottom: 1px solid #203852;
-      display: flex;
-      justify-content: space-between;
-      gap: 15px;
-      align-items: flex-start;
-    }
+.secondary-button {
+  border: 1px solid #41536a;
+  border-radius: 10px;
+  background: #19283b;
+  color: white;
 
-    .record-number {
-      color: #ff6a6a;
-      font-size: 12px;
-      font-weight: bold;
-      text-transform: uppercase;
-      margin-bottom: 5px;
-    }
+  padding: 13px 18px;
 
-    .record-title {
-      font-size: 21px;
-      font-weight: 800;
-      line-height: 1.25;
-    }
+  font-size: 15px;
+  font-weight: 700;
 
-    .metadata {
-      color: #91a5ba;
-      font-size: 13px;
-      margin-top: 6px;
-    }
+  cursor: pointer;
+}
 
-    .badge {
-      white-space: nowrap;
-      border-radius: 30px;
-      padding: 7px 11px;
-      font-size: 12px;
-      font-weight: bold;
-      background: #26384e;
-    }
+.stop-button {
+  border: 1px solid #886b34;
+  border-radius: 10px;
+  background: #493918;
+  color: #ffe3a5;
 
-    .badge.ready {
-      background: #173c2d;
-      color: #8ce5b5;
-    }
+  padding: 13px 18px;
 
-    .badge.warning-badge {
-      background: #493816;
-      color: #ffd783;
-    }
+  font-size: 15px;
+  font-weight: 700;
 
-    .badge.error {
-      background: #492020;
-      color: #ffaaaa;
-    }
+  cursor: pointer;
+}
 
-    .comparison {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-    }
+button:disabled {
+  opacity: .45;
+  cursor: not-allowed;
+}
 
-    .column {
-      padding: 20px;
-      min-width: 0;
-    }
+.status {
+  margin-top: 15px;
+  color: #b9c6d6;
+  line-height: 1.5;
+}
 
-    .column + .column {
-      border-left: 1px solid #203852;
-    }
+.progress-wrap {
+  display: none;
 
-    .old-column {
-      background: #0b1727;
-    }
+  width: 100%;
+  height: 14px;
 
-    .new-column {
-      background: #0e1e2f;
-    }
+  background: #17263a;
+  border-radius: 20px;
 
-    .column-title {
-      font-size: 13px;
-      font-weight: 800;
-      letter-spacing: 0.08em;
-      margin-bottom: 14px;
-    }
+  overflow: hidden;
+  margin-top: 15px;
+}
 
-    .old-column .column-title {
-      color: #ff9b9b;
-    }
+.progress {
+  width: 0%;
+  height: 100%;
 
-    .new-column .column-title {
-      color: #86d8aa;
-    }
+  background: #4ba873;
 
-    .description {
-      font-size: 16px;
-      line-height: 1.65;
-      white-space: pre-wrap;
-    }
+  transition: width .25s ease;
+}
 
-    .word-count {
-      color: #8499af;
-      font-size: 12px;
-      margin-top: 10px;
-    }
+/* ============================================================
+   DATABASE COUNTS
+   ============================================================ */
 
-    .field {
-      margin-top: 19px;
-      padding-top: 15px;
-      border-top: 1px solid #203852;
-    }
+.database-summary {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
 
-    .field-label {
-      color: #869ab0;
-      font-size: 11px;
-      font-weight: bold;
-      letter-spacing: 0.07em;
-      text-transform: uppercase;
-      margin-bottom: 6px;
-    }
+  margin-bottom: 20px;
+}
 
-    .field-value {
-      font-size: 14px;
-      line-height: 1.5;
-      overflow-wrap: anywhere;
-    }
+.summary-card {
+  background: #0d1b2e;
+  border: 1px solid #203852;
+  border-radius: 12px;
+  padding: 16px;
+}
 
-    .source-link {
-      color: #72b7ff;
-      text-decoration: none;
-      word-break: break-all;
-    }
+.summary-number {
+  font-size: 28px;
+  font-weight: 900;
+}
 
-    .source-link:hover {
-      text-decoration: underline;
-    }
+.summary-label {
+  margin-top: 4px;
+  color: #96a9bf;
+  font-size: 13px;
+}
 
-    .notes {
-      background: #091523;
-      border-top: 1px solid #203852;
-      padding: 15px 20px;
-      font-size: 13px;
-      line-height: 1.55;
-      color: #abbacd;
-    }
+/* ============================================================
+   CURRENT RUN COUNTS
+   ============================================================ */
 
-    .difference {
-      color: #ffd47c;
-      font-weight: bold;
-    }
+.run-summary {
+  display: none;
 
-    .placeholder {
-      padding: 35px;
-      text-align: center;
-      color: #8396aa;
-      background: #0d1b2e;
-      border: 1px dashed #314963;
-      border-radius: 14px;
-    }
+  grid-template-columns: repeat(6, 1fr);
+  gap: 10px;
 
-    .spinner {
-      display: inline-block;
-      height: 14px;
-      width: 14px;
-      border: 2px solid #60758c;
-      border-top-color: white;
-      border-radius: 50%;
-      animation: spin 0.7s linear infinite;
-      vertical-align: -2px;
-      margin-right: 5px;
-    }
+  margin-bottom: 22px;
+}
 
-    @keyframes spin {
-      to {
-        transform: rotate(360deg);
-      }
-    }
+.run-box {
+  background: #0d1b2e;
+  border: 1px solid #203852;
+  border-radius: 11px;
+  padding: 14px;
+}
 
-    @media (max-width: 850px) {
-      .comparison {
-        grid-template-columns: 1fr;
-      }
+.run-number {
+  font-size: 25px;
+  font-weight: 900;
+}
 
-      .column + .column {
-        border-left: 0;
-        border-top: 1px solid #203852;
-      }
+.run-label {
+  margin-top: 3px;
+  color: #92a5b9;
+  font-size: 12px;
+  line-height: 1.3;
+}
 
-      .summary-bar {
-        grid-template-columns: repeat(2, 1fr);
-      }
+/* ============================================================
+   RESULTS
+   ============================================================ */
 
-      .record-header {
-        flex-direction: column;
-      }
+#results {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
 
-      .main-button,
-      .secondary-button {
-        width: 100%;
-        margin: 5px 0;
-      }
+.placeholder {
+  background: #0d1b2e;
+  border: 1px dashed #314963;
+  border-radius: 14px;
 
-      h1 {
-        font-size: 28px;
-      }
-    }
-  </style>
+  padding: 35px;
+  text-align: center;
+
+  color: #8498ad;
+  line-height: 1.5;
+}
+
+/* ============================================================
+   RESULT CARD
+   ============================================================ */
+
+.record {
+  background: #0d1b2e;
+  border: 1px solid #203852;
+  border-radius: 15px;
+
+  overflow: hidden;
+}
+
+.record-header {
+  background: #111f32;
+  border-bottom: 1px solid #203852;
+
+  padding: 17px 20px;
+
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 15px;
+}
+
+.record-number {
+  color: #ff7070;
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+
+  margin-bottom: 5px;
+}
+
+.record-title {
+  font-size: 21px;
+  font-weight: 800;
+  line-height: 1.25;
+}
+
+.metadata {
+  color: #91a5ba;
+  font-size: 13px;
+  margin-top: 6px;
+}
+
+.badge {
+  white-space: nowrap;
+
+  border-radius: 30px;
+  padding: 7px 11px;
+
+  font-size: 12px;
+  font-weight: 800;
+
+  background: #26384e;
+}
+
+.badge.ready {
+  background: #173c2d;
+  color: #91ebba;
+}
+
+.badge.failed {
+  background: #4a2121;
+  color: #ffb0b0;
+}
+
+.badge.warning {
+  background: #493818;
+  color: #ffda8c;
+}
+
+.badge.processing {
+  background: #223a52;
+  color: #b9dcff;
+}
+
+/* ============================================================
+   COMPARISON
+   ============================================================ */
+
+.comparison {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+
+.column {
+  min-width: 0;
+  padding: 20px;
+}
+
+.column + .column {
+  border-left: 1px solid #203852;
+}
+
+.old-column {
+  background: #0b1727;
+}
+
+.new-column {
+  background: #0e1e2f;
+}
+
+.column-title {
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: .08em;
+
+  margin-bottom: 14px;
+}
+
+.old-column .column-title {
+  color: #ff9c9c;
+}
+
+.new-column .column-title {
+  color: #89deb0;
+}
+
+.description {
+  font-size: 16px;
+  line-height: 1.65;
+  white-space: pre-wrap;
+}
+
+.word-count {
+  color: #8196ad;
+  font-size: 12px;
+  margin-top: 10px;
+}
+
+.field {
+  border-top: 1px solid #203852;
+
+  margin-top: 18px;
+  padding-top: 14px;
+}
+
+.field-label {
+  color: #8499b0;
+
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: .07em;
+  text-transform: uppercase;
+
+  margin-bottom: 6px;
+}
+
+.field-value {
+  font-size: 14px;
+  line-height: 1.55;
+  overflow-wrap: anywhere;
+}
+
+.source-link {
+  color: #73b9ff;
+  text-decoration: none;
+  word-break: break-all;
+}
+
+.source-link:hover {
+  text-decoration: underline;
+}
+
+/* ============================================================
+   NOTES
+   ============================================================ */
+
+.notes {
+  background: #091523;
+  border-top: 1px solid #203852;
+
+  padding: 15px 20px;
+
+  color: #abbacd;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.fact-warning {
+  color: #ffd278;
+  font-weight: 800;
+}
+
+.saved-note {
+  color: #8de2b2;
+  font-weight: 800;
+}
+
+.live-warning {
+  color: #ffaaaa;
+  font-weight: 900;
+}
+
+/* ============================================================
+   SPINNER
+   ============================================================ */
+
+.spinner {
+  display: inline-block;
+
+  width: 14px;
+  height: 14px;
+
+  border: 2px solid #667d96;
+  border-top-color: white;
+
+  border-radius: 50%;
+
+  animation: spin .7s linear infinite;
+
+  vertical-align: -2px;
+  margin-right: 6px;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ============================================================
+   MOBILE
+   ============================================================ */
+
+@media(max-width:950px) {
+
+  .comparison {
+    grid-template-columns: 1fr;
+  }
+
+  .column + .column {
+    border-left: 0;
+    border-top: 1px solid #203852;
+  }
+
+  .run-summary {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .database-summary {
+    grid-template-columns: 1fr;
+  }
+
+}
+
+@media(max-width:650px) {
+
+  .container {
+    padding: 18px 12px 60px;
+  }
+
+  h1 {
+    font-size: 27px;
+  }
+
+  .record-header {
+    flex-direction: column;
+  }
+
+  .button-row button {
+    width: 100%;
+  }
+
+  .top-nav {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+}
+
+</style>
 </head>
 
 <body>
 
-  <nav class="top-nav">
+<!-- ============================================================
+     NAV
+     ============================================================ -->
+
+<nav class="top-nav">
+
+  <div
+    class="brand"
+    onclick="window.location.href='admin-dashboard.html'"
+  >
+    Sports<span>Mistakes</span> Admin
+  </div>
+
+  <div class="nav-links">
+
+    <a href="admin-dashboard.html">
+      Dashboard
+    </a>
+
+    <a href="admin-mistakes.html">
+      Mistakes
+    </a>
+
+    <a href="index.html">
+      Public Site
+    </a>
+
+    <button onclick="logout()">
+      Log Out
+    </button>
+
+  </div>
+
+</nav>
+
+<!-- ============================================================
+     PAGE
+     ============================================================ -->
+
+<main class="container">
+
+<h1>
+AI Database Description Upgrade
+</h1>
+
+<div class="subtitle">
+
+This test researches up to 50 existing SportsMistakes records using the
+same research approach now used for new nominations.
+
+Successful proposals are stored only in separate
+<strong>ai_upgrade_*</strong> staging fields.
+
+</div>
+
+<div class="safety">
+
+<strong>LIVE DATABASE CONTENT IS PROTECTED.</strong>
+
+This page does not replace the public title, summary, Why It Matters,
+or source fields.
+
+A researched proposal can be stored in staging, but the public website
+continues using the existing live record.
+
+</div>
+
+<!-- ============================================================
+     DATABASE COUNTS
+     ============================================================ -->
+
+<section class="database-summary">
+
+  <div class="summary-card">
+
     <div
-      class="brand"
-      onclick="window.location.href='admin-dashboard.html'"
+      class="summary-number"
+      id="totalRecords"
     >
-      Sports<span>Mistakes</span> Admin
+      —
     </div>
 
-    <div class="nav-links">
-      <a href="admin-dashboard.html">Dashboard</a>
-      <a href="admin-mistakes.html">Mistakes</a>
-      <a href="index.html">Public Site</a>
-      <button onclick="logout()">Log Out</button>
-    </div>
-  </nav>
-
-  <main class="container">
-
-    <h1>AI Description Upgrade Test</h1>
-
-    <div class="subtitle">
-      Test the new SportsMistakes research system against 10 real existing
-      records. The tool automatically selects records with the shortest
-      current descriptions and shows the existing record beside the newly
-      researched version.
+    <div class="summary-label">
+      Total SportsMistakes Records
     </div>
 
-    <div class="warning">
-      <strong>SAFE PREVIEW MODE:</strong>
-      Nothing on this page updates, replaces, deletes, or inserts a
-      SportsMistakes record. It only reads existing records and asks the
-      <strong>upgrade-existing-mistake</strong> Edge Function to research
-      proposed replacements.
+  </div>
+
+  <div class="summary-card">
+
+    <div
+      class="summary-number"
+      id="alreadyResearched"
+    >
+      —
     </div>
 
-    <section class="controls">
+    <div class="summary-label">
+      Already Researched Into Staging
+    </div>
 
-      <button
-        id="runButton"
-        class="main-button"
-        onclick="runTenRecordTest()"
-      >
-        Research 10 Shortest Descriptions
-      </button>
+  </div>
 
-      <button
-        id="resetButton"
-        class="secondary-button"
-        onclick="resetTest()"
-      >
-        Clear Results
-      </button>
+  <div class="summary-card">
 
-      <div id="status" class="status">
-        Checking admin access...
-      </div>
+    <div
+      class="summary-number"
+      id="remainingRecords"
+    >
+      —
+    </div>
 
-      <div id="progressWrap" class="progress-wrap">
-        <div id="progress" class="progress"></div>
-      </div>
+    <div class="summary-label">
+      Not Yet Researched
+    </div>
 
-    </section>
+  </div>
 
-    <section id="summaryBar" class="summary-bar">
+</section>
 
-      <div class="summary-box">
-        <div id="completeCount" class="summary-number">0</div>
-        <div class="summary-label">Researched</div>
-      </div>
+<!-- ============================================================
+     CONTROLS
+     ============================================================ -->
 
-      <div class="summary-box">
-        <div id="readyCount" class="summary-number">0</div>
-        <div class="summary-label">Ready for Review</div>
-      </div>
+<section class="controls">
 
-      <div class="summary-box">
-        <div id="differenceCount" class="summary-number">0</div>
-        <div class="summary-label">Possible Fact Differences</div>
-      </div>
+  <div class="button-row">
 
-      <div class="summary-box">
-        <div id="failureCount" class="summary-number">0</div>
-        <div class="summary-label">Needs Attention</div>
-      </div>
+    <button
+      id="loadButton"
+      class="secondary-button"
+      onclick="loadFifty()"
+    >
+      Load Next 50 Shortest
+    </button>
 
-    </section>
+    <button
+      id="runButton"
+      class="main-button"
+      onclick="runFifty()"
+      disabled
+    >
+      Research + Stage 50
+    </button>
 
-    <section id="results">
+    <button
+      id="stopButton"
+      class="stop-button"
+      onclick="requestStop()"
+      disabled
+    >
+      Stop After Current Record
+    </button>
 
-      <div class="placeholder">
-        Click <strong>Research 10 Shortest Descriptions</strong> to begin.
-      </div>
+    <button
+      id="clearButton"
+      class="secondary-button"
+      onclick="clearResults()"
+    >
+      Clear Screen
+    </button>
 
-    </section>
+  </div>
 
-  </main>
+  <div
+    id="status"
+    class="status"
+  >
+    Checking admin access...
+  </div>
+
+  <div
+    id="progressWrap"
+    class="progress-wrap"
+  >
+    <div
+      id="progress"
+      class="progress"
+    ></div>
+  </div>
+
+</section>
+
+<!-- ============================================================
+     RUN COUNTS
+     ============================================================ -->
+
+<section
+  id="runSummary"
+  class="run-summary"
+>
+
+  <div class="run-box">
+
+    <div
+      class="run-number"
+      id="processedCount"
+    >
+      0
+    </div>
+
+    <div class="run-label">
+      Processed
+    </div>
+
+  </div>
+
+  <div class="run-box">
+
+    <div
+      class="run-number"
+      id="readyCount"
+    >
+      0
+    </div>
+
+    <div class="run-label">
+      Ready for Review
+    </div>
+
+  </div>
+
+  <div class="run-box">
+
+    <div
+      class="run-number"
+      id="verificationFailedCount"
+    >
+      0
+    </div>
+
+    <div class="run-label">
+      Verification Failed
+    </div>
+
+  </div>
+
+  <div class="run-box">
+
+    <div
+      class="run-number"
+      id="sourceMissingCount"
+    >
+      0
+    </div>
+
+    <div class="run-label">
+      Source Missing
+    </div>
+
+  </div>
+
+  <div class="run-box">
+
+    <div
+      class="run-number"
+      id="factDifferenceCount"
+    >
+      0
+    </div>
+
+    <div class="run-label">
+      Possible Fact Differences
+    </div>
+
+  </div>
+
+  <div class="run-box">
+
+    <div
+      class="run-number"
+      id="errorCount"
+    >
+      0
+    </div>
+
+    <div class="run-label">
+      Research / Other Errors
+    </div>
+
+  </div>
+
+</section>
+
+<!-- ============================================================
+     RESULTS
+     ============================================================ -->
+
+<section id="results">
+
+  <div class="placeholder">
+
+    Click
+    <strong>Load Next 50 Shortest</strong>
+    to select records for this test.
+
+  </div>
+
+</section>
+
+</main>
 
 <script>
-  // ============================================================
-  // SPORTSMISTAKES CONFIGURATION
-  // ============================================================
 
-  const SUPABASE_URL =
-    "https://scwjlljurircxuufhqih.supabase.co";
+/* ============================================================
+   SPORTSMISTAKES CONFIG
+   ============================================================ */
 
-  const SUPABASE_ANON_KEY =
-    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNjd2psbGp1cmlyY3h1dWZocWloIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyNjUyMjcsImV4cCI6MjA5Njg0MTIyN30.WF0HRRb9mAkuOySjabTd8CZXVZRqF0MhMl0N2mafnns";
+const SUPABASE_URL =
+  "https://scwjlljurircxuufhqih.supabase.co";
 
-  const SPORTS_MISTAKES_ADMIN_EMAIL =
-    "jason.susnick@gmail.com";
+const SUPABASE_ANON_KEY =
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNjd2psbGp1cmlyY3h1dWZocWloIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyNjUyMjcsImV4cCI6MjA5Njg0MTIyN30.WF0HRRb9mAkuOySjabTd8CZXVZRqF0MhMl0N2mafnns";
 
-  const client =
-    supabase.createClient(
-      SUPABASE_URL,
-      SUPABASE_ANON_KEY
+const SPORTS_MISTAKES_ADMIN_EMAIL =
+  "jason.susnick@gmail.com";
+
+const client =
+  supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_ANON_KEY
+  );
+
+/* ============================================================
+   STATE
+   ============================================================ */
+
+let rows = [];
+
+let running = false;
+
+let stopRequested = false;
+
+let stats = {
+  processed: 0,
+  ready: 0,
+  verificationFailed: 0,
+  sourceMissing: 0,
+  factualDifferences: 0,
+  errors: 0
+};
+
+
+/* ============================================================
+   ADMIN AUTH
+   ============================================================ */
+
+async function requireAdmin() {
+
+  const {
+    data,
+    error
+  } =
+    await client.auth.getSession();
+
+  if (error) {
+    console.error(error);
+  }
+
+  const session =
+    data?.session;
+
+  if (!session) {
+
+    window.location.href =
+      "admin-login.html?redirect=admin-description-upgrade-test.html";
+
+    return false;
+  }
+
+  const email =
+    String(
+      session.user?.email ||
+      ""
+    ).toLowerCase();
+
+  if (
+    email !==
+    SPORTS_MISTAKES_ADMIN_EMAIL.toLowerCase()
+  ) {
+
+    document.body.innerHTML = `
+      <div style="
+        max-width:620px;
+        margin:80px auto;
+        padding:25px;
+        background:#0d1b2e;
+        color:white;
+        border:1px solid #203852;
+        border-radius:16px;
+        font-family:Arial,sans-serif;
+      ">
+
+        <h1>
+          Admin Access Denied
+        </h1>
+
+        <p>
+          Signed in as:
+          <strong>
+            ${escapeHtml(email || "unknown")}
+          </strong>
+        </p>
+
+        <p>
+          This tool is restricted to the
+          SportsMistakes administrator.
+        </p>
+
+        <a
+          href="admin-login.html"
+          style="color:#74b9ff"
+        >
+          Log in as admin
+        </a>
+
+      </div>
+    `;
+
+    return false;
+  }
+
+  return true;
+}
+
+
+/* ============================================================
+   DATABASE COUNTS
+   ============================================================ */
+
+async function refreshCounts() {
+
+  const [
+    totalResult,
+    researchedResult
+  ] =
+    await Promise.all([
+
+      client
+        .from("mistakes")
+        .select(
+          "id",
+          {
+            count: "exact",
+            head: true
+          }
+        ),
+
+      client
+        .from("mistakes")
+        .select(
+          "id",
+          {
+            count: "exact",
+            head: true
+          }
+        )
+        .not(
+          "ai_upgrade_researched_at",
+          "is",
+          null
+        )
+
+    ]);
+
+  if (totalResult.error) {
+    console.error(
+      totalResult.error
+    );
+  }
+
+  if (researchedResult.error) {
+    console.error(
+      researchedResult.error
+    );
+  }
+
+  const total =
+    totalResult.count || 0;
+
+  const researched =
+    researchedResult.count || 0;
+
+  document.getElementById(
+    "totalRecords"
+  ).textContent =
+    total;
+
+  document.getElementById(
+    "alreadyResearched"
+  ).textContent =
+    researched;
+
+  document.getElementById(
+    "remainingRecords"
+  ).textContent =
+    Math.max(
+      0,
+      total - researched
+    );
+}
+
+
+/* ============================================================
+   LOAD NEXT 50
+   ============================================================ */
+
+async function loadFifty() {
+
+  if (running) {
+    return;
+  }
+
+  const ok =
+    await requireAdmin();
+
+  if (!ok) {
+    return;
+  }
+
+  const status =
+    document.getElementById(
+      "status"
     );
 
-  let currentSession = null;
-  let running = false;
+  const loadButton =
+    document.getElementById(
+      "loadButton"
+    );
 
-  let stats = {
-    complete: 0,
-    ready: 0,
-    differences: 0,
-    failures: 0
-  };
+  const runButton =
+    document.getElementById(
+      "runButton"
+    );
 
-  // ============================================================
-  // ADMIN ACCESS
-  // ============================================================
+  loadButton.disabled =
+    true;
 
-  async function requireAdmin() {
+  runButton.disabled =
+    true;
+
+  status.textContent =
+    "Loading unresearched SportsMistakes records...";
+
+  try {
+
+    /*
+      Load all unresearched records.
+
+      We sort locally by summary length so that
+      the 50 thinnest remaining entries are selected.
+
+      limit(2000) safely covers the current database
+      size while avoiding the default 1000-row return.
+    */
 
     const {
       data,
       error
-    } = await client.auth.getSession();
-
-    if (error) {
-      console.error(error);
-    }
-
-    const session = data?.session;
-
-    if (!session) {
-      window.location.href =
-        "admin-login.html?redirect=admin-description-upgrade-test.html";
-      return false;
-    }
-
-    const email =
-      (
-        session.user?.email || ""
-      ).toLowerCase();
-
-    if (
-      email !==
-      SPORTS_MISTAKES_ADMIN_EMAIL.toLowerCase()
-    ) {
-      document.body.innerHTML = `
-        <div style="
-          max-width:600px;
-          margin:80px auto;
-          background:#0d1b2e;
-          color:white;
-          border:1px solid #203852;
-          border-radius:16px;
-          padding:24px;
-          font-family:Arial,sans-serif;
-        ">
-          <h1>Admin Access Denied</h1>
-          <p>
-            You are signed in as
-            <strong>${escapeHtml(email || "unknown")}</strong>.
-          </p>
-          <p>
-            This page is restricted to the SportsMistakes administrator.
-          </p>
-          <a
-            href="admin-login.html"
-            style="color:#74b9ff;"
-          >
-            Log in as admin
-          </a>
-        </div>
-      `;
-
-      return false;
-    }
-
-    currentSession = session;
-
-    document.getElementById("status").textContent =
-      "Admin access confirmed. Ready to test 10 records.";
-
-    return true;
-  }
-
-  // ============================================================
-  // MAIN TEST
-  // ============================================================
-
-  async function runTenRecordTest() {
-
-    if (running) {
-      return;
-    }
-
-    const adminOK = await requireAdmin();
-
-    if (!adminOK) {
-      return;
-    }
-
-    running = true;
-
-    resetStats();
-
-    const runButton =
-      document.getElementById("runButton");
-
-    const results =
-      document.getElementById("results");
-
-    const status =
-      document.getElementById("status");
-
-    runButton.disabled = true;
-
-    runButton.innerHTML =
-      `<span class="spinner"></span> Loading records...`;
-
-    results.innerHTML = "";
-
-    document.getElementById(
-      "summaryBar"
-    ).style.display = "grid";
-
-    document.getElementById(
-      "progressWrap"
-    ).style.display = "block";
-
-    setProgress(0);
-
-    status.textContent =
-      "Loading existing SportsMistakes records...";
-
-    try {
-
-      // ----------------------------------------------------------
-      // Load existing records.
-      //
-      // We load the database records and sort them in the browser
-      // according to current summary length.
-      //
-      // This avoids requiring a special SQL function just to find
-      // the shortest descriptions.
-      // ----------------------------------------------------------
-
-      const {
-        data: mistakes,
-        error
-      } = await client
+    } =
+      await client
         .from("mistakes")
         .select(`
           id,
           title,
-          year,
           sport,
+          year,
+          league,
+          category,
+          teams_people,
+          key_people,
           summary,
           why_it_matters,
           source_1,
-          source_2
+          source_2,
+          ai_upgrade_status,
+          ai_upgrade_description,
+          ai_upgrade_researched_at,
+          ai_upgrade_error
         `)
+        .is(
+          "ai_upgrade_researched_at",
+          null
+        )
         .limit(2000);
 
-      if (error) {
-        throw error;
-      }
+    if (error) {
+      throw error;
+    }
 
-      if (!mistakes || !mistakes.length) {
-        throw new Error(
-          "No SportsMistakes records were returned."
+    const candidates =
+      (data || [])
+        .filter(
+          row =>
+            row &&
+            String(
+              row.title || ""
+            ).trim()
+        )
+        .map(
+          row => ({
+            ...row,
+            currentWordCount:
+              countWords(
+                row.summary
+              )
+          })
+        )
+        .sort(
+          (a,b) => {
+
+            const wordDifference =
+              a.currentWordCount -
+              b.currentWordCount;
+
+            if (
+              wordDifference !== 0
+            ) {
+              return wordDifference;
+            }
+
+            return (
+              String(
+                a.summary || ""
+              ).length -
+              String(
+                b.summary || ""
+              ).length
+            );
+          }
         );
-      }
 
-      // Ignore records with no useful title.
-      const validRecords =
-        mistakes.filter(
-          item =>
-            item &&
-            String(item.title || "").trim()
-        );
-
-      // Sort by the length of the existing summary.
-      // Empty summaries come first.
-      validRecords.sort(
-        (a, b) => {
-          const aLength =
-            String(a.summary || "").trim().length;
-
-          const bLength =
-            String(b.summary || "").trim().length;
-
-          return aLength - bLength;
-        }
+    rows =
+      candidates.slice(
+        0,
+        50
       );
 
-      const testRecords =
-        validRecords.slice(0, 10);
+    if (!rows.length) {
 
-      if (!testRecords.length) {
-        throw new Error(
-          "Could not find records to test."
-        );
-      }
-
-      status.textContent =
-        `Found ${mistakes.length} records. Researching the 10 shortest descriptions one at a time...`;
-
-      // ----------------------------------------------------------
-      // Process sequentially.
-      //
-      // DO NOT fire 10 web-search calls simultaneously.
-      // ----------------------------------------------------------
-
-      for (
-        let index = 0;
-        index < testRecords.length;
-        index++
-      ) {
-        const mistake = testRecords[index];
-
-        status.textContent =
-          `Researching ${index + 1} of ${testRecords.length}: ${mistake.title}`;
-
-        runButton.innerHTML =
-          `<span class="spinner"></span> Researching ${index + 1} of 10...`;
-
-        // Add temporary card so user can see progress.
-        const cardId =
-          `record-${safeId(mistake.id)}`;
-
-        results.insertAdjacentHTML(
-          "beforeend",
-          loadingCard(
-            mistake,
-            index + 1,
-            cardId
-          )
-        );
-
-        try {
-
-          const result =
-            await researchMistake(
-              mistake.id
-            );
-
-          renderCompletedCard(
-            cardId,
-            mistake,
-            result,
-            index + 1
-          );
-
-          stats.complete++;
-
-          if (
-            result.quality_status ===
-            "ready_for_review"
-          ) {
-            stats.ready++;
-          } else {
-            stats.failures++;
-          }
-
-          if (
-            result.factual_difference_found
-          ) {
-            stats.differences++;
-          }
-
-        } catch (researchError) {
-
-          console.error(
-            "Research failed:",
-            mistake,
-            researchError
-          );
-
-          stats.complete++;
-          stats.failures++;
-
-          renderFailureCard(
-            cardId,
-            mistake,
-            researchError,
-            index + 1
-          );
-        }
-
-        updateStats();
-
-        setProgress(
-          ((index + 1) /
-            testRecords.length) *
-            100
-        );
-      }
-
-      status.textContent =
-        `Finished. ${stats.complete} records researched. Nothing was changed in the database.`;
-
-      runButton.textContent =
-        "Run 10-Record Test Again";
-
-    } catch (error) {
-
-      console.error(error);
-
-      results.innerHTML = `
+      document.getElementById(
+        "results"
+      ).innerHTML = `
         <div class="placeholder">
-          <strong>Test could not start.</strong>
-          <br><br>
-          ${escapeHtml(
-            error?.message ||
-            String(error)
-          )}
+          No unresearched records remain.
         </div>
       `;
 
       status.textContent =
-        "The test stopped before completion.";
+        "Every available SportsMistakes record already has an AI research status.";
 
-      runButton.textContent =
-        "Try Again";
-
-    } finally {
-
-      running = false;
-      runButton.disabled = false;
+      return;
     }
+
+    resetRunStats();
+
+    renderLoadedRows();
+
+    runButton.disabled =
+      false;
+
+    status.textContent =
+      `${rows.length} records loaded. These are the shortest descriptions among records not yet researched.`;
+
+  } catch (error) {
+
+    console.error(error);
+
+    status.textContent =
+      "Could not load the test records.";
+
+    document.getElementById(
+      "results"
+    ).innerHTML = `
+      <div class="placeholder">
+        <strong>
+          Load failed.
+        </strong>
+        <br><br>
+        ${escapeHtml(
+          error?.message ||
+          String(error)
+        )}
+      </div>
+    `;
+
+  } finally {
+
+    loadButton.disabled =
+      false;
+  }
+}
+
+
+/* ============================================================
+   DISPLAY LOADED RECORDS BEFORE RUN
+   ============================================================ */
+
+function renderLoadedRows() {
+
+  const results =
+    document.getElementById(
+      "results"
+    );
+
+  results.innerHTML =
+    rows.map(
+      (row,index) => `
+        <article
+          class="record"
+          id="record-${safeId(row.id)}"
+        >
+
+          <div class="record-header">
+
+            <div>
+
+              <div class="record-number">
+                Record ${index + 1} of ${rows.length}
+              </div>
+
+              <div class="record-title">
+                ${escapeHtml(
+                  row.title ||
+                  "Untitled"
+                )}
+              </div>
+
+              <div class="metadata">
+                ${escapeHtml(
+                  formatMetadata(row)
+                )}
+                •
+                ${row.currentWordCount}
+                current words
+              </div>
+
+            </div>
+
+            <div class="badge">
+              Waiting
+            </div>
+
+          </div>
+
+          <div class="comparison">
+
+            <section class="column old-column">
+
+              <div class="column-title">
+                OLD — LIVE DESCRIPTION
+              </div>
+
+              <div class="description">
+                ${
+                  row.summary
+                    ? escapeHtml(
+                        row.summary
+                      )
+                    : "<em>No live description.</em>"
+                }
+              </div>
+
+              <div class="word-count">
+                ${row.currentWordCount}
+                words
+              </div>
+
+            </section>
+
+            <section class="column new-column">
+
+              <div class="column-title">
+                NEW — AI STAGING DESCRIPTION
+              </div>
+
+              <div class="description">
+                Not researched yet.
+              </div>
+
+            </section>
+
+          </div>
+
+        </article>
+      `
+    ).join("");
+}
+
+
+/* ============================================================
+   RUN 50
+   ============================================================ */
+
+async function runFifty() {
+
+  if (
+    running ||
+    !rows.length
+  ) {
+    return;
   }
 
-  // ============================================================
-  // CALL THE SAFE PREVIEW EDGE FUNCTION
-  // ============================================================
+  const ok =
+    await requireAdmin();
 
-  async function researchMistake(
-    mistakeId
-  ) {
+  if (!ok) {
+    return;
+  }
 
-    // Refresh session before every call.
-    const {
-      data: sessionData
-    } = await client.auth.getSession();
+  running =
+    true;
 
-    const session =
-      sessionData?.session;
+  stopRequested =
+    false;
 
-    if (!session) {
-      throw new Error(
-        "Admin session expired. Please log in again."
+  resetRunStats();
+
+  const runButton =
+    document.getElementById(
+      "runButton"
+    );
+
+  const loadButton =
+    document.getElementById(
+      "loadButton"
+    );
+
+  const stopButton =
+    document.getElementById(
+      "stopButton"
+    );
+
+  const status =
+    document.getElementById(
+      "status"
+    );
+
+  runButton.disabled =
+    true;
+
+  loadButton.disabled =
+    true;
+
+  stopButton.disabled =
+    false;
+
+  document.getElementById(
+    "runSummary"
+  ).style.display =
+    "grid";
+
+  document.getElementById(
+    "progressWrap"
+  ).style.display =
+    "block";
+
+  setProgress(0);
+
+  try {
+
+    for (
+      let index = 0;
+      index < rows.length;
+      index++
+    ) {
+
+      if (stopRequested) {
+
+        status.textContent =
+          `Stopped safely after ${stats.processed} records.`;
+
+        break;
+      }
+
+      const row =
+        rows[index];
+
+      status.textContent =
+        `Researching ${index + 1} of ${rows.length}: ${row.title}`;
+
+      runButton.innerHTML =
+        `<span class="spinner"></span> Researching ${index + 1} of ${rows.length}...`;
+
+      markProcessing(
+        row,
+        index
+      );
+
+      try {
+
+        const result =
+          await researchAndStage(
+            row.id
+          );
+
+        renderResult(
+          row,
+          index,
+          result
+        );
+
+        updateStatsFromResult(
+          result
+        );
+
+      } catch (error) {
+
+        console.error(
+          "Research error:",
+          error
+        );
+
+        renderError(
+          row,
+          index,
+          error
+        );
+
+        stats.processed++;
+        stats.errors++;
+
+        updateRunStats();
+      }
+
+      setProgress(
+        (
+          (index + 1) /
+          rows.length
+        ) * 100
       );
     }
 
-    const response = await fetch(
+    if (!stopRequested) {
+
+      status.textContent =
+        `Finished. ${stats.processed} records processed. All successful proposals were saved only to staging fields. Live descriptions were not changed.`;
+
+    }
+
+    await refreshCounts();
+
+  } finally {
+
+    running =
+      false;
+
+    runButton.disabled =
+      false;
+
+    loadButton.disabled =
+      false;
+
+    stopButton.disabled =
+      true;
+
+    runButton.textContent =
+      "Research + Stage 50";
+  }
+}
+
+
+/* ============================================================
+   EDGE FUNCTION CALL
+   ============================================================ */
+
+async function researchAndStage(
+  mistakeId
+) {
+
+  const {
+    data,
+    error
+  } =
+    await client.auth.getSession();
+
+  if (error) {
+    throw error;
+  }
+
+  const session =
+    data?.session;
+
+  if (!session) {
+    throw new Error(
+      "Admin session expired. Please log in again."
+    );
+  }
+
+  const response =
+    await fetch(
       `${SUPABASE_URL}/functions/v1/upgrade-existing-mistake`,
       {
         method: "POST",
 
         headers: {
+
           "Content-Type":
             "application/json",
 
@@ -890,746 +1577,1106 @@
 
           "Authorization":
             `Bearer ${session.access_token}`
+
         },
 
-        body: JSON.stringify({
-          mistake_id:
-            String(mistakeId)
-        })
+        body:
+          JSON.stringify({
+            mistake_id:
+              String(
+                mistakeId
+              )
+          })
       }
     );
 
-    let payload = {};
+  let payload =
+    {};
 
-    try {
-      payload =
-        await response.json();
-    } catch {
-      throw new Error(
-        `Research function returned HTTP ${response.status}.`
-      );
-    }
+  try {
 
-    if (
-      !response.ok ||
-      payload?.success !== true
-    ) {
-      throw new Error(
-        payload?.details ||
-        payload?.error ||
-        `Research failed with HTTP ${response.status}.`
-      );
-    }
+    payload =
+      await response.json();
 
-    // Very important safety check.
-    if (
-      payload.database_updated !==
-      false
-    ) {
-      throw new Error(
-        "Safety stop: research function did not confirm preview-only mode."
-      );
-    }
+  } catch {
 
-    return payload;
+    throw new Error(
+      `Edge Function returned HTTP ${response.status} without valid JSON.`
+    );
+
   }
 
-  // ============================================================
-  // CARD RENDERING
-  // ============================================================
-
-  function loadingCard(
-    mistake,
-    number,
-    cardId
+  if (
+    !response.ok ||
+    payload?.success !== true
   ) {
 
-    return `
-      <article
-        class="record"
-        id="${escapeHtml(cardId)}"
-      >
+    throw new Error(
+      payload?.details ||
+      payload?.error ||
+      `Research failed with HTTP ${response.status}.`
+    );
 
-        <div class="record-header">
+  }
 
-          <div>
-            <div class="record-number">
-              Test Record ${number}
-            </div>
+  /*
+    SAFETY CHECKS
 
-            <div class="record-title">
-              ${escapeHtml(
-                mistake.title ||
-                "Untitled"
-              )}
-            </div>
+    The function must explicitly confirm:
 
-            <div class="metadata">
-              ${escapeHtml(
-                formatMetadata(
-                  mistake
+    - staging_only
+    - staging saved
+    - live fields NOT updated
+    - database_updated false
+
+    If any of those expectations change,
+    stop treating the response as safe.
+  */
+
+  if (
+    payload.mode !==
+    "staging_only"
+  ) {
+    throw new Error(
+      "Safety stop: function did not confirm staging-only mode."
+    );
+  }
+
+  if (
+    payload.staging_saved !==
+    true
+  ) {
+    throw new Error(
+      "Safety stop: staging save was not confirmed."
+    );
+  }
+
+  if (
+    payload.live_fields_updated !==
+    false
+  ) {
+    throw new Error(
+      "Safety stop: function did not confirm live fields remained untouched."
+    );
+  }
+
+  if (
+    payload.database_updated !==
+    false
+  ) {
+    throw new Error(
+      "Safety stop: unexpected live database update flag."
+    );
+  }
+
+  return payload;
+}
+
+
+/* ============================================================
+   PROCESSING DISPLAY
+   ============================================================ */
+
+function markProcessing(
+  row,
+  index
+) {
+
+  const card =
+    document.getElementById(
+      `record-${safeId(row.id)}`
+    );
+
+  if (!card) {
+    return;
+  }
+
+  const badge =
+    card.querySelector(
+      ".badge"
+    );
+
+  if (badge) {
+
+    badge.className =
+      "badge processing";
+
+    badge.innerHTML =
+      `<span class="spinner"></span> Researching`;
+
+  }
+
+  const newDescription =
+    card.querySelector(
+      ".new-column .description"
+    );
+
+  if (newDescription) {
+
+    newDescription.innerHTML =
+      `<span class="spinner"></span> Researching this exact event...`;
+
+  }
+}
+
+
+/* ============================================================
+   RENDER SUCCESS / VERIFIED OR FAILED VERIFICATION
+   ============================================================ */
+
+function renderResult(
+  row,
+  index,
+  result
+) {
+
+  const card =
+    document.getElementById(
+      `record-${safeId(row.id)}`
+    );
+
+  if (!card) {
+    return;
+  }
+
+  const current =
+    result.current || {};
+
+  const proposed =
+    result.proposed || {};
+
+  const staging =
+    result.staging || {};
+
+  const status =
+    result.quality_status ||
+    staging.status ||
+    "unknown";
+
+  const badgeInfo =
+    statusBadge(
+      status
+    );
+
+  const oldDescription =
+    current.description ||
+    row.summary ||
+    "";
+
+  const newDescription =
+    proposed.description ||
+    staging.description ||
+    "";
+
+  card.innerHTML = `
+
+    <div class="record-header">
+
+      <div>
+
+        <div class="record-number">
+          Record ${index + 1} of ${rows.length}
+        </div>
+
+        <div class="record-title">
+          ${escapeHtml(
+            row.title ||
+            "Untitled"
+          )}
+        </div>
+
+        <div class="metadata">
+          ${escapeHtml(
+            formatMetadata(row)
+          )}
+          • ID:
+          ${escapeHtml(row.id)}
+        </div>
+
+      </div>
+
+      <div class="badge ${badgeInfo.className}">
+        ${escapeHtml(
+          badgeInfo.label
+        )}
+      </div>
+
+    </div>
+
+    <div class="comparison">
+
+      <!-- ======================================================
+           LIVE
+           ====================================================== -->
+
+      <section class="column old-column">
+
+        <div class="column-title">
+          OLD — CURRENT LIVE DESCRIPTION
+        </div>
+
+        <div class="description">
+
+          ${
+            oldDescription
+              ? escapeHtml(
+                  oldDescription
                 )
-              )}
-            </div>
+              : "<em>No current description.</em>"
+          }
+
+        </div>
+
+        <div class="word-count">
+
+          ${countWords(
+            oldDescription
+          )}
+          words
+
+        </div>
+
+        <div class="field">
+
+          <div class="field-label">
+            Current Why It Matters
           </div>
 
-          <div class="badge">
-            <span class="spinner"></span>
-            Researching
+          <div class="field-value">
+
+            ${
+              current.why_it_matters
+                ? escapeHtml(
+                    current.why_it_matters
+                  )
+                : "—"
+            }
+
           </div>
 
         </div>
 
-        <div class="placeholder"
-          style="
-            border:0;
-            border-radius:0;
-            background:#0d1b2e;
-          "
-        >
-          Running one researched web search for this exact event...
-        </div>
+        <div class="field">
 
-      </article>
-    `;
-  }
-
-  function renderCompletedCard(
-    cardId,
-    mistake,
-    result,
-    number
-  ) {
-
-    const card =
-      document.getElementById(
-        cardId
-      );
-
-    if (!card) return;
-
-    const current =
-      result.current || {};
-
-    const proposed =
-      result.proposed || {};
-
-    const quality =
-      result.quality_status ||
-      "unknown";
-
-    let badgeClass =
-      "warning-badge";
-
-    if (
-      quality ===
-      "ready_for_review"
-    ) {
-      badgeClass = "ready";
-    }
-
-    if (
-      quality ===
-        "verification_failed" ||
-      quality ===
-        "source_missing"
-    ) {
-      badgeClass = "error";
-    }
-
-    const oldDescription =
-      current.description ||
-      mistake.summary ||
-      "";
-
-    const newDescription =
-      proposed.description ||
-      "";
-
-    card.innerHTML = `
-
-      <div class="record-header">
-
-        <div>
-
-          <div class="record-number">
-            Test Record ${number}
+          <div class="field-label">
+            Current Sources
           </div>
 
-          <div class="record-title">
-            ${escapeHtml(
-              mistake.title ||
-              "Untitled"
+          <div class="field-value">
+
+            ${sourceHtml(
+              current.source_1
             )}
+
+            ${
+              current.source_2
+                ? "<br><br>" +
+                  sourceHtml(
+                    current.source_2
+                  )
+                : ""
+            }
+
           </div>
 
-          <div class="metadata">
+        </div>
+
+      </section>
+
+      <!-- ======================================================
+           STAGING
+           ====================================================== -->
+
+      <section class="column new-column">
+
+        <div class="column-title">
+          NEW — AI STAGING DESCRIPTION
+        </div>
+
+        <div class="description">
+
+          ${
+            newDescription
+              ? escapeHtml(
+                  newDescription
+                )
+              : (
+                  status ===
+                  "verification_failed"
+                    ?
+                    "<em>No proposal stored because the event could not be confidently verified.</em>"
+                    :
+                    "<em>No staging description was stored.</em>"
+                )
+          }
+
+        </div>
+
+        <div class="word-count">
+
+          ${
+            newDescription
+              ? countWords(
+                  newDescription
+                ) +
+                " words"
+              : "No staged description"
+          }
+
+        </div>
+
+        <div class="field">
+
+          <div class="field-label">
+            Staged Why It Matters
+          </div>
+
+          <div class="field-value">
+
+            ${
+              proposed.why_it_matters ||
+              staging.why_it_matters
+                ? escapeHtml(
+                    proposed.why_it_matters ||
+                    staging.why_it_matters
+                  )
+                : "—"
+            }
+
+          </div>
+
+        </div>
+
+        <div class="field">
+
+          <div class="field-label">
+            Researched Sources
+          </div>
+
+          <div class="field-value">
+
+            ${sourceHtml(
+              proposed.source_1 ||
+              staging.source_1
+            )}
+
+            ${
+              proposed.source_2 ||
+              staging.source_2
+                ?
+                "<br><br>" +
+                sourceHtml(
+                  proposed.source_2 ||
+                  staging.source_2
+                )
+                :
+                ""
+            }
+
+          </div>
+
+        </div>
+
+        <div class="field">
+
+          <div class="field-label">
+            Proposed Canonical Title
+          </div>
+
+          <div class="field-value">
+
+            ${
+              proposed.canonical_title ||
+              staging.canonical_title
+                ?
+                escapeHtml(
+                  proposed.canonical_title ||
+                  staging.canonical_title
+                )
+                :
+                "—"
+            }
+
+          </div>
+
+        </div>
+
+      </section>
+
+    </div>
+
+    <!-- ========================================================
+         AUDIT NOTES
+         ======================================================== -->
+
+    <div class="notes">
+
+      <span class="saved-note">
+        ✓ STAGING RESULT SAVED
+      </span>
+
+      &nbsp; • &nbsp;
+
+      <span class="live-warning">
+        LIVE DESCRIPTION NOT CHANGED
+      </span>
+
+      <br><br>
+
+      <strong>
+        Status:
+      </strong>
+
+      ${escapeHtml(status)}
+
+      &nbsp; • &nbsp;
+
+      <strong>
+        Verified:
+      </strong>
+
+      ${
+        result.verified
+          ? "Yes"
+          : "No"
+      }
+
+      ${
+        staging.researched_at
+          ? `
+            &nbsp; • &nbsp;
+
+            <strong>
+              Researched:
+            </strong>
+
             ${escapeHtml(
-              formatMetadata(
-                mistake
+              formatDate(
+                staging.researched_at
               )
             )}
-          </div>
+          `
+          : ""
+      }
 
+      ${
+        result.verification_note
+          ? `
+            <br><br>
+
+            <strong>
+              Verification note:
+            </strong>
+
+            ${escapeHtml(
+              result.verification_note
+            )}
+          `
+          : ""
+      }
+
+      ${
+        result.factual_difference_found
+          ? `
+            <br><br>
+
+            <span class="fact-warning">
+              ⚠ POSSIBLE FACTUAL DIFFERENCE:
+            </span>
+
+            ${escapeHtml(
+              result.factual_difference_note ||
+              "The researched evidence differs meaningfully from the existing record."
+            )}
+          `
+          : ""
+      }
+
+    </div>
+
+  `;
+}
+
+
+/* ============================================================
+   RENDER TECHNICAL FAILURE
+   ============================================================ */
+
+function renderError(
+  row,
+  index,
+  error
+) {
+
+  const card =
+    document.getElementById(
+      `record-${safeId(row.id)}`
+    );
+
+  if (!card) {
+    return;
+  }
+
+  card.innerHTML = `
+
+    <div class="record-header">
+
+      <div>
+
+        <div class="record-number">
+          Record ${index + 1} of ${rows.length}
         </div>
 
-        <div class="badge ${badgeClass}">
+        <div class="record-title">
           ${escapeHtml(
-            readableStatus(
-              quality
-            )
+            row.title ||
+            "Untitled"
+          )}
+        </div>
+
+        <div class="metadata">
+          ${escapeHtml(
+            formatMetadata(row)
           )}
         </div>
 
       </div>
 
-      <div class="comparison">
-
-        <!-- OLD -->
-
-        <section class="column old-column">
-
-          <div class="column-title">
-            OLD DESCRIPTION
-          </div>
-
-          <div class="description">
-            ${
-              oldDescription
-                ? escapeHtml(
-                    oldDescription
-                  )
-                : "<em>No existing description.</em>"
-            }
-          </div>
-
-          <div class="word-count">
-            ${countWords(
-              oldDescription
-            )} words
-            •
-            ${String(
-              oldDescription
-            ).length} characters
-          </div>
-
-          <div class="field">
-
-            <div class="field-label">
-              Old Why It Matters
-            </div>
-
-            <div class="field-value">
-              ${
-                current.why_it_matters
-                  ? escapeHtml(
-                      current.why_it_matters
-                    )
-                  : "—"
-              }
-            </div>
-
-          </div>
-
-          <div class="field">
-
-            <div class="field-label">
-              Old Sources
-            </div>
-
-            <div class="field-value">
-              ${sourceHtml(
-                current.source_1
-              )}
-
-              ${
-                current.source_2
-                  ? "<br><br>" +
-                    sourceHtml(
-                      current.source_2
-                    )
-                  : ""
-              }
-            </div>
-
-          </div>
-
-        </section>
-
-        <!-- NEW -->
-
-        <section class="column new-column">
-
-          <div class="column-title">
-            NEW AI-RESEARCHED DESCRIPTION
-          </div>
-
-          <div class="description">
-            ${
-              newDescription
-                ? escapeHtml(
-                    newDescription
-                  )
-                : "<em>No proposed description returned.</em>"
-            }
-          </div>
-
-          <div class="word-count">
-            ${countWords(
-              newDescription
-            )} words
-            •
-            ${String(
-              newDescription
-            ).length} characters
-          </div>
-
-          <div class="field">
-
-            <div class="field-label">
-              New Why It Matters
-            </div>
-
-            <div class="field-value">
-              ${
-                proposed.why_it_matters
-                  ? escapeHtml(
-                      proposed.why_it_matters
-                    )
-                  : "—"
-              }
-            </div>
-
-          </div>
-
-          <div class="field">
-
-            <div class="field-label">
-              New Researched Sources
-            </div>
-
-            <div class="field-value">
-              ${sourceHtml(
-                proposed.source_1
-              )}
-
-              ${
-                proposed.source_2
-                  ? "<br><br>" +
-                    sourceHtml(
-                      proposed.source_2
-                    )
-                  : ""
-              }
-            </div>
-
-          </div>
-
-          <div class="field">
-
-            <div class="field-label">
-              Proposed Canonical Title
-            </div>
-
-            <div class="field-value">
-              ${escapeHtml(
-                proposed.canonical_title ||
-                mistake.title ||
-                ""
-              )}
-            </div>
-
-          </div>
-
-        </section>
-
+      <div class="badge failed">
+        Research Error
       </div>
 
-      <div class="notes">
+    </div>
 
-        <strong>
-          AI verification:
-        </strong>
-        ${
-          result.verified
-            ? "Verified"
-            : "Not verified"
-        }
+    <div class="comparison">
 
-        &nbsp; • &nbsp;
+      <section class="column old-column">
 
-        <strong>
-          Database changed:
-        </strong>
-        ${
-          result.database_updated
-            ? "YES"
-            : "NO"
-        }
+        <div class="column-title">
+          OLD — CURRENT LIVE DESCRIPTION
+        </div>
 
-        ${
-          result.verification_note
-            ? `
-              <br><br>
-              <strong>
-                Verification note:
-              </strong>
-              ${escapeHtml(
-                result.verification_note
-              )}
-            `
-            : ""
-        }
+        <div class="description">
 
-        ${
-          result.factual_difference_found
-            ? `
-              <br><br>
-              <span class="difference">
-                ⚠ Possible factual difference found:
-              </span>
-              ${escapeHtml(
-                result.factual_difference_note ||
-                "AI flagged a difference between the old record and researched evidence."
-              )}
-            `
-            : ""
-        }
-
-      </div>
-    `;
-  }
-
-  function renderFailureCard(
-    cardId,
-    mistake,
-    error,
-    number
-  ) {
-
-    const card =
-      document.getElementById(
-        cardId
-      );
-
-    if (!card) return;
-
-    card.innerHTML = `
-
-      <div class="record-header">
-
-        <div>
-
-          <div class="record-number">
-            Test Record ${number}
-          </div>
-
-          <div class="record-title">
-            ${escapeHtml(
-              mistake.title ||
-              "Untitled"
-            )}
-          </div>
-
-          <div class="metadata">
-            ${escapeHtml(
-              formatMetadata(
-                mistake
-              )
-            )}
-          </div>
+          ${
+            row.summary
+              ? escapeHtml(
+                  row.summary
+                )
+              : "<em>No current description.</em>"
+          }
 
         </div>
 
-        <div class="badge error">
-          Research Failed
+      </section>
+
+      <section class="column new-column">
+
+        <div class="column-title">
+          NEW — AI STAGING DESCRIPTION
         </div>
 
-      </div>
+        <div class="description">
 
-      <div class="comparison">
+          <em>
+            Research could not be completed.
+          </em>
 
-        <section class="column old-column">
+        </div>
 
-          <div class="column-title">
-            OLD DESCRIPTION
+        <div class="field">
+
+          <div class="field-label">
+            Error
           </div>
 
-          <div class="description">
-            ${
-              mistake.summary
-                ? escapeHtml(
-                    mistake.summary
-                  )
-                : "<em>No existing description.</em>"
-            }
-          </div>
+          <div class="field-value">
 
-        </section>
-
-        <section class="column new-column">
-
-          <div class="column-title">
-            NEW DESCRIPTION
-          </div>
-
-          <div class="description">
-            <strong>
-              Could not research this record.
-            </strong>
-            <br><br>
             ${escapeHtml(
               error?.message ||
               String(error)
             )}
+
           </div>
 
-        </section>
+        </div>
 
-      </div>
-    `;
-  }
+      </section>
 
-  // ============================================================
-  // SUMMARY / PROGRESS
-  // ============================================================
+    </div>
 
-  function resetStats() {
+    <div class="notes">
 
-    stats = {
-      complete: 0,
-      ready: 0,
-      differences: 0,
-      failures: 0
-    };
+      <span class="live-warning">
+        LIVE DESCRIPTION NOT CHANGED
+      </span>
 
-    updateStats();
-  }
+    </div>
 
-  function updateStats() {
+  `;
+}
 
-    document.getElementById(
-      "completeCount"
-    ).textContent =
-      stats.complete;
 
-    document.getElementById(
-      "readyCount"
-    ).textContent =
-      stats.ready;
+/* ============================================================
+   STATUS COUNTERS
+   ============================================================ */
 
-    document.getElementById(
-      "differenceCount"
-    ).textContent =
-      stats.differences;
+function updateStatsFromResult(
+  result
+) {
 
-    document.getElementById(
-      "failureCount"
-    ).textContent =
-      stats.failures;
-  }
+  stats.processed++;
 
-  function setProgress(
-    percent
+  const status =
+    result.quality_status ||
+    result.staging?.status ||
+    "";
+
+  if (
+    status ===
+    "ready_for_review"
   ) {
 
-    document.getElementById(
-      "progress"
-    ).style.width =
-      `${Math.max(
-        0,
-        Math.min(
-          100,
-          percent
-        )
-      )}%`;
-  }
+    stats.ready++;
 
-  function resetTest() {
-
-    if (running) {
-      alert(
-        "A research test is currently running."
-      );
-      return;
-    }
-
-    resetStats();
-
-    document.getElementById(
-      "results"
-    ).innerHTML = `
-      <div class="placeholder">
-        Click
-        <strong>
-          Research 10 Shortest Descriptions
-        </strong>
-        to begin.
-      </div>
-    `;
-
-    document.getElementById(
-      "summaryBar"
-    ).style.display = "none";
-
-    document.getElementById(
-      "progressWrap"
-    ).style.display = "none";
-
-    setProgress(0);
-
-    document.getElementById(
-      "status"
-    ).textContent =
-      "Ready to run another test.";
-  }
-
-  // ============================================================
-  // HELPERS
-  // ============================================================
-
-  function formatMetadata(
-    mistake
+  } else if (
+    status ===
+    "verification_failed"
   ) {
 
-    return [
-      mistake.sport || "",
-      mistake.year || "",
-      `ID: ${mistake.id}`
-    ]
-      .filter(Boolean)
-      .join(" • ");
-  }
+    stats.verificationFailed++;
 
-  function countWords(
-    value
+  } else if (
+    status ===
+    "source_missing"
   ) {
 
-    const text =
-      String(value || "").trim();
+    stats.sourceMissing++;
 
-    if (!text) {
-      return 0;
-    }
+  } else {
 
-    return text
-      .split(/\s+/)
-      .filter(Boolean)
-      .length;
+    stats.errors++;
+
   }
 
-  function readableStatus(
+  if (
+    result.factual_difference_found
+  ) {
+
+    stats.factualDifferences++;
+
+  }
+
+  updateRunStats();
+}
+
+
+function resetRunStats() {
+
+  stats = {
+    processed: 0,
+    ready: 0,
+    verificationFailed: 0,
+    sourceMissing: 0,
+    factualDifferences: 0,
+    errors: 0
+  };
+
+  updateRunStats();
+
+  document.getElementById(
+    "runSummary"
+  ).style.display =
+    "grid";
+}
+
+
+function updateRunStats() {
+
+  document.getElementById(
+    "processedCount"
+  ).textContent =
+    stats.processed;
+
+  document.getElementById(
+    "readyCount"
+  ).textContent =
+    stats.ready;
+
+  document.getElementById(
+    "verificationFailedCount"
+  ).textContent =
+    stats.verificationFailed;
+
+  document.getElementById(
+    "sourceMissingCount"
+  ).textContent =
+    stats.sourceMissing;
+
+  document.getElementById(
+    "factDifferenceCount"
+  ).textContent =
+    stats.factualDifferences;
+
+  document.getElementById(
+    "errorCount"
+  ).textContent =
+    stats.errors;
+}
+
+
+/* ============================================================
+   STOP
+   ============================================================ */
+
+function requestStop() {
+
+  if (!running) {
+    return;
+  }
+
+  stopRequested =
+    true;
+
+  document.getElementById(
+    "stopButton"
+  ).disabled =
+    true;
+
+  document.getElementById(
+    "status"
+  ).textContent =
+    "Stop requested. The current record will finish, then the batch will stop.";
+}
+
+
+/* ============================================================
+   CLEAR SCREEN
+   ============================================================ */
+
+function clearResults() {
+
+  if (running) {
+
+    alert(
+      "The research batch is currently running. Stop it first."
+    );
+
+    return;
+  }
+
+  rows =
+    [];
+
+  resetRunStats();
+
+  document.getElementById(
+    "runSummary"
+  ).style.display =
+    "none";
+
+  document.getElementById(
+    "progressWrap"
+  ).style.display =
+    "none";
+
+  setProgress(0);
+
+  document.getElementById(
+    "runButton"
+  ).disabled =
+    true;
+
+  document.getElementById(
+    "results"
+  ).innerHTML = `
+
+    <div class="placeholder">
+
+      Click
+      <strong>
+        Load Next 50 Shortest
+      </strong>
+      to select records for this test.
+
+    </div>
+
+  `;
+
+  document.getElementById(
+    "status"
+  ).textContent =
+    "Screen cleared. Staging data already saved in Supabase was not deleted.";
+}
+
+
+/* ============================================================
+   PROGRESS
+   ============================================================ */
+
+function setProgress(
+  percent
+) {
+
+  document.getElementById(
+    "progress"
+  ).style.width =
+    `${Math.max(
+      0,
+      Math.min(
+        100,
+        percent
+      )
+    )}%`;
+}
+
+
+/* ============================================================
+   BADGES
+   ============================================================ */
+
+function statusBadge(
+  status
+) {
+
+  switch (
     status
   ) {
 
-    const labels = {
-      ready_for_review:
-        "Ready for Review",
+    case "ready_for_review":
 
-      verification_failed:
-        "Verification Failed",
+      return {
+        className: "ready",
+        label: "Ready for Review"
+      };
 
-      source_missing:
-        "Source Missing",
+    case "verification_failed":
 
-      description_too_short:
-        "Description Too Short",
+      return {
+        className: "failed",
+        label: "Verification Failed"
+      };
 
-      description_too_long:
-        "Description Too Long"
-    };
+    case "source_missing":
 
-    return (
-      labels[status] ||
-      status ||
-      "Unknown"
+      return {
+        className: "warning",
+        label: "Source Missing"
+      };
+
+    case "description_too_short":
+
+      return {
+        className: "warning",
+        label: "Description Too Short"
+      };
+
+    case "description_too_long":
+
+      return {
+        className: "warning",
+        label: "Description Too Long"
+      };
+
+    case "research_error":
+
+      return {
+        className: "failed",
+        label: "Research Error"
+      };
+
+    default:
+
+      return {
+        className: "warning",
+        label: status ||
+          "Needs Review"
+      };
+
+  }
+}
+
+
+/* ============================================================
+   HELPERS
+   ============================================================ */
+
+function countWords(
+  value
+) {
+
+  const text =
+    String(
+      value ||
+      ""
+    ).trim();
+
+  if (!text) {
+    return 0;
+  }
+
+  return text
+    .split(/\s+/)
+    .filter(Boolean)
+    .length;
+}
+
+
+function formatMetadata(
+  row
+) {
+
+  return [
+    row.sport ||
+      "",
+    row.league ||
+      "",
+    row.year ||
+      ""
+  ]
+    .filter(Boolean)
+    .join(" • ");
+}
+
+
+function formatDate(
+  value
+) {
+
+  try {
+
+    return new Date(
+      value
+    ).toLocaleString();
+
+  } catch {
+
+    return value;
+
+  }
+}
+
+
+function sourceHtml(
+  value
+) {
+
+  const url =
+    String(
+      value ||
+      ""
+    ).trim();
+
+  if (!url) {
+    return "—";
+  }
+
+  const safe =
+    escapeHtml(
+      url
     );
-  }
 
-  function sourceHtml(
-    value
-  ) {
+  return `
 
-    const url =
-      String(value || "").trim();
+    <a
+      class="source-link"
+      href="${safe}"
+      target="_blank"
+      rel="noopener noreferrer"
+    >
+      ${safe}
+    </a>
 
-    if (!url) {
-      return "—";
-    }
+  `;
+}
 
-    const safe =
-      escapeHtml(url);
 
-    return `
-      <a
-        class="source-link"
-        href="${safe}"
-        target="_blank"
-        rel="noopener noreferrer"
-      >
-        ${safe}
-      </a>
-    `;
-  }
+function safeId(
+  value
+) {
 
-  function escapeHtml(
-    value
-  ) {
+  return String(
+    value ||
+    ""
+  ).replace(
+    /[^a-zA-Z0-9_-]/g,
+    "-"
+  );
+}
 
-    return String(
-      value ?? ""
+
+function escapeHtml(
+  value
+) {
+
+  return String(
+    value ??
+    ""
+  )
+    .replace(
+      /&/g,
+      "&amp;"
     )
-      .replace(
-        /&/g,
-        "&amp;"
-      )
-      .replace(
-        /</g,
-        "&lt;"
-      )
-      .replace(
-        />/g,
-        "&gt;"
-      )
-      .replace(
-        /"/g,
-        "&quot;"
-      )
-      .replace(
-        /'/g,
-        "&#039;"
-      );
-  }
-
-  function safeId(
-    value
-  ) {
-
-    return String(
-      value || ""
-    ).replace(
-      /[^a-zA-Z0-9_-]/g,
-      "-"
+    .replace(
+      /</g,
+      "&lt;"
+    )
+    .replace(
+      />/g,
+      "&gt;"
+    )
+    .replace(
+      /"/g,
+      "&quot;"
+    )
+    .replace(
+      /'/g,
+      "&#039;"
     );
+}
+
+
+/* ============================================================
+   LOGOUT
+   ============================================================ */
+
+async function logout() {
+
+  await client.auth.signOut();
+
+  window.location.href =
+    "admin-login.html";
+}
+
+
+/* ============================================================
+   INITIALIZE
+   ============================================================ */
+
+async function initialize() {
+
+  const ok =
+    await requireAdmin();
+
+  if (!ok) {
+    return;
   }
 
-  // ============================================================
-  // LOGOUT
-  // ============================================================
+  document.getElementById(
+    "status"
+  ).textContent =
+    "Admin access confirmed. Loading database research counts...";
 
-  async function logout() {
+  await refreshCounts();
 
-    await client.auth.signOut();
+  document.getElementById(
+    "status"
+  ).textContent =
+    "Ready. Load the next 50 shortest unresearched descriptions.";
+}
 
-    window.location.href =
-      "admin-login.html";
-  }
 
-  // ============================================================
-  // START PAGE
-  // ============================================================
-
-  requireAdmin();
+initialize();
 
 </script>
 
