@@ -5,15 +5,13 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 
-<title>SportsMistakes — AI Database Upgrade Test</title>
+<title>SportsMistakes — AI Database Upgrade</title>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
 
-* {
-  box-sizing: border-box;
-}
+* { box-sizing: border-box; }
 
 body {
   margin: 0;
@@ -22,20 +20,14 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
-/* ============================================================
-   TOP NAV
-   ============================================================ */
-
 .top-nav {
   background: #0c1a2c;
   border-bottom: 1px solid #203852;
   padding: 15px 24px;
-
   display: flex;
   justify-content: space-between;
   align-items: center;
   gap: 20px;
-
   position: sticky;
   top: 0;
   z-index: 100;
@@ -47,9 +39,7 @@ body {
   cursor: pointer;
 }
 
-.brand span {
-  color: #ff4d4d;
-}
+.brand span { color: #ff4d4d; }
 
 .nav-links {
   display: flex;
@@ -73,10 +63,6 @@ body {
   border-radius: 7px;
   padding: 7px 11px;
 }
-
-/* ============================================================
-   PAGE
-   ============================================================ */
 
 .container {
   max-width: 1500px;
@@ -103,11 +89,61 @@ h1 {
   border-radius: 12px;
   padding: 15px 18px;
   line-height: 1.55;
-  margin-bottom: 20px;
+  margin-bottom: 25px;
 }
 
-.safety strong {
-  color: #83e6ae;
+.safety strong { color: #83e6ae; }
+
+/* ============================================================
+   RUNNING DATABASE TOTALS
+   ============================================================ */
+
+.section-heading {
+  margin: 26px 0 10px;
+  font-size: 17px;
+  font-weight: 900;
+  letter-spacing: .04em;
+}
+
+.section-subtitle {
+  color: #91a5ba;
+  font-size: 13px;
+  margin-bottom: 12px;
+}
+
+.database-summary {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 11px;
+  margin-bottom: 22px;
+}
+
+.summary-card {
+  background: #0d1b2e;
+  border: 1px solid #203852;
+  border-radius: 12px;
+  padding: 15px;
+}
+
+.summary-card.highlight {
+  border-color: #3d7558;
+  background: #10251d;
+}
+
+.summary-number {
+  font-size: 27px;
+  font-weight: 900;
+}
+
+.summary-label {
+  margin-top: 4px;
+  color: #96a9bf;
+  font-size: 12px;
+  line-height: 1.3;
+}
+
+.summary-card.highlight .summary-number {
+  color: #8ce3b3;
 }
 
 /* ============================================================
@@ -128,39 +164,29 @@ h1 {
   flex-wrap: wrap;
 }
 
-button {
-  font-family: inherit;
-}
+button { font-family: inherit; }
 
 .main-button {
   border: 0;
   border-radius: 10px;
   background: #d84040;
   color: white;
-
   padding: 14px 21px;
-
   font-size: 16px;
   font-weight: 800;
-
   cursor: pointer;
 }
 
-.main-button:hover {
-  background: #ec5050;
-}
+.main-button:hover { background: #ec5050; }
 
 .secondary-button {
   border: 1px solid #41536a;
   border-radius: 10px;
   background: #19283b;
   color: white;
-
   padding: 13px 18px;
-
   font-size: 15px;
   font-weight: 700;
-
   cursor: pointer;
 }
 
@@ -169,12 +195,9 @@ button {
   border-radius: 10px;
   background: #493918;
   color: #ffe3a5;
-
   padding: 13px 18px;
-
   font-size: 15px;
   font-weight: 700;
-
   cursor: pointer;
 }
 
@@ -191,13 +214,10 @@ button:disabled {
 
 .progress-wrap {
   display: none;
-
   width: 100%;
   height: 14px;
-
   background: #17263a;
   border-radius: 20px;
-
   overflow: hidden;
   margin-top: 15px;
 }
@@ -205,52 +225,18 @@ button:disabled {
 .progress {
   width: 0%;
   height: 100%;
-
   background: #4ba873;
-
   transition: width .25s ease;
 }
 
 /* ============================================================
-   DATABASE COUNTS
-   ============================================================ */
-
-.database-summary {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 12px;
-
-  margin-bottom: 20px;
-}
-
-.summary-card {
-  background: #0d1b2e;
-  border: 1px solid #203852;
-  border-radius: 12px;
-  padding: 16px;
-}
-
-.summary-number {
-  font-size: 28px;
-  font-weight: 900;
-}
-
-.summary-label {
-  margin-top: 4px;
-  color: #96a9bf;
-  font-size: 13px;
-}
-
-/* ============================================================
-   CURRENT RUN COUNTS
+   CURRENT BATCH
    ============================================================ */
 
 .run-summary {
   display: none;
-
   grid-template-columns: repeat(6, 1fr);
   gap: 10px;
-
   margin-bottom: 22px;
 }
 
@@ -287,32 +273,23 @@ button:disabled {
   background: #0d1b2e;
   border: 1px dashed #314963;
   border-radius: 14px;
-
   padding: 35px;
   text-align: center;
-
   color: #8498ad;
   line-height: 1.5;
 }
-
-/* ============================================================
-   RESULT CARD
-   ============================================================ */
 
 .record {
   background: #0d1b2e;
   border: 1px solid #203852;
   border-radius: 15px;
-
   overflow: hidden;
 }
 
 .record-header {
   background: #111f32;
   border-bottom: 1px solid #203852;
-
   padding: 17px 20px;
-
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
@@ -324,7 +301,6 @@ button:disabled {
   font-size: 12px;
   font-weight: 800;
   text-transform: uppercase;
-
   margin-bottom: 5px;
 }
 
@@ -342,13 +318,10 @@ button:disabled {
 
 .badge {
   white-space: nowrap;
-
   border-radius: 30px;
   padding: 7px 11px;
-
   font-size: 12px;
   font-weight: 800;
-
   background: #26384e;
 }
 
@@ -372,10 +345,6 @@ button:disabled {
   color: #b9dcff;
 }
 
-/* ============================================================
-   COMPARISON
-   ============================================================ */
-
 .comparison {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -390,29 +359,18 @@ button:disabled {
   border-left: 1px solid #203852;
 }
 
-.old-column {
-  background: #0b1727;
-}
-
-.new-column {
-  background: #0e1e2f;
-}
+.old-column { background: #0b1727; }
+.new-column { background: #0e1e2f; }
 
 .column-title {
   font-size: 12px;
   font-weight: 900;
   letter-spacing: .08em;
-
   margin-bottom: 14px;
 }
 
-.old-column .column-title {
-  color: #ff9c9c;
-}
-
-.new-column .column-title {
-  color: #89deb0;
-}
+.old-column .column-title { color: #ff9c9c; }
+.new-column .column-title { color: #89deb0; }
 
 .description {
   font-size: 16px;
@@ -428,19 +386,16 @@ button:disabled {
 
 .field {
   border-top: 1px solid #203852;
-
   margin-top: 18px;
   padding-top: 14px;
 }
 
 .field-label {
   color: #8499b0;
-
   font-size: 11px;
   font-weight: 800;
   letter-spacing: .07em;
   text-transform: uppercase;
-
   margin-bottom: 6px;
 }
 
@@ -456,20 +411,10 @@ button:disabled {
   word-break: break-all;
 }
 
-.source-link:hover {
-  text-decoration: underline;
-}
-
-/* ============================================================
-   NOTES
-   ============================================================ */
-
 .notes {
   background: #091523;
   border-top: 1px solid #203852;
-
   padding: 15px 20px;
-
   color: #abbacd;
   font-size: 13px;
   line-height: 1.6;
@@ -490,39 +435,23 @@ button:disabled {
   font-weight: 900;
 }
 
-/* ============================================================
-   SPINNER
-   ============================================================ */
-
 .spinner {
   display: inline-block;
-
   width: 14px;
   height: 14px;
-
   border: 2px solid #667d96;
   border-top-color: white;
-
   border-radius: 50%;
-
   animation: spin .7s linear infinite;
-
   vertical-align: -2px;
   margin-right: 6px;
 }
 
 @keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
+  to { transform: rotate(360deg); }
 }
 
-/* ============================================================
-   MOBILE
-   ============================================================ */
-
 @media(max-width:950px) {
-
   .comparison {
     grid-template-columns: 1fr;
   }
@@ -537,20 +466,16 @@ button:disabled {
   }
 
   .database-summary {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, 1fr);
   }
-
 }
 
 @media(max-width:650px) {
-
   .container {
     padding: 18px 12px 60px;
   }
 
-  h1 {
-    font-size: 27px;
-  }
+  h1 { font-size: 27px; }
 
   .record-header {
     flex-direction: column;
@@ -565,6 +490,9 @@ button:disabled {
     flex-direction: column;
   }
 
+  .database-summary {
+    grid-template-columns: 1fr 1fr;
+  }
 }
 
 </style>
@@ -572,122 +500,89 @@ button:disabled {
 
 <body>
 
-<!-- ============================================================
-     NAV
-     ============================================================ -->
-
 <nav class="top-nav">
 
-  <div
-    class="brand"
-    onclick="window.location.href='admin-dashboard.html'"
-  >
+  <div class="brand" onclick="window.location.href='admin-dashboard.html'">
     Sports<span>Mistakes</span> Admin
   </div>
 
   <div class="nav-links">
-
-    <a href="admin-dashboard.html">
-      Dashboard
-    </a>
-
-    <a href="admin-mistakes.html">
-      Mistakes
-    </a>
-
-    <a href="index.html">
-      Public Site
-    </a>
-
-    <button onclick="logout()">
-      Log Out
-    </button>
-
+    <a href="admin-dashboard.html">Dashboard</a>
+    <a href="admin-mistakes.html">Mistakes</a>
+    <a href="index.html">Public Site</a>
+    <button onclick="logout()">Log Out</button>
   </div>
 
 </nav>
 
-<!-- ============================================================
-     PAGE
-     ============================================================ -->
-
 <main class="container">
 
-<h1>
-AI Database Description Upgrade
-</h1>
+<h1>AI Database Description Upgrade</h1>
 
 <div class="subtitle">
-
-This test researches up to 50 existing SportsMistakes records using the
-same research approach now used for new nominations.
-
-Successful proposals are stored only in separate
-<strong>ai_upgrade_*</strong> staging fields.
-
+Research and improve existing SportsMistakes records while keeping all
+proposed changes safely separated from the live database content.
 </div>
 
 <div class="safety">
-
 <strong>LIVE DATABASE CONTENT IS PROTECTED.</strong>
-
-This page does not replace the public title, summary, Why It Matters,
-or source fields.
-
-A researched proposal can be stored in staging, but the public website
-continues using the existing live record.
-
+Research is stored only in the <strong>ai_upgrade_*</strong> staging fields.
+Nothing on this page replaces the public description or sources.
 </div>
 
 <!-- ============================================================
-     DATABASE COUNTS
+     RUNNING TOTALS
      ============================================================ -->
+
+<div class="section-heading">
+ALL DATABASE — RUNNING TOTALS
+</div>
+
+<div class="section-subtitle">
+These numbers do NOT reset when you load another batch.
+They show progress across the entire SportsMistakes database.
+</div>
 
 <section class="database-summary">
 
   <div class="summary-card">
+    <div class="summary-number" id="totalRecords">—</div>
+    <div class="summary-label">Total Records</div>
+  </div>
 
-    <div
-      class="summary-number"
-      id="totalRecords"
-    >
-      —
-    </div>
-
-    <div class="summary-label">
-      Total SportsMistakes Records
-    </div>
-
+  <div class="summary-card highlight">
+    <div class="summary-number" id="alreadyResearched">—</div>
+    <div class="summary-label">Researched / Staged</div>
   </div>
 
   <div class="summary-card">
+    <div class="summary-number" id="remainingRecords">—</div>
+    <div class="summary-label">Remaining</div>
+  </div>
 
-    <div
-      class="summary-number"
-      id="alreadyResearched"
-    >
-      —
-    </div>
-
-    <div class="summary-label">
-      Already Researched Into Staging
-    </div>
-
+  <div class="summary-card highlight">
+    <div class="summary-number" id="allReady">—</div>
+    <div class="summary-label">Ready for Review</div>
   </div>
 
   <div class="summary-card">
+    <div class="summary-number" id="allVerificationFailed">—</div>
+    <div class="summary-label">Verification Failed</div>
+  </div>
 
-    <div
-      class="summary-number"
-      id="remainingRecords"
-    >
-      —
-    </div>
+  <div class="summary-card">
+    <div class="summary-number" id="allSourceMissing">—</div>
+    <div class="summary-label">Source Missing</div>
+  </div>
 
-    <div class="summary-label">
-      Not Yet Researched
-    </div>
+  <div class="summary-card">
+    <div class="summary-number" id="allErrors">—</div>
+    <div class="summary-label">Research / Other Errors</div>
+  </div>
 
+  <div class="summary-card">
+    <div class="summary-number" id="allFactDifferences">—</div>
+    <div class="summary-label">Possible Fact Differences</div>
   </div>
 
 </section>
@@ -727,7 +622,6 @@ continues using the existing live record.
     </button>
 
     <button
-      id="clearButton"
       class="secondary-button"
       onclick="clearResults()"
     >
@@ -736,138 +630,67 @@ continues using the existing live record.
 
   </div>
 
-  <div
-    id="status"
-    class="status"
-  >
+  <div id="status" class="status">
     Checking admin access...
   </div>
 
-  <div
-    id="progressWrap"
-    class="progress-wrap"
-  >
-    <div
-      id="progress"
-      class="progress"
-    ></div>
+  <div id="progressWrap" class="progress-wrap">
+    <div id="progress" class="progress"></div>
   </div>
 
 </section>
 
 <!-- ============================================================
-     RUN COUNTS
+     CURRENT BATCH
      ============================================================ -->
 
-<section
-  id="runSummary"
-  class="run-summary"
->
+<div class="section-heading">
+CURRENT 50-RECORD BATCH
+</div>
+
+<div class="section-subtitle">
+These counters reset each time you load a new batch.
+</div>
+
+<section id="runSummary" class="run-summary">
 
   <div class="run-box">
-
-    <div
-      class="run-number"
-      id="processedCount"
-    >
-      0
-    </div>
-
-    <div class="run-label">
-      Processed
-    </div>
-
+    <div class="run-number" id="processedCount">0</div>
+    <div class="run-label">Processed</div>
   </div>
 
   <div class="run-box">
-
-    <div
-      class="run-number"
-      id="readyCount"
-    >
-      0
-    </div>
-
-    <div class="run-label">
-      Ready for Review
-    </div>
-
+    <div class="run-number" id="readyCount">0</div>
+    <div class="run-label">Ready for Review</div>
   </div>
 
   <div class="run-box">
-
-    <div
-      class="run-number"
-      id="verificationFailedCount"
-    >
-      0
-    </div>
-
-    <div class="run-label">
-      Verification Failed
-    </div>
-
+    <div class="run-number" id="verificationFailedCount">0</div>
+    <div class="run-label">Verification Failed</div>
   </div>
 
   <div class="run-box">
-
-    <div
-      class="run-number"
-      id="sourceMissingCount"
-    >
-      0
-    </div>
-
-    <div class="run-label">
-      Source Missing
-    </div>
-
+    <div class="run-number" id="sourceMissingCount">0</div>
+    <div class="run-label">Source Missing</div>
   </div>
 
   <div class="run-box">
-
-    <div
-      class="run-number"
-      id="factDifferenceCount"
-    >
-      0
-    </div>
-
-    <div class="run-label">
-      Possible Fact Differences
-    </div>
-
+    <div class="run-number" id="factDifferenceCount">0</div>
+    <div class="run-label">Possible Fact Differences</div>
   </div>
 
   <div class="run-box">
-
-    <div
-      class="run-number"
-      id="errorCount"
-    >
-      0
-    </div>
-
-    <div class="run-label">
-      Research / Other Errors
-    </div>
-
+    <div class="run-number" id="errorCount">0</div>
+    <div class="run-label">Research / Other Errors</div>
   </div>
 
 </section>
-
-<!-- ============================================================
-     RESULTS
-     ============================================================ -->
 
 <section id="results">
 
   <div class="placeholder">
-
-    Click
-    <strong>Load Next 50 Shortest</strong>
-    to select records for this test.
-
+    Click <strong>Load Next 50 Shortest</strong>
+    to select the next unresearched records.
   </div>
 
 </section>
@@ -875,10 +698,6 @@ continues using the existing live record.
 </main>
 
 <script>
-
-/* ============================================================
-   SPORTSMISTAKES CONFIG
-   ============================================================ */
 
 const SUPABASE_URL =
   "https://scwjlljurircxuufhqih.supabase.co";
@@ -895,14 +714,8 @@ const client =
     SUPABASE_ANON_KEY
   );
 
-/* ============================================================
-   STATE
-   ============================================================ */
-
 let rows = [];
-
 let running = false;
-
 let stopRequested = false;
 
 let stats = {
@@ -914,166 +727,163 @@ let stats = {
   errors: 0
 };
 
-
 /* ============================================================
-   ADMIN AUTH
+   ADMIN
    ============================================================ */
 
 async function requireAdmin() {
 
-  const {
-    data,
-    error
-  } =
+  const { data, error } =
     await client.auth.getSession();
 
-  if (error) {
-    console.error(error);
-  }
+  if (error) console.error(error);
 
-  const session =
-    data?.session;
+  const session = data?.session;
 
   if (!session) {
-
     window.location.href =
       "admin-login.html?redirect=admin-description-upgrade-test.html";
-
     return false;
   }
 
   const email =
-    String(
-      session.user?.email ||
-      ""
-    ).toLowerCase();
+    String(session.user?.email || "").toLowerCase();
 
   if (
     email !==
     SPORTS_MISTAKES_ADMIN_EMAIL.toLowerCase()
   ) {
-
     document.body.innerHTML = `
-      <div style="
-        max-width:620px;
-        margin:80px auto;
-        padding:25px;
-        background:#0d1b2e;
-        color:white;
-        border:1px solid #203852;
-        border-radius:16px;
-        font-family:Arial,sans-serif;
-      ">
-
-        <h1>
-          Admin Access Denied
-        </h1>
-
-        <p>
-          Signed in as:
-          <strong>
-            ${escapeHtml(email || "unknown")}
-          </strong>
-        </p>
-
-        <p>
-          This tool is restricted to the
-          SportsMistakes administrator.
-        </p>
-
-        <a
-          href="admin-login.html"
-          style="color:#74b9ff"
-        >
-          Log in as admin
-        </a>
-
+      <div style="max-width:620px;margin:80px auto;padding:25px;background:#0d1b2e;color:white;border:1px solid #203852;border-radius:16px;font-family:Arial,sans-serif;">
+        <h1>Admin Access Denied</h1>
+        <p>Signed in as <strong>${escapeHtml(email || "unknown")}</strong></p>
       </div>
     `;
-
     return false;
   }
 
   return true;
 }
 
-
 /* ============================================================
-   DATABASE COUNTS
+   RUNNING DATABASE TOTALS
    ============================================================ */
+
+async function exactCount(builder) {
+
+  const { count, error } =
+    await builder;
+
+  if (error) {
+    console.error(error);
+    return 0;
+  }
+
+  return count || 0;
+}
 
 async function refreshCounts() {
 
   const [
-    totalResult,
-    researchedResult
-  ] =
-    await Promise.all([
+    total,
+    researched,
+    ready,
+    verificationFailed,
+    sourceMissing,
+    researchErrors,
+    tooShort,
+    tooLong,
+    factualDifferences
+  ] = await Promise.all([
 
+    exactCount(
       client
         .from("mistakes")
-        .select(
-          "id",
-          {
-            count: "exact",
-            head: true
-          }
-        ),
+        .select("id", { count: "exact", head: true })
+    ),
 
+    exactCount(
       client
         .from("mistakes")
-        .select(
-          "id",
-          {
-            count: "exact",
-            head: true
-          }
-        )
-        .not(
-          "ai_upgrade_researched_at",
-          "is",
-          null
-        )
+        .select("id", { count: "exact", head: true })
+        .not("ai_upgrade_researched_at", "is", null)
+    ),
 
-    ]);
+    exactCount(
+      client
+        .from("mistakes")
+        .select("id", { count: "exact", head: true })
+        .eq("ai_upgrade_status", "ready_for_review")
+    ),
 
-  if (totalResult.error) {
-    console.error(
-      totalResult.error
-    );
-  }
+    exactCount(
+      client
+        .from("mistakes")
+        .select("id", { count: "exact", head: true })
+        .eq("ai_upgrade_status", "verification_failed")
+    ),
 
-  if (researchedResult.error) {
-    console.error(
-      researchedResult.error
-    );
-  }
+    exactCount(
+      client
+        .from("mistakes")
+        .select("id", { count: "exact", head: true })
+        .eq("ai_upgrade_status", "source_missing")
+    ),
 
-  const total =
-    totalResult.count || 0;
+    exactCount(
+      client
+        .from("mistakes")
+        .select("id", { count: "exact", head: true })
+        .eq("ai_upgrade_status", "research_error")
+    ),
 
-  const researched =
-    researchedResult.count || 0;
+    exactCount(
+      client
+        .from("mistakes")
+        .select("id", { count: "exact", head: true })
+        .eq("ai_upgrade_status", "description_too_short")
+    ),
 
-  document.getElementById(
-    "totalRecords"
-  ).textContent =
+    exactCount(
+      client
+        .from("mistakes")
+        .select("id", { count: "exact", head: true })
+        .eq("ai_upgrade_status", "description_too_long")
+    ),
+
+    exactCount(
+      client
+        .from("mistakes")
+        .select("id", { count: "exact", head: true })
+        .eq("ai_upgrade_factual_difference_found", true)
+    )
+
+  ]);
+
+  document.getElementById("totalRecords").textContent =
     total;
 
-  document.getElementById(
-    "alreadyResearched"
-  ).textContent =
+  document.getElementById("alreadyResearched").textContent =
     researched;
 
-  document.getElementById(
-    "remainingRecords"
-  ).textContent =
-    Math.max(
-      0,
-      total - researched
-    );
-}
+  document.getElementById("remainingRecords").textContent =
+    Math.max(0, total - researched);
 
+  document.getElementById("allReady").textContent =
+    ready;
+
+  document.getElementById("allVerificationFailed").textContent =
+    verificationFailed;
+
+  document.getElementById("allSourceMissing").textContent =
+    sourceMissing;
+
+  document.getElementById("allErrors").textContent =
+    researchErrors + tooShort + tooLong;
+
+  document.getElementById("allFactDifferences").textContent =
+    factualDifferences;
+}
 
 /* ============================================================
    LOAD NEXT 50
@@ -1081,57 +891,35 @@ async function refreshCounts() {
 
 async function loadFifty() {
 
-  if (running) {
-    return;
-  }
+  if (running) return;
 
-  const ok =
-    await requireAdmin();
-
-  if (!ok) {
-    return;
-  }
+  const ok = await requireAdmin();
+  if (!ok) return;
 
   const status =
-    document.getElementById(
-      "status"
-    );
+    document.getElementById("status");
 
   const loadButton =
-    document.getElementById(
-      "loadButton"
-    );
+    document.getElementById("loadButton");
 
   const runButton =
-    document.getElementById(
-      "runButton"
-    );
+    document.getElementById("runButton");
 
-  loadButton.disabled =
-    true;
-
-  runButton.disabled =
-    true;
+  loadButton.disabled = true;
+  runButton.disabled = true;
 
   status.textContent =
-    "Loading unresearched SportsMistakes records...";
+    "Loading the next unresearched SportsMistakes records...";
 
   try {
 
     /*
-      Load all unresearched records.
-
-      We sort locally by summary length so that
-      the 50 thinnest remaining entries are selected.
-
-      limit(2000) safely covers the current database
-      size while avoiding the default 1000-row return.
+      IMPORTANT:
+      Only records with NO ai_upgrade_researched_at
+      are eligible for this batch.
     */
 
-    const {
-      data,
-      error
-    } =
+    const { data, error } =
       await client
         .from("mistakes")
         .select(`
@@ -1152,303 +940,219 @@ async function loadFifty() {
           ai_upgrade_researched_at,
           ai_upgrade_error
         `)
-        .is(
-          "ai_upgrade_researched_at",
-          null
-        )
+        .is("ai_upgrade_researched_at", null)
         .limit(2000);
 
-    if (error) {
-      throw error;
-    }
+    if (error) throw error;
 
     const candidates =
       (data || [])
-        .filter(
-          row =>
-            row &&
-            String(
-              row.title || ""
-            ).trim()
+        .filter(row =>
+          row &&
+          String(row.title || "").trim()
         )
-        .map(
-          row => ({
-            ...row,
-            currentWordCount:
-              countWords(
-                row.summary
-              )
-          })
-        )
-        .sort(
-          (a,b) => {
+        .map(row => ({
+          ...row,
+          currentWordCount:
+            countWords(row.summary)
+        }))
+        .sort((a,b) => {
 
-            const wordDifference =
-              a.currentWordCount -
-              b.currentWordCount;
+          const wordDifference =
+            a.currentWordCount -
+            b.currentWordCount;
 
-            if (
-              wordDifference !== 0
-            ) {
-              return wordDifference;
-            }
-
-            return (
-              String(
-                a.summary || ""
-              ).length -
-              String(
-                b.summary || ""
-              ).length
-            );
+          if (wordDifference !== 0) {
+            return wordDifference;
           }
-        );
+
+          return (
+            String(a.summary || "").length -
+            String(b.summary || "").length
+          );
+        });
 
     rows =
-      candidates.slice(
-        0,
-        50
-      );
+      candidates.slice(0, 50);
+
+    resetRunStats();
 
     if (!rows.length) {
 
-      document.getElementById(
-        "results"
-      ).innerHTML = `
+      document.getElementById("results").innerHTML = `
         <div class="placeholder">
-          No unresearched records remain.
+          <strong>No unresearched records remain.</strong>
+          <br><br>
+          The database research pass appears complete.
         </div>
       `;
 
       status.textContent =
-        "Every available SportsMistakes record already has an AI research status.";
+        "No unresearched records remain.";
+
+      await refreshCounts();
 
       return;
     }
 
-    resetRunStats();
-
     renderLoadedRows();
 
-    runButton.disabled =
-      false;
+    runButton.disabled = false;
 
     status.textContent =
-      `${rows.length} records loaded. These are the shortest descriptions among records not yet researched.`;
+      `${rows.length} new unresearched records loaded. Ready to research.`;
+
+    await refreshCounts();
 
   } catch (error) {
 
     console.error(error);
 
     status.textContent =
-      "Could not load the test records.";
+      "Could not load records.";
 
-    document.getElementById(
-      "results"
-    ).innerHTML = `
+    document.getElementById("results").innerHTML = `
       <div class="placeholder">
-        <strong>
-          Load failed.
-        </strong>
+        <strong>Load failed.</strong>
         <br><br>
-        ${escapeHtml(
-          error?.message ||
-          String(error)
-        )}
+        ${escapeHtml(error?.message || String(error))}
       </div>
     `;
 
   } finally {
 
-    loadButton.disabled =
-      false;
+    loadButton.disabled = false;
   }
 }
 
-
 /* ============================================================
-   DISPLAY LOADED RECORDS BEFORE RUN
+   DISPLAY LOADED RECORDS
    ============================================================ */
 
 function renderLoadedRows() {
 
-  const results =
-    document.getElementById(
-      "results"
-    );
+  document.getElementById("results").innerHTML =
+    rows.map((row,index) => `
 
-  results.innerHTML =
-    rows.map(
-      (row,index) => `
-        <article
-          class="record"
-          id="record-${safeId(row.id)}"
-        >
+      <article class="record" id="record-${safeId(row.id)}">
 
-          <div class="record-header">
+        <div class="record-header">
 
-            <div>
+          <div>
 
-              <div class="record-number">
-                Record ${index + 1} of ${rows.length}
-              </div>
-
-              <div class="record-title">
-                ${escapeHtml(
-                  row.title ||
-                  "Untitled"
-                )}
-              </div>
-
-              <div class="metadata">
-                ${escapeHtml(
-                  formatMetadata(row)
-                )}
-                •
-                ${row.currentWordCount}
-                current words
-              </div>
-
+            <div class="record-number">
+              Record ${index + 1} of ${rows.length}
             </div>
 
-            <div class="badge">
-              Waiting
+            <div class="record-title">
+              ${escapeHtml(row.title || "Untitled")}
+            </div>
+
+            <div class="metadata">
+              ${escapeHtml(formatMetadata(row))}
+              • ${row.currentWordCount} current words
             </div>
 
           </div>
 
-          <div class="comparison">
-
-            <section class="column old-column">
-
-              <div class="column-title">
-                OLD — LIVE DESCRIPTION
-              </div>
-
-              <div class="description">
-                ${
-                  row.summary
-                    ? escapeHtml(
-                        row.summary
-                      )
-                    : "<em>No live description.</em>"
-                }
-              </div>
-
-              <div class="word-count">
-                ${row.currentWordCount}
-                words
-              </div>
-
-            </section>
-
-            <section class="column new-column">
-
-              <div class="column-title">
-                NEW — AI STAGING DESCRIPTION
-              </div>
-
-              <div class="description">
-                Not researched yet.
-              </div>
-
-            </section>
-
+          <div class="badge">
+            Waiting
           </div>
 
-        </article>
-      `
-    ).join("");
+        </div>
+
+        <div class="comparison">
+
+          <section class="column old-column">
+
+            <div class="column-title">
+              OLD — LIVE DESCRIPTION
+            </div>
+
+            <div class="description">
+              ${
+                row.summary
+                  ? escapeHtml(row.summary)
+                  : "<em>No live description.</em>"
+              }
+            </div>
+
+            <div class="word-count">
+              ${row.currentWordCount} words
+            </div>
+
+          </section>
+
+          <section class="column new-column">
+
+            <div class="column-title">
+              NEW — AI STAGING DESCRIPTION
+            </div>
+
+            <div class="description">
+              Not researched yet.
+            </div>
+
+          </section>
+
+        </div>
+
+      </article>
+
+    `).join("");
 }
 
-
 /* ============================================================
-   RUN 50
+   RUN BATCH
    ============================================================ */
 
 async function runFifty() {
 
-  if (
-    running ||
-    !rows.length
-  ) {
-    return;
-  }
+  if (running || !rows.length) return;
 
-  const ok =
-    await requireAdmin();
+  const ok = await requireAdmin();
+  if (!ok) return;
 
-  if (!ok) {
-    return;
-  }
-
-  running =
-    true;
-
-  stopRequested =
-    false;
+  running = true;
+  stopRequested = false;
 
   resetRunStats();
 
   const runButton =
-    document.getElementById(
-      "runButton"
-    );
+    document.getElementById("runButton");
 
   const loadButton =
-    document.getElementById(
-      "loadButton"
-    );
+    document.getElementById("loadButton");
 
   const stopButton =
-    document.getElementById(
-      "stopButton"
-    );
+    document.getElementById("stopButton");
 
   const status =
-    document.getElementById(
-      "status"
-    );
+    document.getElementById("status");
 
-  runButton.disabled =
-    true;
+  runButton.disabled = true;
+  loadButton.disabled = true;
+  stopButton.disabled = false;
 
-  loadButton.disabled =
-    true;
-
-  stopButton.disabled =
-    false;
-
-  document.getElementById(
-    "runSummary"
-  ).style.display =
+  document.getElementById("runSummary").style.display =
     "grid";
 
-  document.getElementById(
-    "progressWrap"
-  ).style.display =
+  document.getElementById("progressWrap").style.display =
     "block";
 
   setProgress(0);
 
   try {
 
-    for (
-      let index = 0;
-      index < rows.length;
-      index++
-    ) {
+    for (let index = 0; index < rows.length; index++) {
 
       if (stopRequested) {
-
         status.textContent =
           `Stopped safely after ${stats.processed} records.`;
-
         break;
       }
 
-      const row =
-        rows[index];
+      const row = rows[index];
 
       status.textContent =
         `Researching ${index + 1} of ${rows.length}: ${row.title}`;
@@ -1456,40 +1160,32 @@ async function runFifty() {
       runButton.innerHTML =
         `<span class="spinner"></span> Researching ${index + 1} of ${rows.length}...`;
 
-      markProcessing(
-        row,
-        index
-      );
+      markProcessing(row);
 
       try {
 
         const result =
-          await researchAndStage(
-            row.id
-          );
+          await researchAndStage(row.id);
 
-        renderResult(
-          row,
-          index,
-          result
-        );
+        renderResult(row, index, result);
 
-        updateStatsFromResult(
-          result
-        );
+        /*
+          If server safeguard says this record was already
+          researched, don't count it as a new research result.
+        */
+
+        if (!result.skipped_already_researched) {
+          updateStatsFromResult(result);
+        } else {
+          stats.processed++;
+          updateRunStats();
+        }
 
       } catch (error) {
 
-        console.error(
-          "Research error:",
-          error
-        );
+        console.error(error);
 
-        renderError(
-          row,
-          index,
-          error
-        );
+        renderError(row, index, error);
 
         stats.processed++;
         stats.errors++;
@@ -1498,17 +1194,26 @@ async function runFifty() {
       }
 
       setProgress(
-        (
-          (index + 1) /
-          rows.length
-        ) * 100
+        ((index + 1) / rows.length) * 100
       );
+
+      /*
+        Refresh permanent totals every 10 records.
+        This lets you watch the running database total climb.
+      */
+
+      if (
+        (index + 1) % 10 === 0 ||
+        index === rows.length - 1
+      ) {
+        await refreshCounts();
+      }
     }
 
     if (!stopRequested) {
 
       status.textContent =
-        `Finished. ${stats.processed} records processed. All successful proposals were saved only to staging fields. Live descriptions were not changed.`;
+        `Finished. ${stats.processed} records processed. Live descriptions were not changed.`;
 
     }
 
@@ -1516,41 +1221,27 @@ async function runFifty() {
 
   } finally {
 
-    running =
-      false;
+    running = false;
 
-    runButton.disabled =
-      false;
-
-    loadButton.disabled =
-      false;
-
-    stopButton.disabled =
-      true;
+    runButton.disabled = false;
+    loadButton.disabled = false;
+    stopButton.disabled = true;
 
     runButton.textContent =
       "Research + Stage 50";
   }
 }
 
-
 /* ============================================================
-   EDGE FUNCTION CALL
+   EDGE FUNCTION
    ============================================================ */
 
-async function researchAndStage(
-  mistakeId
-) {
+async function researchAndStage(mistakeId) {
 
-  const {
-    data,
-    error
-  } =
+  const { data, error } =
     await client.auth.getSession();
 
-  if (error) {
-    throw error;
-  }
+  if (error) throw error;
 
   const session =
     data?.session;
@@ -1568,102 +1259,63 @@ async function researchAndStage(
         method: "POST",
 
         headers: {
-
-          "Content-Type":
-            "application/json",
-
-          "apikey":
-            SUPABASE_ANON_KEY,
-
+          "Content-Type": "application/json",
+          "apikey": SUPABASE_ANON_KEY,
           "Authorization":
             `Bearer ${session.access_token}`
-
         },
 
-        body:
-          JSON.stringify({
-            mistake_id:
-              String(
-                mistakeId
-              )
-          })
+        body: JSON.stringify({
+          mistake_id: String(mistakeId)
+
+          /*
+            IMPORTANT:
+            force_research is deliberately NOT sent.
+            Therefore the server safeguard prevents
+            accidental repeat research.
+          */
+        })
       }
     );
 
-  let payload =
-    {};
+  let payload = {};
 
   try {
-
     payload =
       await response.json();
-
   } catch {
-
     throw new Error(
       `Edge Function returned HTTP ${response.status} without valid JSON.`
     );
-
   }
 
-  if (
-    !response.ok ||
-    payload?.success !== true
-  ) {
-
+  if (!response.ok || payload?.success !== true) {
     throw new Error(
       payload?.details ||
       payload?.error ||
       `Research failed with HTTP ${response.status}.`
     );
-
   }
 
-  /*
-    SAFETY CHECKS
-
-    The function must explicitly confirm:
-
-    - staging_only
-    - staging saved
-    - live fields NOT updated
-    - database_updated false
-
-    If any of those expectations change,
-    stop treating the response as safe.
-  */
-
-  if (
-    payload.mode !==
-    "staging_only"
-  ) {
+  if (payload.mode !== "staging_only") {
     throw new Error(
       "Safety stop: function did not confirm staging-only mode."
     );
   }
 
-  if (
-    payload.staging_saved !==
-    true
-  ) {
+  if (payload.staging_saved !== true) {
     throw new Error(
       "Safety stop: staging save was not confirmed."
     );
   }
 
-  if (
-    payload.live_fields_updated !==
-    false
-  ) {
+  if (payload.live_fields_updated !== false) {
     throw new Error(
-      "Safety stop: function did not confirm live fields remained untouched."
+      "Safety stop: live fields may have been changed."
     );
   }
 
-  if (
-    payload.database_updated !==
-    false
-  ) {
+  if (payload.database_updated !== false) {
     throw new Error(
       "Safety stop: unexpected live database update flag."
     );
@@ -1672,38 +1324,28 @@ async function researchAndStage(
   return payload;
 }
 
-
 /* ============================================================
-   PROCESSING DISPLAY
+   PROCESSING
    ============================================================ */
 
-function markProcessing(
-  row,
-  index
-) {
+function markProcessing(row) {
 
   const card =
     document.getElementById(
       `record-${safeId(row.id)}`
     );
 
-  if (!card) {
-    return;
-  }
+  if (!card) return;
 
   const badge =
-    card.querySelector(
-      ".badge"
-    );
+    card.querySelector(".badge");
 
   if (badge) {
-
     badge.className =
       "badge processing";
 
     badge.innerHTML =
       `<span class="spinner"></span> Researching`;
-
   }
 
   const newDescription =
@@ -1712,32 +1354,23 @@ function markProcessing(
     );
 
   if (newDescription) {
-
     newDescription.innerHTML =
       `<span class="spinner"></span> Researching this exact event...`;
-
   }
 }
 
-
 /* ============================================================
-   RENDER SUCCESS / VERIFIED OR FAILED VERIFICATION
+   RESULT
    ============================================================ */
 
-function renderResult(
-  row,
-  index,
-  result
-) {
+function renderResult(row,index,result) {
 
   const card =
     document.getElementById(
       `record-${safeId(row.id)}`
     );
 
-  if (!card) {
-    return;
-  }
+  if (!card) return;
 
   const current =
     result.current || {};
@@ -1754,9 +1387,12 @@ function renderResult(
     "unknown";
 
   const badgeInfo =
-    statusBadge(
-      status
-    );
+    result.skipped_already_researched
+      ? {
+          className: "warning",
+          label: "Already Researched — Skipped"
+        }
+      : statusBadge(status);
 
   const oldDescription =
     current.description ||
@@ -1779,35 +1415,23 @@ function renderResult(
         </div>
 
         <div class="record-title">
-          ${escapeHtml(
-            row.title ||
-            "Untitled"
-          )}
+          ${escapeHtml(row.title || "Untitled")}
         </div>
 
         <div class="metadata">
-          ${escapeHtml(
-            formatMetadata(row)
-          )}
-          • ID:
-          ${escapeHtml(row.id)}
+          ${escapeHtml(formatMetadata(row))}
+          • ID: ${escapeHtml(row.id)}
         </div>
 
       </div>
 
       <div class="badge ${badgeInfo.className}">
-        ${escapeHtml(
-          badgeInfo.label
-        )}
+        ${escapeHtml(badgeInfo.label)}
       </div>
 
     </div>
 
     <div class="comparison">
-
-      <!-- ======================================================
-           LIVE
-           ====================================================== -->
 
       <section class="column old-column">
 
@@ -1816,76 +1440,45 @@ function renderResult(
         </div>
 
         <div class="description">
-
           ${
             oldDescription
-              ? escapeHtml(
-                  oldDescription
-                )
+              ? escapeHtml(oldDescription)
               : "<em>No current description.</em>"
           }
-
         </div>
 
         <div class="word-count">
-
-          ${countWords(
-            oldDescription
-          )}
-          words
-
+          ${countWords(oldDescription)} words
         </div>
 
         <div class="field">
-
           <div class="field-label">
             Current Why It Matters
           </div>
-
           <div class="field-value">
-
             ${
               current.why_it_matters
-                ? escapeHtml(
-                    current.why_it_matters
-                  )
+                ? escapeHtml(current.why_it_matters)
                 : "—"
             }
-
           </div>
-
         </div>
 
         <div class="field">
-
           <div class="field-label">
             Current Sources
           </div>
-
           <div class="field-value">
-
-            ${sourceHtml(
-              current.source_1
-            )}
-
+            ${sourceHtml(current.source_1)}
             ${
               current.source_2
-                ? "<br><br>" +
-                  sourceHtml(
-                    current.source_2
-                  )
+                ? "<br><br>" + sourceHtml(current.source_2)
                 : ""
             }
-
           </div>
-
         </div>
 
       </section>
-
-      <!-- ======================================================
-           STAGING
-           ====================================================== -->
 
       <section class="column new-column">
 
@@ -1894,45 +1487,26 @@ function renderResult(
         </div>
 
         <div class="description">
-
           ${
             newDescription
-              ? escapeHtml(
-                  newDescription
-                )
-              : (
-                  status ===
-                  "verification_failed"
-                    ?
-                    "<em>No proposal stored because the event could not be confidently verified.</em>"
-                    :
-                    "<em>No staging description was stored.</em>"
-                )
+              ? escapeHtml(newDescription)
+              : "<em>No staged description.</em>"
           }
-
         </div>
 
         <div class="word-count">
-
           ${
             newDescription
-              ? countWords(
-                  newDescription
-                ) +
-                " words"
+              ? countWords(newDescription) + " words"
               : "No staged description"
           }
-
         </div>
 
         <div class="field">
-
           <div class="field-label">
             Staged Why It Matters
           </div>
-
           <div class="field-value">
-
             ${
               proposed.why_it_matters ||
               staging.why_it_matters
@@ -1942,17 +1516,13 @@ function renderResult(
                   )
                 : "—"
             }
-
           </div>
-
         </div>
 
         <div class="field">
-
           <div class="field-label">
             Researched Sources
           </div>
-
           <div class="field-value">
 
             ${sourceHtml(
@@ -1963,57 +1533,36 @@ function renderResult(
             ${
               proposed.source_2 ||
               staging.source_2
-                ?
-                "<br><br>" +
-                sourceHtml(
-                  proposed.source_2 ||
-                  staging.source_2
-                )
-                :
-                ""
+                ? "<br><br>" +
+                  sourceHtml(
+                    proposed.source_2 ||
+                    staging.source_2
+                  )
+                : ""
             }
 
           </div>
-
-        </div>
-
-        <div class="field">
-
-          <div class="field-label">
-            Proposed Canonical Title
-          </div>
-
-          <div class="field-value">
-
-            ${
-              proposed.canonical_title ||
-              staging.canonical_title
-                ?
-                escapeHtml(
-                  proposed.canonical_title ||
-                  staging.canonical_title
-                )
-                :
-                "—"
-            }
-
-          </div>
-
         </div>
 
       </section>
 
     </div>
 
-    <!-- ========================================================
-         AUDIT NOTES
-         ======================================================== -->
-
     <div class="notes">
 
-      <span class="saved-note">
-        ✓ STAGING RESULT SAVED
-      </span>
+      ${
+        result.skipped_already_researched
+          ? `
+            <span class="fact-warning">
+              ALREADY RESEARCHED — NO NEW OPENAI REQUEST WAS MADE
+            </span>
+          `
+          : `
+            <span class="saved-note">
+              ✓ STAGING RESULT SAVED
+            </span>
+          `
+      }
 
       &nbsp; • &nbsp;
 
@@ -2023,38 +1572,34 @@ function renderResult(
 
       <br><br>
 
-      <strong>
-        Status:
-      </strong>
-
+      <strong>Status:</strong>
       ${escapeHtml(status)}
 
       &nbsp; • &nbsp;
 
-      <strong>
-        Verified:
-      </strong>
-
-      ${
-        result.verified
-          ? "Yes"
-          : "No"
-      }
+      <strong>Verified:</strong>
+      ${result.verified ? "Yes" : "No"}
 
       ${
         staging.researched_at
           ? `
             &nbsp; • &nbsp;
+            <strong>Researched:</strong>
+            ${escapeHtml(formatDate(staging.researched_at))}
+          `
+          : ""
+      }
 
-            <strong>
-              Researched:
-            </strong>
-
-            ${escapeHtml(
-              formatDate(
-                staging.researched_at
-              )
-            )}
+      ${
+        result.compression_applied
+          ? `
+            <br><br>
+            <strong>Description compression:</strong>
+            ${
+              result.compression_successful
+                ? `Yes — reduced from ${result.original_description_word_count} to ${result.description_word_count} words.`
+                : "Attempted, but length still requires review."
+            }
           `
           : ""
       }
@@ -2063,14 +1608,8 @@ function renderResult(
         result.verification_note
           ? `
             <br><br>
-
-            <strong>
-              Verification note:
-            </strong>
-
-            ${escapeHtml(
-              result.verification_note
-            )}
+            <strong>Verification note:</strong>
+            ${escapeHtml(result.verification_note)}
           `
           : ""
       }
@@ -2079,11 +1618,9 @@ function renderResult(
         result.factual_difference_found
           ? `
             <br><br>
-
             <span class="fact-warning">
               ⚠ POSSIBLE FACTUAL DIFFERENCE:
             </span>
-
             ${escapeHtml(
               result.factual_difference_note ||
               "The researched evidence differs meaningfully from the existing record."
@@ -2097,49 +1634,31 @@ function renderResult(
   `;
 }
 
-
 /* ============================================================
-   RENDER TECHNICAL FAILURE
+   ERROR
    ============================================================ */
 
-function renderError(
-  row,
-  index,
-  error
-) {
+function renderError(row,index,error) {
 
   const card =
     document.getElementById(
       `record-${safeId(row.id)}`
     );
 
-  if (!card) {
-    return;
-  }
+  if (!card) return;
 
   card.innerHTML = `
 
     <div class="record-header">
 
       <div>
-
         <div class="record-number">
           Record ${index + 1} of ${rows.length}
         </div>
 
         <div class="record-title">
-          ${escapeHtml(
-            row.title ||
-            "Untitled"
-          )}
+          ${escapeHtml(row.title || "Untitled")}
         </div>
-
-        <div class="metadata">
-          ${escapeHtml(
-            formatMetadata(row)
-          )}
-        </div>
-
       </div>
 
       <div class="badge failed">
@@ -2157,15 +1676,7 @@ function renderError(
         </div>
 
         <div class="description">
-
-          ${
-            row.summary
-              ? escapeHtml(
-                  row.summary
-                )
-              : "<em>No current description.</em>"
-          }
-
+          ${escapeHtml(row.summary || "")}
         </div>
 
       </section>
@@ -2177,28 +1688,14 @@ function renderError(
         </div>
 
         <div class="description">
-
-          <em>
-            Research could not be completed.
-          </em>
-
+          <em>Research could not be completed.</em>
         </div>
 
         <div class="field">
-
-          <div class="field-label">
-            Error
-          </div>
-
+          <div class="field-label">Error</div>
           <div class="field-value">
-
-            ${escapeHtml(
-              error?.message ||
-              String(error)
-            )}
-
+            ${escapeHtml(error?.message || String(error))}
           </div>
-
         </div>
 
       </section>
@@ -2206,24 +1703,19 @@ function renderError(
     </div>
 
     <div class="notes">
-
       <span class="live-warning">
         LIVE DESCRIPTION NOT CHANGED
       </span>
-
     </div>
 
   `;
 }
 
-
 /* ============================================================
-   STATUS COUNTERS
+   CURRENT BATCH STATS
    ============================================================ */
 
-function updateStatsFromResult(
-  result
-) {
+function updateStatsFromResult(result) {
 
   stats.processed++;
 
@@ -2232,44 +1724,22 @@ function updateStatsFromResult(
     result.staging?.status ||
     "";
 
-  if (
-    status ===
-    "ready_for_review"
-  ) {
-
+  if (status === "ready_for_review") {
     stats.ready++;
-
-  } else if (
-    status ===
-    "verification_failed"
-  ) {
-
+  } else if (status === "verification_failed") {
     stats.verificationFailed++;
-
-  } else if (
-    status ===
-    "source_missing"
-  ) {
-
+  } else if (status === "source_missing") {
     stats.sourceMissing++;
-
   } else {
-
     stats.errors++;
-
   }
 
-  if (
-    result.factual_difference_found
-  ) {
-
+  if (result.factual_difference_found) {
     stats.factualDifferences++;
-
   }
 
   updateRunStats();
 }
-
 
 function resetRunStats() {
 
@@ -2284,236 +1754,145 @@ function resetRunStats() {
 
   updateRunStats();
 
-  document.getElementById(
-    "runSummary"
-  ).style.display =
+  document.getElementById("runSummary").style.display =
     "grid";
 }
 
-
 function updateRunStats() {
 
-  document.getElementById(
-    "processedCount"
-  ).textContent =
+  document.getElementById("processedCount").textContent =
     stats.processed;
 
-  document.getElementById(
-    "readyCount"
-  ).textContent =
+  document.getElementById("readyCount").textContent =
     stats.ready;
 
-  document.getElementById(
-    "verificationFailedCount"
-  ).textContent =
+  document.getElementById("verificationFailedCount").textContent =
     stats.verificationFailed;
 
-  document.getElementById(
-    "sourceMissingCount"
-  ).textContent =
+  document.getElementById("sourceMissingCount").textContent =
     stats.sourceMissing;
 
-  document.getElementById(
-    "factDifferenceCount"
-  ).textContent =
+  document.getElementById("factDifferenceCount").textContent =
     stats.factualDifferences;
 
-  document.getElementById(
-    "errorCount"
-  ).textContent =
+  document.getElementById("errorCount").textContent =
     stats.errors;
 }
 
-
 /* ============================================================
-   STOP
+   STOP / CLEAR
    ============================================================ */
 
 function requestStop() {
 
-  if (!running) {
-    return;
-  }
+  if (!running) return;
 
-  stopRequested =
+  stopRequested = true;
+
+  document.getElementById("stopButton").disabled =
     true;
 
-  document.getElementById(
-    "stopButton"
-  ).disabled =
-    true;
-
-  document.getElementById(
-    "status"
-  ).textContent =
-    "Stop requested. The current record will finish, then the batch will stop.";
+  document.getElementById("status").textContent =
+    "Stop requested. Current record will finish first.";
 }
-
-
-/* ============================================================
-   CLEAR SCREEN
-   ============================================================ */
 
 function clearResults() {
 
   if (running) {
-
     alert(
-      "The research batch is currently running. Stop it first."
+      "The research batch is running. Stop it first."
     );
-
     return;
   }
 
-  rows =
-    [];
-
+  rows = [];
   resetRunStats();
 
-  document.getElementById(
-    "runSummary"
-  ).style.display =
+  document.getElementById("runSummary").style.display =
     "none";
 
-  document.getElementById(
-    "progressWrap"
-  ).style.display =
+  document.getElementById("progressWrap").style.display =
     "none";
 
   setProgress(0);
 
-  document.getElementById(
-    "runButton"
-  ).disabled =
+  document.getElementById("runButton").disabled =
     true;
 
-  document.getElementById(
-    "results"
-  ).innerHTML = `
-
+  document.getElementById("results").innerHTML = `
     <div class="placeholder">
-
-      Click
-      <strong>
-        Load Next 50 Shortest
-      </strong>
-      to select records for this test.
-
+      Click <strong>Load Next 50 Shortest</strong>
+      to select the next unresearched records.
     </div>
-
   `;
 
-  document.getElementById(
-    "status"
-  ).textContent =
-    "Screen cleared. Staging data already saved in Supabase was not deleted.";
+  document.getElementById("status").textContent =
+    "Screen cleared. Permanent database totals above were not changed.";
 }
 
-
 /* ============================================================
-   PROGRESS
+   HELPERS
    ============================================================ */
 
-function setProgress(
-  percent
-) {
-
-  document.getElementById(
-    "progress"
-  ).style.width =
-    `${Math.max(
-      0,
-      Math.min(
-        100,
-        percent
-      )
-    )}%`;
+function setProgress(percent) {
+  document.getElementById("progress").style.width =
+    `${Math.max(0,Math.min(100,percent))}%`;
 }
 
+function statusBadge(status) {
 
-/* ============================================================
-   BADGES
-   ============================================================ */
-
-function statusBadge(
-  status
-) {
-
-  switch (
-    status
-  ) {
+  switch(status) {
 
     case "ready_for_review":
-
       return {
         className: "ready",
         label: "Ready for Review"
       };
 
     case "verification_failed":
-
       return {
         className: "failed",
         label: "Verification Failed"
       };
 
     case "source_missing":
-
       return {
         className: "warning",
         label: "Source Missing"
       };
 
     case "description_too_short":
-
       return {
         className: "warning",
         label: "Description Too Short"
       };
 
     case "description_too_long":
-
       return {
         className: "warning",
         label: "Description Too Long"
       };
 
     case "research_error":
-
       return {
         className: "failed",
         label: "Research Error"
       };
 
     default:
-
       return {
         className: "warning",
-        label: status ||
-          "Needs Review"
+        label: status || "Needs Review"
       };
-
   }
 }
 
-
-/* ============================================================
-   HELPERS
-   ============================================================ */
-
-function countWords(
-  value
-) {
+function countWords(value) {
 
   const text =
-    String(
-      value ||
-      ""
-    ).trim();
+    String(value || "").trim();
 
-  if (!text) {
-    return 0;
-  }
+  if (!text) return 0;
 
   return text
     .split(/\s+/)
@@ -2521,63 +1900,35 @@ function countWords(
     .length;
 }
 
-
-function formatMetadata(
-  row
-) {
-
+function formatMetadata(row) {
   return [
-    row.sport ||
-      "",
-    row.league ||
-      "",
-    row.year ||
-      ""
+    row.sport || "",
+    row.league || "",
+    row.year || ""
   ]
     .filter(Boolean)
     .join(" • ");
 }
 
-
-function formatDate(
-  value
-) {
-
+function formatDate(value) {
   try {
-
-    return new Date(
-      value
-    ).toLocaleString();
-
+    return new Date(value).toLocaleString();
   } catch {
-
     return value;
-
   }
 }
 
-
-function sourceHtml(
-  value
-) {
+function sourceHtml(value) {
 
   const url =
-    String(
-      value ||
-      ""
-    ).trim();
+    String(value || "").trim();
 
-  if (!url) {
-    return "—";
-  }
+  if (!url) return "—";
 
   const safe =
-    escapeHtml(
-      url
-    );
+    escapeHtml(url);
 
   return `
-
     <a
       class="source-link"
       href="${safe}"
@@ -2586,68 +1937,32 @@ function sourceHtml(
     >
       ${safe}
     </a>
-
   `;
 }
 
-
-function safeId(
-  value
-) {
-
-  return String(
-    value ||
-    ""
-  ).replace(
-    /[^a-zA-Z0-9_-]/g,
-    "-"
-  );
-}
-
-
-function escapeHtml(
-  value
-) {
-
-  return String(
-    value ??
-    ""
-  )
+function safeId(value) {
+  return String(value || "")
     .replace(
-      /&/g,
-      "&amp;"
-    )
-    .replace(
-      /</g,
-      "&lt;"
-    )
-    .replace(
-      />/g,
-      "&gt;"
-    )
-    .replace(
-      /"/g,
-      "&quot;"
-    )
-    .replace(
-      /'/g,
-      "&#039;"
+      /[^a-zA-Z0-9_-]/g,
+      "-"
     );
 }
 
+function escapeHtml(value) {
 
-/* ============================================================
-   LOGOUT
-   ============================================================ */
+  return String(value ?? "")
+    .replace(/&/g,"&amp;")
+    .replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;")
+    .replace(/"/g,"&quot;")
+    .replace(/'/g,"&#039;");
+}
 
 async function logout() {
-
   await client.auth.signOut();
-
   window.location.href =
     "admin-login.html";
 }
-
 
 /* ============================================================
    INITIALIZE
@@ -2658,23 +1973,16 @@ async function initialize() {
   const ok =
     await requireAdmin();
 
-  if (!ok) {
-    return;
-  }
+  if (!ok) return;
 
-  document.getElementById(
-    "status"
-  ).textContent =
-    "Admin access confirmed. Loading database research counts...";
+  document.getElementById("status").textContent =
+    "Admin access confirmed. Calculating running database totals...";
 
   await refreshCounts();
 
-  document.getElementById(
-    "status"
-  ).textContent =
+  document.getElementById("status").textContent =
     "Ready. Load the next 50 shortest unresearched descriptions.";
 }
-
 
 initialize();
 
