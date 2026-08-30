@@ -2436,28 +2436,102 @@
       }
     }
 
-    async function fetchAllMistakesLightweight() {
-      const pageSize = 500;
-      let from = 0;
-      let allRows = [];
+    // ==========================================================
+    // FAST HOMEPAGE DATA LOADING
+    // ==========================================================
+    // The homepage used to wait for the entire 900+ record database
+    // before rendering anything.  That made the artwork feel slow even
+    // though the card images themselves were lazy-loaded.
+    //
+    // New approach:
+    //   1. Fetch a small first group immediately.
+    //   2. Render the visible homepage right away.
+    //   3. Fetch the rest of the database quietly in the background.
+    //
+    // Search/filter still gets the complete database once the background
+    // fetch finishes.  The existing 24-card Load More system is unchanged.
+
+    const INITIAL_DATA_LIMIT = 120;
+    const BACKGROUND_PAGE_SIZE = 250;
+    let fullDatabaseLoaded = false;
+    let fullDatabaseLoadPromise = null;
+
+    const MISTAKE_LIGHT_FIELDS =
+      "id,title,sport,year,category,subcategory,teams_people,summary,why_it_matters,lessons_learned,controversy_score,views,artwork_url";
+
+    async function fetchInitialMistakesLightweight() {
+      const { data, error } = await client
+        .from("mistakes")
+        .select(MISTAKE_LIGHT_FIELDS)
+        .order("controversy_score", { ascending:false })
+        .range(0, INITIAL_DATA_LIMIT - 1);
+
+      if (error) throw error;
+      return data || [];
+    }
+
+    async function fetchRemainingMistakesLightweight() {
+      let from = INITIAL_DATA_LIMIT;
+      let remainingRows = [];
 
       while (true) {
         const { data, error } = await client
           .from("mistakes")
-          .select("id,title,sport,year,category,subcategory,teams_people,summary,why_it_matters,lessons_learned,controversy_score,views,artwork_url")
+          .select(MISTAKE_LIGHT_FIELDS)
           .order("controversy_score", { ascending:false })
-          .range(from, from + pageSize - 1);
+          .range(from, from + BACKGROUND_PAGE_SIZE - 1);
 
         if (error) throw error;
 
         const rows = data || [];
-        allRows = allRows.concat(rows);
+        remainingRows = remainingRows.concat(rows);
 
-        if (rows.length < pageSize) break;
-        from += pageSize;
+        if (rows.length < BACKGROUND_PAGE_SIZE) break;
+        from += BACKGROUND_PAGE_SIZE;
       }
 
-      return allRows;
+      return remainingRows;
+    }
+
+    function mergeMistakeRows(existingRows, incomingRows) {
+      const byId = new Map();
+      [...(existingRows || []), ...(incomingRows || [])].forEach(row => {
+        if (row && row.id != null) byId.set(String(row.id), row);
+      });
+      return Array.from(byId.values());
+    }
+
+    async function loadFullDatabaseInBackground() {
+      if (fullDatabaseLoaded) return mistakes;
+      if (fullDatabaseLoadPromise) return fullDatabaseLoadPromise;
+
+      fullDatabaseLoadPromise = (async () => {
+        try {
+          const remaining = await fetchRemainingMistakesLightweight();
+          mistakes = mergeMistakeRows(mistakes, remaining);
+          fullDatabaseLoaded = true;
+
+          // These controls/search features benefit from the full database,
+          // but updating them does not rebuild all of the artwork sections.
+          populateDropdowns();
+          renderLiveSearchResults();
+
+          // If the user has already filtered/sorted the All Mistakes area,
+          // refresh that one grid so its result count is complete.
+          if (filtersAreActive() || currentSortMode !== "default") {
+            renderMistakes();
+          }
+
+          return mistakes;
+        } catch (error) {
+          console.error("Background database load failed:", error);
+          return mistakes;
+        } finally {
+          fullDatabaseLoadPromise = null;
+        }
+      })();
+
+      return fullDatabaseLoadPromise;
     }
 
     async function loadVoteStatsInBackground() {
@@ -2541,7 +2615,8 @@
 
     async function loadMistakes() {
       try {
-        mistakes = await fetchAllMistakesLightweight();
+        // FAST FIRST PAINT: only fetch the first group before rendering.
+        mistakes = await fetchInitialMistakesLightweight();
       } catch (error) {
         const msg = error?.message || JSON.stringify(error) || "Unknown error";
         document.getElementById("stats").innerText = "Error loading mistakes: " + msg;
@@ -2552,7 +2627,7 @@
       applySearchFromUrl();
       populateDropdowns();
 
-      // Render the visible homepage immediately.
+      // Render the visible homepage immediately from the first small group.
       renderFeaturedHero();
       renderDashboardLists();
       renderMistakes();
@@ -2562,8 +2637,14 @@
       renderTodaysFive();
       renderMuseumExtras();
 
+      // Let the browser paint the page first.  Then fill the complete search /
+      // filter database and community statistics in the background.
+      window.setTimeout(() => {
+        loadFullDatabaseInBackground();
+      }, 50);
+
       // Votes are useful, but they must never delay the homepage.
-      window.setTimeout(loadVoteStatsInBackground, 300);
+      window.setTimeout(loadVoteStatsInBackground, 450);
     }
 
     function populateDropdowns() {
@@ -3613,7 +3694,7 @@ function formatNumber(n) {
       if(navBuckner && buckner){
         const url=buckner.artwork_url||buckner.ai_artwork_url||"";
         if(url){
-          navBuckner.innerHTML=`<img src="${escapeHtml(url)}" alt="Bill Buckner SportsMistakes artwork">`;
+          navBuckner.innerHTML=`<img src="${escapeHtml(url)}" alt="Bill Buckner SportsMistakes artwork" loading="lazy" decoding="async">`;
           navBuckner.onclick=()=>location.href=`mistake.html?id=${encodeURIComponent(buckner.id)}`;
           navBuckner.style.cursor="pointer";
           navBuckner.title=buckner.title||"Bill Buckner";
@@ -3631,7 +3712,7 @@ function formatNumber(n) {
       if(daily){
         const url=daily.artwork_url||daily.ai_artwork_url||"";
         dailyBox.innerHTML=url
-          ? `<img src="${escapeHtml(url)}" alt="${escapeHtml(daily.title||"SportsMistakes artwork")}">`
+          ? `<img src="${escapeHtml(url)}" alt="${escapeHtml(daily.title||"SportsMistakes artwork")}" loading="lazy" decoding="async">`
           : `<div class="daily-art-placeholder">SportsMistakes</div>`;
         dailyBox.onclick=()=>location.href=`mistake.html?id=${encodeURIComponent(daily.id)}`;
         dailyBox.style.cursor="pointer";
