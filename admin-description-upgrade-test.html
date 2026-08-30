@@ -189,6 +189,32 @@ button:disabled {
   line-height: 1.5;
 }
 
+.batch-safety {
+  display: none;
+  margin-top: 12px;
+  padding: 11px 13px;
+  border-radius: 9px;
+  border: 1px solid #35536f;
+  background: #102033;
+  color: #bcd4ea;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.batch-safety.good {
+  display: block;
+  border-color: #35654b;
+  background: #10251d;
+  color: #9be7bb;
+}
+
+.batch-safety.bad {
+  display: block;
+  border-color: #7d3d3d;
+  background: #2d1717;
+  color: #ffb2b2;
+}
+
 .progress-wrap {
   display: none;
 
@@ -212,29 +238,12 @@ button:disabled {
 }
 
 /* ============================================================
-   SECTION LABELS
-   ============================================================ */
-
-.section-heading {
-  margin: 26px 0 10px;
-  font-size: 17px;
-  font-weight: 900;
-  letter-spacing: .04em;
-}
-
-.section-subtitle {
-  color: #91a5ba;
-  font-size: 13px;
-  margin-bottom: 12px;
-}
-
-/* ============================================================
    DATABASE COUNTS
    ============================================================ */
 
 .database-summary {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: 12px;
 
   margin-bottom: 20px;
@@ -245,15 +254,6 @@ button:disabled {
   border: 1px solid #203852;
   border-radius: 12px;
   padding: 16px;
-}
-
-.summary-card.highlight {
-  border-color: #3d7558;
-  background: #10251d;
-}
-
-.summary-card.highlight .summary-number {
-  color: #8ce3b3;
 }
 
 .summary-number {
@@ -666,57 +666,54 @@ continues using the existing live record.
 </div>
 
 <!-- ============================================================
-     DATABASE COUNTS — RUNNING TOTALS
+     DATABASE COUNTS
      ============================================================ -->
-
-<div class="section-heading">
-ALL DATABASE — RUNNING TOTALS
-</div>
-
-<div class="section-subtitle">
-These numbers do not reset when you load another batch. They show progress across the entire SportsMistakes database.
-</div>
 
 <section class="database-summary">
 
   <div class="summary-card">
-    <div class="summary-number" id="totalRecords">—</div>
-    <div class="summary-label">Total Records</div>
-  </div>
 
-  <div class="summary-card highlight">
-    <div class="summary-number" id="alreadyResearched">—</div>
-    <div class="summary-label">Researched / Staged</div>
-  </div>
+    <div
+      class="summary-number"
+      id="totalRecords"
+    >
+      —
+    </div>
 
-  <div class="summary-card">
-    <div class="summary-number" id="remainingRecords">—</div>
-    <div class="summary-label">Remaining</div>
-  </div>
+    <div class="summary-label">
+      Total SportsMistakes Records
+    </div>
 
-  <div class="summary-card highlight">
-    <div class="summary-number" id="allReady">—</div>
-    <div class="summary-label">Ready for Review</div>
   </div>
 
   <div class="summary-card">
-    <div class="summary-number" id="allVerificationFailed">—</div>
-    <div class="summary-label">Verification Failed</div>
+
+    <div
+      class="summary-number"
+      id="alreadyResearched"
+    >
+      —
+    </div>
+
+    <div class="summary-label">
+      Already Researched Into Staging
+    </div>
+
   </div>
 
   <div class="summary-card">
-    <div class="summary-number" id="allSourceMissing">—</div>
-    <div class="summary-label">Source Missing</div>
-  </div>
 
-  <div class="summary-card">
-    <div class="summary-number" id="allErrors">—</div>
-    <div class="summary-label">Research / Length Errors</div>
-  </div>
+    <div
+      class="summary-number"
+      id="remainingRecords"
+    >
+      —
+    </div>
 
-  <div class="summary-card">
-    <div class="summary-number" id="allFactDifferences">—</div>
-    <div class="summary-label">Possible Fact Differences</div>
+    <div class="summary-label">
+      Not Yet Researched
+    </div>
+
   </div>
 
 </section>
@@ -772,6 +769,12 @@ These numbers do not reset when you load another batch. They show progress acros
     Checking admin access...
   </div>
 
+
+  <div
+    id="batchSafety"
+    class="batch-safety"
+  ></div>
+
   <div
     id="progressWrap"
     class="progress-wrap"
@@ -783,14 +786,6 @@ These numbers do not reset when you load another batch. They show progress acros
   </div>
 
 </section>
-
-<div class="section-heading">
-CURRENT 50-RECORD BATCH
-</div>
-
-<div class="section-subtitle">
-These counters reset when you load a new batch.
-</div>
 
 <!-- ============================================================
      RUN COUNTS
@@ -1043,112 +1038,72 @@ async function refreshCounts() {
 
   const [
     totalResult,
-    researchedResult,
-    readyResult,
-    verificationFailedResult,
-    sourceMissingResult,
-    researchErrorResult,
-    tooShortResult,
-    tooLongResult,
-    factualDifferenceResult
-  ] = await Promise.all([
+    researchedResult
+  ] =
+    await Promise.all([
 
-    client
-      .from("mistakes")
-      .select("id", { count: "exact", head: true }),
+      client
+        .from("mistakes")
+        .select(
+          "id",
+          {
+            count: "exact",
+            head: true
+          }
+        ),
 
-    client
-      .from("mistakes")
-      .select("id", { count: "exact", head: true })
-      .not("ai_upgrade_researched_at", "is", null),
+      client
+        .from("mistakes")
+        .select(
+          "id",
+          {
+            count: "exact",
+            head: true
+          }
+        )
+        .not(
+          "ai_upgrade_researched_at",
+          "is",
+          null
+        )
 
-    client
-      .from("mistakes")
-      .select("id", { count: "exact", head: true })
-      .eq("ai_upgrade_status", "ready_for_review"),
+    ]);
 
-    client
-      .from("mistakes")
-      .select("id", { count: "exact", head: true })
-      .eq("ai_upgrade_status", "verification_failed"),
-
-    client
-      .from("mistakes")
-      .select("id", { count: "exact", head: true })
-      .eq("ai_upgrade_status", "source_missing"),
-
-    client
-      .from("mistakes")
-      .select("id", { count: "exact", head: true })
-      .eq("ai_upgrade_status", "research_error"),
-
-    client
-      .from("mistakes")
-      .select("id", { count: "exact", head: true })
-      .eq("ai_upgrade_status", "description_too_short"),
-
-    client
-      .from("mistakes")
-      .select("id", { count: "exact", head: true })
-      .eq("ai_upgrade_status", "description_too_long"),
-
-    client
-      .from("mistakes")
-      .select("id", { count: "exact", head: true })
-      .eq("ai_upgrade_factual_difference_found", true)
-  ]);
-
-  const results = [
-    totalResult,
-    researchedResult,
-    readyResult,
-    verificationFailedResult,
-    sourceMissingResult,
-    researchErrorResult,
-    tooShortResult,
-    tooLongResult,
-    factualDifferenceResult
-  ];
-
-  for (const result of results) {
-    if (result.error) {
-      console.error(result.error);
-    }
+  if (totalResult.error) {
+    console.error(
+      totalResult.error
+    );
   }
 
-  const total = totalResult.count || 0;
-  const researched = researchedResult.count || 0;
-  const ready = readyResult.count || 0;
-  const verificationFailed = verificationFailedResult.count || 0;
-  const sourceMissing = sourceMissingResult.count || 0;
-  const researchErrors = researchErrorResult.count || 0;
-  const tooShort = tooShortResult.count || 0;
-  const tooLong = tooLongResult.count || 0;
-  const factualDifferences = factualDifferenceResult.count || 0;
+  if (researchedResult.error) {
+    console.error(
+      researchedResult.error
+    );
+  }
 
-  document.getElementById("totalRecords").textContent =
+  const total =
+    totalResult.count || 0;
+
+  const researched =
+    researchedResult.count || 0;
+
+  document.getElementById(
+    "totalRecords"
+  ).textContent =
     total;
 
-  document.getElementById("alreadyResearched").textContent =
+  document.getElementById(
+    "alreadyResearched"
+  ).textContent =
     researched;
 
-  document.getElementById("remainingRecords").textContent =
-    Math.max(0, total - researched);
-
-  document.getElementById("allReady").textContent =
-    ready;
-
-  document.getElementById("allVerificationFailed").textContent =
-    verificationFailed;
-
-  document.getElementById("allSourceMissing").textContent =
-    sourceMissing;
-
-  document.getElementById("allErrors").textContent =
-    researchErrors + tooShort + tooLong;
-
-  document.getElementById("allFactDifferences").textContent =
-    factualDifferences;
+  document.getElementById(
+    "remainingRecords"
+  ).textContent =
+    Math.max(
+      0,
+      total - researched
+    );
 }
 
 
@@ -1174,6 +1129,11 @@ async function loadFifty() {
       "status"
     );
 
+  const batchSafety =
+    document.getElementById(
+      "batchSafety"
+    );
+
   const loadButton =
     document.getElementById(
       "loadButton"
@@ -1190,19 +1150,22 @@ async function loadFifty() {
   runButton.disabled =
     true;
 
+  batchSafety.className =
+    "batch-safety";
+
+  batchSafety.textContent =
+    "";
+
   status.textContent =
     "Loading unresearched SportsMistakes records...";
 
   try {
 
     /*
-      Load all unresearched records.
+      FIRST SAFETY LAYER:
 
-      We sort locally by summary length so that
-      the 50 thinnest remaining entries are selected.
-
-      limit(2000) safely covers the current database
-      size while avoiding the default 1000-row return.
+      Supabase itself is asked to return ONLY rows whose
+      ai_upgrade_researched_at value is NULL.
     */
 
     const {
@@ -1239,11 +1202,38 @@ async function loadFifty() {
       throw error;
     }
 
+    /*
+      SECOND SAFETY LAYER:
+
+      Even though Supabase already filtered the query,
+      JavaScript independently rejects ANY row that contains
+      a research timestamp.
+    */
+
+    const rawRows =
+      data || [];
+
+    const timestampedRowsReturned =
+      rawRows.filter(
+        row =>
+          row?.ai_upgrade_researched_at != null
+      );
+
+    if (
+      timestampedRowsReturned.length > 0
+    ) {
+      console.error(
+        "SAFETY WARNING: Supabase returned timestamped rows even though NULL was requested:",
+        timestampedRowsReturned
+      );
+    }
+
     const candidates =
-      (data || [])
+      rawRows
         .filter(
           row =>
             row &&
+            row.ai_upgrade_researched_at == null &&
             String(
               row.title || ""
             ).trim()
@@ -1270,14 +1260,24 @@ async function loadFifty() {
               return wordDifference;
             }
 
-            return (
+            const charDifference =
               String(
                 a.summary || ""
               ).length -
               String(
                 b.summary || ""
-              ).length
-            );
+              ).length;
+
+            if (
+              charDifference !== 0
+            ) {
+              return charDifference;
+            }
+
+            return String(a.id)
+              .localeCompare(
+                String(b.id)
+              );
           }
         );
 
@@ -1297,8 +1297,122 @@ async function loadFifty() {
         </div>
       `;
 
+      batchSafety.className =
+        "batch-safety good";
+
+      batchSafety.textContent =
+        "No eligible unresearched records remain.";
+
       status.textContent =
-        "Every available SportsMistakes record already has an AI research status.";
+        "Every available SportsMistakes record already has an AI research timestamp.";
+
+      await refreshCounts();
+
+      return;
+    }
+
+    /*
+      THIRD HTML-SIDE SAFETY LAYER:
+
+      Re-fetch the exact 50 IDs we are about to run and verify
+      that ALL 50 still have ai_upgrade_researched_at = NULL.
+
+      The red Research button stays disabled unless this passes.
+    */
+
+    const selectedIds =
+      rows.map(
+        row => row.id
+      );
+
+    const {
+      data: verificationRows,
+      error: verificationError
+    } =
+      await client
+        .from("mistakes")
+        .select(
+          "id,ai_upgrade_researched_at"
+        )
+        .in(
+          "id",
+          selectedIds
+        );
+
+    if (verificationError) {
+      throw verificationError;
+    }
+
+    const verificationMap =
+      new Map(
+        (verificationRows || [])
+          .map(
+            row => [
+              String(row.id),
+              row.ai_upgrade_researched_at
+            ]
+          )
+      );
+
+    const unsafeRows =
+      rows.filter(
+        row => {
+          const value =
+            verificationMap.get(
+              String(row.id)
+            );
+
+          return (
+            value === undefined ||
+            value !== null
+          );
+        }
+      );
+
+    if (
+      unsafeRows.length > 0
+    ) {
+
+      rows =
+        rows.filter(
+          row =>
+            !unsafeRows.some(
+              unsafe =>
+                String(unsafe.id) ===
+                String(row.id)
+            )
+        );
+
+      console.error(
+        "SAFETY STOP: researched/missing rows were removed from selected batch:",
+        unsafeRows
+      );
+
+      batchSafety.className =
+        "batch-safety bad";
+
+      batchSafety.textContent =
+        `Safety check removed ${unsafeRows.length} record(s) because Supabase no longer confirmed them as unresearched. Click Load Next 50 again before researching.`;
+
+      document.getElementById(
+        "results"
+      ).innerHTML = `
+        <div class="placeholder">
+          <strong>Batch safety check stopped this selection.</strong>
+          <br><br>
+          ${unsafeRows.length} loaded record(s) were already researched or could not be verified as unresearched.
+          <br><br>
+          Click <strong>Load Next 50 Shortest</strong> again.
+        </div>
+      `;
+
+      runButton.disabled =
+        true;
+
+      status.textContent =
+        "Batch rejected before research. No AI requests were made.";
+
+      await refreshCounts();
 
       return;
     }
@@ -1307,18 +1421,34 @@ async function loadFifty() {
 
     renderLoadedRows();
 
+    batchSafety.className =
+      "batch-safety good";
+
+    batchSafety.textContent =
+      `Selected batch: ${rows.length} records — all ${rows.length} confirmed unresearched. Safe to run.`;
+
     runButton.disabled =
       false;
 
     status.textContent =
       `${rows.length} records loaded. These are the shortest descriptions among records not yet researched.`;
 
+    await refreshCounts();
+
   } catch (error) {
 
     console.error(error);
 
+    rows = [];
+
+    batchSafety.className =
+      "batch-safety bad";
+
+    batchSafety.textContent =
+      "Batch verification failed. Research button remains disabled.";
+
     status.textContent =
-      "Could not load the test records.";
+      "Could not load or verify the test records.";
 
     document.getElementById(
       "results"
@@ -1440,6 +1570,87 @@ function renderLoadedRows() {
 
 
 /* ============================================================
+   FINAL PREFLIGHT BEFORE STARTING AI REQUESTS
+   ============================================================ */
+
+async function verifyBatchImmediatelyBeforeRun() {
+
+  if (!rows.length) {
+    return {
+      ok: false,
+      reason: "No records are loaded."
+    };
+  }
+
+  const ids =
+    rows.map(
+      row => row.id
+    );
+
+  const {
+    data,
+    error
+  } =
+    await client
+      .from("mistakes")
+      .select(
+        "id,ai_upgrade_researched_at"
+      )
+      .in(
+        "id",
+        ids
+      );
+
+  if (error) {
+    return {
+      ok: false,
+      reason: error.message
+    };
+  }
+
+  const map =
+    new Map(
+      (data || [])
+        .map(
+          row => [
+            String(row.id),
+            row.ai_upgrade_researched_at
+          ]
+        )
+    );
+
+  const unsafe =
+    rows.filter(
+      row => {
+        const timestamp =
+          map.get(
+            String(row.id)
+          );
+
+        return (
+          timestamp === undefined ||
+          timestamp !== null
+        );
+      }
+    );
+
+  if (unsafe.length) {
+    return {
+      ok: false,
+      reason:
+        `${unsafe.length} record(s) are already researched or could not be confirmed as unresearched.`
+    };
+  }
+
+  return {
+    ok: true,
+    reason:
+      `All ${rows.length} records are still unresearched.`
+  };
+}
+
+
+/* ============================================================
    RUN 50
    ============================================================ */
 
@@ -1458,6 +1669,47 @@ async function runFifty() {
   if (!ok) {
     return;
   }
+
+  const batchSafety =
+    document.getElementById(
+      "batchSafety"
+    );
+
+  batchSafety.className =
+    "batch-safety";
+
+  batchSafety.textContent =
+    "Re-checking all loaded record IDs immediately before research...";
+
+  const preflight =
+    await verifyBatchImmediatelyBeforeRun();
+
+  if (!preflight.ok) {
+
+    batchSafety.className =
+      "batch-safety bad";
+
+    batchSafety.textContent =
+      `SAFETY STOP: ${preflight.reason} Click Load Next 50 again.`;
+
+    document.getElementById(
+      "status"
+    ).textContent =
+      "Research did not start. No AI requests were made.";
+
+    document.getElementById(
+      "runButton"
+    ).disabled =
+      true;
+
+    return;
+  }
+
+  batchSafety.className =
+    "batch-safety good";
+
+  batchSafety.textContent =
+    `Final preflight passed: ${preflight.reason}`;
 
   running =
     true;
@@ -2484,6 +2736,17 @@ function clearResults() {
     "status"
   ).textContent =
     "Screen cleared. Staging data already saved in Supabase was not deleted.";
+
+  const batchSafety =
+    document.getElementById(
+      "batchSafety"
+    );
+
+  batchSafety.className =
+    "batch-safety";
+
+  batchSafety.textContent =
+    "";
 }
 
 
@@ -2750,6 +3013,17 @@ async function initialize() {
     "status"
   ).textContent =
     "Ready. Load the next 50 shortest unresearched descriptions.";
+
+  const batchSafety =
+    document.getElementById(
+      "batchSafety"
+    );
+
+  batchSafety.className =
+    "batch-safety";
+
+  batchSafety.textContent =
+    "";
 }
 
 
