@@ -2775,15 +2775,50 @@
       `).join("");
     }
 
-    function renderArt(m, size) {
-      const url = m.artwork_url || "";
+    function optimizedArtworkUrl(originalUrl, size = "card") {
+      const url = String(originalUrl || "").trim();
+      if (!url) return "";
 
-      if (url) {
+      // Supabase Image Transformations: serve a much smaller, browser-optimized
+      // version of the existing artwork instead of downloading the full PNG.
+      // If this is not a public Supabase Storage URL, keep the original URL.
+      const marker = "/storage/v1/object/public/";
+      if (!url.includes(marker)) return url;
+
+      const widths = {
+        thumb: 180,
+        search: 260,
+        card: 420,
+        featured: 1000
+      };
+
+      const qualities = {
+        thumb: 68,
+        search: 70,
+        card: 72,
+        featured: 76
+      };
+
+      const width = widths[size] || 420;
+      const quality = qualities[size] || 72;
+      const transformed = url.replace(marker, "/storage/v1/render/image/public/");
+      const joiner = transformed.includes("?") ? "&" : "?";
+
+      return `${transformed}${joiner}width=${width}&quality=${quality}&resize=cover`;
+    }
+
+    function renderArt(m, size) {
+      const originalUrl = m.artwork_url || "";
+
+      if (originalUrl) {
+        const optimizedUrl = optimizedArtworkUrl(originalUrl, size);
         const featuredAttributes = size === "featured"
           ? `fetchpriority="high" decoding="async"`
           : `loading="lazy" decoding="async"`;
 
-        return `<img src="${escapeHtml(url)}" alt="${escapeHtml(m.title || "Sports mistake artwork")}" ${featuredAttributes} />`;
+        // If Image Transformations are disabled for any reason, fall back to
+        // the original artwork rather than showing a broken image.
+        return `<img src="${escapeHtml(optimizedUrl)}" data-original="${escapeHtml(originalUrl)}" onerror="this.onerror=null;if(this.dataset.original&&this.src!==this.dataset.original)this.src=this.dataset.original;" alt="${escapeHtml(m.title || "Sports mistake artwork")}" ${featuredAttributes} />`;
       }
 
       if (size === "featured") {
@@ -3694,7 +3729,8 @@ function formatNumber(n) {
       if(navBuckner && buckner){
         const url=buckner.artwork_url||buckner.ai_artwork_url||"";
         if(url){
-          navBuckner.innerHTML=`<img src="${escapeHtml(url)}" alt="Bill Buckner SportsMistakes artwork" loading="lazy" decoding="async">`;
+          const optimizedUrl=optimizedArtworkUrl(url,"thumb");
+          navBuckner.innerHTML=`<img src="${escapeHtml(optimizedUrl)}" data-original="${escapeHtml(url)}" onerror="this.onerror=null;if(this.dataset.original&&this.src!==this.dataset.original)this.src=this.dataset.original;" alt="Bill Buckner SportsMistakes artwork" loading="lazy" decoding="async">`;
           navBuckner.onclick=()=>location.href=`mistake.html?id=${encodeURIComponent(buckner.id)}`;
           navBuckner.style.cursor="pointer";
           navBuckner.title=buckner.title||"Bill Buckner";
@@ -3711,8 +3747,9 @@ function formatNumber(n) {
 
       if(daily){
         const url=daily.artwork_url||daily.ai_artwork_url||"";
+        const optimizedDailyUrl=optimizedArtworkUrl(url,"featured");
         dailyBox.innerHTML=url
-          ? `<img src="${escapeHtml(url)}" alt="${escapeHtml(daily.title||"SportsMistakes artwork")}" loading="lazy" decoding="async">`
+          ? `<img src="${escapeHtml(optimizedDailyUrl)}" data-original="${escapeHtml(url)}" onerror="this.onerror=null;if(this.dataset.original&&this.src!==this.dataset.original)this.src=this.dataset.original;" alt="${escapeHtml(daily.title||"SportsMistakes artwork")}" fetchpriority="high" decoding="async">`
           : `<div class="daily-art-placeholder">SportsMistakes</div>`;
         dailyBox.onclick=()=>location.href=`mistake.html?id=${encodeURIComponent(daily.id)}`;
         dailyBox.style.cursor="pointer";
