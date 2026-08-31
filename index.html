@@ -2041,6 +2041,10 @@
       color:#fff;
     }
 
+
+    /* Artwork placeholders stay stable while the small queued image loads. */
+    img.deferred-art { opacity:0; transition:opacity .12s ease; }
+    img.deferred-art.art-loaded { opacity:1; }
 </style>
 <script src="sportsmistakes-analytics.js" defer></script>
 </head>
@@ -2414,8 +2418,8 @@
   <script>
     const client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    const INITIAL_CARD_LIMIT = 24;
-    const LOAD_MORE_AMOUNT = 24;
+    const INITIAL_CARD_LIMIT = 12;
+    const LOAD_MORE_AMOUNT = 12;
 
     let mistakes = [];
     let selectedNominationMistake = null;
@@ -2451,7 +2455,7 @@
     // Search/filter still gets the complete database once the background
     // fetch finishes.  The existing 24-card Load More system is unchanged.
 
-    const INITIAL_DATA_LIMIT = 120;
+    const INITIAL_DATA_LIMIT = 80;
     const BACKGROUND_PAGE_SIZE = 250;
     let fullDatabaseLoaded = false;
     let fullDatabaseLoadPromise = null;
@@ -2641,10 +2645,10 @@
       // filter database and community statistics in the background.
       window.setTimeout(() => {
         loadFullDatabaseInBackground();
-      }, 50);
+      }, 1200);
 
       // Votes are useful, but they must never delay the homepage.
-      window.setTimeout(loadVoteStatsInBackground, 450);
+      window.setTimeout(loadVoteStatsInBackground, 1800);
     }
 
     function populateDropdowns() {
@@ -2775,36 +2779,136 @@
       `).join("");
     }
 
+    // ==========================================================
+    // BATCHED ARTWORK LOADING
+    // ==========================================================
+    // Supabase transformations are working, but allowing dozens of images to
+    // request at the same time still makes the page visibly "paint" artwork.
+    // Only critical featured art loads immediately. All other artwork is
+    // queued when it nears the viewport, with a maximum of 4 simultaneous
+    // image downloads/decodes.
+
+    const IMAGE_LOAD_CONCURRENCY = 4;
+    const artworkLoadQueue = [];
+    const queuedArtworkElements = new WeakSet();
+    let activeArtworkLoads = 0;
+
+    const artworkObserver = ("IntersectionObserver" in window)
+      ? new IntersectionObserver((entries) => {
+          entries.forEach(entry => {
+            if (!entry.isIntersecting) return;
+            artworkObserver.unobserve(entry.target);
+            enqueueArtworkImage(entry.target);
+          });
+        }, {
+          root: null,
+          rootMargin: "100px 0px",
+          threshold: 0.01
+        })
+      : null;
+
+    function enqueueArtworkImage(img) {
+      if (!img || !img.dataset || !img.dataset.src) return;
+      if (img.dataset.loaded === "1" || img.dataset.loading === "1") return;
+      if (queuedArtworkElements.has(img)) return;
+
+      queuedArtworkElements.add(img);
+      artworkLoadQueue.push(img);
+      pumpArtworkQueue();
+    }
+
+    function pumpArtworkQueue() {
+      while (activeArtworkLoads < IMAGE_LOAD_CONCURRENCY && artworkLoadQueue.length) {
+        const img = artworkLoadQueue.shift();
+        if (!img || !img.isConnected || !img.dataset?.src) continue;
+        if (img.dataset.loaded === "1" || img.dataset.loading === "1") continue;
+
+        activeArtworkLoads++;
+        img.dataset.loading = "1";
+
+        const optimized = img.dataset.src;
+        const original = img.dataset.original || "";
+        let usingFallback = false;
+        let finished = false;
+
+        const finish = () => {
+          if (finished) return;
+          finished = true;
+          img.dataset.loading = "0";
+          img.dataset.loaded = "1";
+          img.classList.add("art-loaded");
+          activeArtworkLoads = Math.max(0, activeArtworkLoads - 1);
+          pumpArtworkQueue();
+        };
+
+        img.onload = finish;
+        img.onerror = () => {
+          if (!usingFallback && original && img.src !== original) {
+            usingFallback = true;
+            img.src = original;
+            return;
+          }
+          finish();
+        };
+
+        img.src = optimized;
+
+        // Cached images can already be complete immediately after src is set.
+        if (img.complete && img.naturalWidth > 0) finish();
+      }
+    }
+
+    function observeDeferredArtwork(root = document) {
+      const images = root.querySelectorAll
+        ? root.querySelectorAll("img.deferred-art[data-src]")
+        : [];
+
+      images.forEach(img => {
+        if (img.dataset.loaded === "1" || img.dataset.loading === "1") return;
+        if (artworkObserver) artworkObserver.observe(img);
+        else enqueueArtworkImage(img);
+      });
+    }
+
+    // Any homepage section can be rebuilt with innerHTML. Observe newly-added
+    // artwork automatically without requiring each renderer to remember.
+    const artworkMutationObserver = new MutationObserver((mutations) => {
+      mutations.forEach(mutation => {
+        mutation.addedNodes.forEach(node => {
+          if (!(node instanceof Element)) return;
+          if (node.matches?.("img.deferred-art[data-src]")) {
+            if (artworkObserver) artworkObserver.observe(node);
+            else enqueueArtworkImage(node);
+          }
+          observeDeferredArtwork(node);
+        });
+      });
+    });
+
+    artworkMutationObserver.observe(document.body, {
+      childList: true,
+      subtree: true
+    });
+
     function optimizedArtworkUrl(originalUrl, size = "card") {
       const url = String(originalUrl || "").trim();
       if (!url) return "";
 
-      // Supabase Image Transformations: serve a much smaller, browser-optimized
-      // version of the existing artwork instead of downloading the full PNG.
-      // If this is not a public Supabase Storage URL, keep the original URL.
       const marker = "/storage/v1/object/public/";
       if (!url.includes(marker)) return url;
 
-      const widths = {
-        thumb: 180,
-        search: 260,
-        card: 420,
-        featured: 1000
+      const transforms = {
+        thumb:    { width: 140, height: 140, quality: 60 },
+        search:   { width: 240, height: 180, quality: 62 },
+        card:     { width: 360, height: 240, quality: 64 },
+        featured: { width: 900, height: 700, quality: 70 }
       };
 
-      const qualities = {
-        thumb: 68,
-        search: 70,
-        card: 72,
-        featured: 76
-      };
-
-      const width = widths[size] || 420;
-      const quality = qualities[size] || 72;
+      const t = transforms[size] || transforms.card;
       const transformed = url.replace(marker, "/storage/v1/render/image/public/");
       const joiner = transformed.includes("?") ? "&" : "?";
 
-      return `${transformed}${joiner}width=${width}&quality=${quality}&resize=cover`;
+      return `${transformed}${joiner}width=${t.width}&height=${t.height}&quality=${t.quality}&resize=cover`;
     }
 
     function renderArt(m, size) {
@@ -2812,13 +2916,16 @@
 
       if (originalUrl) {
         const optimizedUrl = optimizedArtworkUrl(originalUrl, size);
-        const featuredAttributes = size === "featured"
-          ? `fetchpriority="high" decoding="async"`
-          : `loading="lazy" decoding="async"`;
+        const alt = escapeHtml(m.title || "Sports mistake artwork");
 
-        // If Image Transformations are disabled for any reason, fall back to
-        // the original artwork rather than showing a broken image.
-        return `<img src="${escapeHtml(optimizedUrl)}" data-original="${escapeHtml(originalUrl)}" onerror="this.onerror=null;if(this.dataset.original&&this.src!==this.dataset.original)this.src=this.dataset.original;" alt="${escapeHtml(m.title || "Sports mistake artwork")}" ${featuredAttributes} />`;
+        // The one large featured image is critical and starts immediately.
+        if (size === "featured") {
+          return `<img src="${escapeHtml(optimizedUrl)}" data-original="${escapeHtml(originalUrl)}" onerror="this.onerror=null;if(this.dataset.original&&this.src!==this.dataset.original)this.src=this.dataset.original;" alt="${alt}" fetchpriority="high" decoding="async" />`;
+        }
+
+        // Everything else starts with no src. IntersectionObserver + the
+        // four-at-a-time queue decides when the network request begins.
+        return `<img class="deferred-art" data-src="${escapeHtml(optimizedUrl)}" data-original="${escapeHtml(originalUrl)}" alt="${alt}" decoding="async" />`;
       }
 
       if (size === "featured") {
@@ -3730,7 +3837,7 @@ function formatNumber(n) {
         const url=buckner.artwork_url||buckner.ai_artwork_url||"";
         if(url){
           const optimizedUrl=optimizedArtworkUrl(url,"thumb");
-          navBuckner.innerHTML=`<img src="${escapeHtml(optimizedUrl)}" data-original="${escapeHtml(url)}" onerror="this.onerror=null;if(this.dataset.original&&this.src!==this.dataset.original)this.src=this.dataset.original;" alt="Bill Buckner SportsMistakes artwork" loading="lazy" decoding="async">`;
+          navBuckner.innerHTML=`<img class="deferred-art" data-src="${escapeHtml(optimizedUrl)}" data-original="${escapeHtml(url)}" alt="Bill Buckner SportsMistakes artwork" decoding="async">`;
           navBuckner.onclick=()=>location.href=`mistake.html?id=${encodeURIComponent(buckner.id)}`;
           navBuckner.style.cursor="pointer";
           navBuckner.title=buckner.title||"Bill Buckner";
