@@ -142,6 +142,7 @@
     }
 
     .art-inner{
+      position:relative;
       background:#06101d;
       border:5px solid rgba(30,20,8,.8);
       min-height:430px;
@@ -163,10 +164,10 @@
     .art-corrective-plaque{
       position:absolute;
       left:50%;
-      bottom:28px;
+      bottom:8px;
       transform:translateX(-50%);
       z-index:4;
-      width:min(78%, 430px);
+      width:min(82%, 430px);
       padding:7px 12px;
       background:linear-gradient(180deg,#e3bd62,#b47b18 52%,#8b5808);
       border:1px solid #f7dd91;
@@ -183,13 +184,6 @@
       letter-spacing:.25px;
       pointer-events:none;
       text-shadow:0 1px 0 rgba(255,255,255,.22);
-    }
-
-    .art-corrective-plaque .plaque-meta{
-      display:block;
-      margin-top:2px;
-      font-size:9px;
-      letter-spacing:.45px;
     }
 
     .plaque{
@@ -1101,12 +1095,11 @@
       .art-frame{padding:11px}
       .art-inner{min-height:265px;max-height:300px}
       .art-corrective-plaque{
-        bottom:18px;
-        width:min(80%, 300px);
+        bottom:6px;
+        width:min(84%, 300px);
         padding:5px 9px;
         font-size:9px;
       }
-      .art-corrective-plaque .plaque-meta{font-size:8px}
       .plaque{
         width:70%;
         min-width:210px;
@@ -1317,8 +1310,8 @@
       .art-frame{padding:12px}
       .art-inner{min-height:330px}
       .art-corrective-plaque{
-        bottom:21px;
-        width:min(82%, 330px);
+        bottom:7px;
+        width:min(86%, 330px);
         padding:6px 9px;
         font-size:9px;
       }
@@ -1385,15 +1378,14 @@ async function loadMistake(){
         <div class="spotlight"></div>
         <div class="frame-wrap">
           <div class="art-frame">
-            <div class="art-inner" ${artStyle}>${artworkUrl?"":"SportsMistakes Artwork"}</div>
-            ${artworkUrl ? `
-              <div class="art-corrective-plaque">
-                ${escapeHtml(data.title||"Untitled Mistake")}
-                <span class="plaque-meta">${escapeHtml([data.year||"",data.sport||""].filter(Boolean).join(" • "))}</span>
-              </div>
-            ` : ""}
+            <div class="art-inner" ${artStyle}>
+              ${artworkUrl ? `
+                <div class="art-corrective-plaque">
+                  ${escapeHtml(data.title||"Untitled Mistake")}
+                </div>
+              ` : "SportsMistakes Artwork"}
+            </div>
           </div>
-          <div class="plaque">${escapeHtml(data.title||"Untitled Mistake")}<br>${escapeHtml(data.year||"")} ${escapeHtml(data.sport||"")}</div>
         </div>
         <div class="museum-ropes"></div>
       </div>
