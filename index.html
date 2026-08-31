@@ -2858,9 +2858,9 @@
     // FAST ARTWORK LOADING + FULL-PAINTING DISPLAY
     // ==========================================================
     // The previous four-at-a-time queue actually slowed the page down by
-    // serializing image requests.  Supabase is already serving transformed
-    // images, so let the browser parallelize them normally and use native
-    // lazy loading for anything below the viewport.
+    // serializing image requests. Let the browser parallelize normal public
+    // Storage image requests and use native lazy loading below the viewport.
+    // Supabase Image Transformations are intentionally NOT used here.
     //
     // We also use resize=contain (not cover) so thumbnails show the entire
     // painting instead of cropping to a face/arm.  A small HTML plaque is
@@ -2868,26 +2868,12 @@
     // hallucinated text baked into old AI artwork is no longer relied on.
 
     function optimizedArtworkUrl(originalUrl, size = "card") {
-      const url = String(originalUrl || "").trim();
-      if (!url) return "";
-
-      const marker = "/storage/v1/object/public/";
-      if (!url.includes(marker)) return url;
-
-      // Keep homepage payloads deliberately small.  These are display sizes,
-      // not source-art sizes; the original artwork remains untouched.
-      const transforms = {
-        thumb:    { width: 110, height: 110, quality: 48 },
-        search:   { width: 220, height: 165, quality: 50 },
-        card:     { width: 320, height: 240, quality: 52 },
-        featured: { width: 820, height: 620, quality: 60 }
-      };
-
-      const t = transforms[size] || transforms.card;
-      const transformed = url.replace(marker, "/storage/v1/render/image/public/");
-      const joiner = transformed.includes("?") ? "&" : "?";
-
-      return `${transformed}${joiner}width=${t.width}&height=${t.height}&quality=${t.quality}&resize=contain`;
+      // AUG 31 2026: use the original public Storage URL directly.
+      // This intentionally avoids Supabase Image Transformations so homepage
+      // artwork does not consume the Storage Image Transformations quota.
+      // The size argument is kept so existing rendering calls remain unchanged.
+      // Browser-native eager/lazy loading and fetch priority still control speed.
+      return String(originalUrl || "").trim();
     }
 
     function artworkPlaqueHtml(m, size) {
