@@ -161,32 +161,27 @@
     /* Corrective plaque placed directly over the lower part of the artwork.
        It uses the live database title/year/sport, covering any incorrect text
        that may be baked into an older AI-generated painting. */
-    .art-corrective-plaque{
+    /* Neutral mask over old AI-baked plaque text.
+       No text is placed inside the artwork itself. */
+    .art-baked-plaque-mask{
       position:absolute;
       left:50%;
-      bottom:8px;
+      bottom:4px;
       transform:translateX(-50%);
       z-index:4;
-      width:min(82%, 430px);
-      padding:7px 12px;
-      background:linear-gradient(180deg,#e3bd62,#b47b18 52%,#8b5808);
-      border:1px solid #f7dd91;
+      width:min(84%, 430px);
+      height:24px;
       border-radius:2px;
+      background:
+        linear-gradient(180deg,rgba(10,13,16,.96),rgba(4,6,8,.99));
       box-shadow:
-        0 1px 0 rgba(255,255,255,.35) inset,
-        0 5px 12px rgba(0,0,0,.48);
-      color:#1b1000;
-      text-align:center;
-      font-family:Georgia,"Times New Roman",serif;
-      font-size:11px;
-      line-height:1.2;
-      font-weight:900;
-      letter-spacing:.25px;
+        0 1px 0 rgba(255,255,255,.05) inset,
+        0 3px 8px rgba(0,0,0,.35);
       pointer-events:none;
-      text-shadow:0 1px 0 rgba(255,255,255,.22);
     }
 
     .plaque{
+
       width:46%;
       min-width:250px;
       margin:10px auto 0;
@@ -1094,11 +1089,10 @@
       .frame-wrap{max-width:420px}
       .art-frame{padding:11px}
       .art-inner{min-height:265px;max-height:300px}
-      .art-corrective-plaque{
-        bottom:6px;
-        width:min(84%, 300px);
-        padding:5px 9px;
-        font-size:9px;
+      .art-baked-plaque-mask{
+        bottom:3px;
+        width:min(86%, 300px);
+        height:18px;
       }
       .plaque{
         width:70%;
@@ -1309,11 +1303,10 @@
       .container{margin:20px auto 50px;padding:0 14px}
       .art-frame{padding:12px}
       .art-inner{min-height:330px}
-      .art-corrective-plaque{
-        bottom:7px;
-        width:min(86%, 330px);
-        padding:6px 9px;
-        font-size:9px;
+      .art-baked-plaque-mask{
+        bottom:3px;
+        width:min(88%, 330px);
+        height:20px;
       }
       .plaque{width:70%;min-width:220px}
       .museum-ropes{display:none}
@@ -1379,13 +1372,10 @@ async function loadMistake(){
         <div class="frame-wrap">
           <div class="art-frame">
             <div class="art-inner" ${artStyle}>
-              ${artworkUrl ? `
-                <div class="art-corrective-plaque">
-                  ${escapeHtml(data.title||"Untitled Mistake")}
-                </div>
-              ` : "SportsMistakes Artwork"}
+              ${artworkUrl ? `<div class="art-baked-plaque-mask" aria-hidden="true"></div>` : "SportsMistakes Artwork"}
             </div>
           </div>
+          <div class="plaque">${escapeHtml(data.title||"Untitled Mistake")}</div>
         </div>
         <div class="museum-ropes"></div>
       </div>
