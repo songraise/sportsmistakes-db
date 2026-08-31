@@ -2045,6 +2045,81 @@
     /* Artwork placeholders stay stable while the small queued image loads. */
     img.deferred-art { opacity:0; transition:opacity .12s ease; }
     img.deferred-art.art-loaded { opacity:1; }
+
+
+    /* =========================================================
+       ARTWORK SPEED / FULL-PAINTING / PLAQUE FIX — AUG 31 2026
+       ========================================================= */
+    .artwork-shell{
+      position:relative;
+      display:block;
+      width:100%;
+      height:100%;
+      overflow:hidden;
+      background:#0a0d11;
+    }
+    .artwork-shell img{
+      width:100% !important;
+      height:100% !important;
+      object-fit:contain !important;
+      object-position:center center !important;
+      display:block;
+      background:#0a0d11;
+    }
+
+    /* Override older cover rules so the WHOLE painting is always visible. */
+    .thumb img,
+    .search-result-art img,
+    .card-image img,
+    .today-art img,
+    .museum-today-grid .today-art img,
+    .rank-thumb img,
+    .hall-art img,
+    .battle-art img,
+    .daily-art-image img,
+    .nav-buckner-art img,
+    .judge-art img,
+    .museum-hero-art img,
+    .featured-art img{
+      object-fit:contain !important;
+      object-position:center center !important;
+      background:#0a0d11;
+    }
+
+    /* Correct display plaque: uses the live database title, not AI-baked text. */
+    .correct-art-plaque{
+      position:absolute;
+      left:50%;
+      bottom:3.5%;
+      transform:translateX(-50%);
+      z-index:4;
+      max-width:88%;
+      min-width:42%;
+      padding:4px 9px;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      white-space:nowrap;
+      text-align:center;
+      border:1px solid rgba(88,57,7,.95);
+      border-radius:2px;
+      background:linear-gradient(180deg,#f5d77b 0%,#c99a31 48%,#a87519 100%);
+      box-shadow:0 1px 1px rgba(255,255,255,.35) inset,0 2px 7px rgba(0,0,0,.55);
+      color:#211704;
+      font-family:Georgia, "Times New Roman", serif !important;
+      font-weight:900;
+      letter-spacing:.02em;
+      line-height:1.05;
+      pointer-events:none;
+    }
+    .plaque-featured{font-size:12px;padding:6px 14px;max-width:82%}
+    .plaque-card{font-size:8px;padding:3px 7px}
+    .plaque-search{font-size:7px;padding:3px 6px}
+    .plaque-thumb{font-size:5px;padding:2px 4px;bottom:3%;max-width:92%}
+
+    @media(max-width:760px){
+      .plaque-featured{font-size:9px;padding:4px 9px}
+      .plaque-card{font-size:7px}
+    }
 </style>
 <script src="sportsmistakes-analytics.js" defer></script>
 </head>
@@ -2418,8 +2493,8 @@
   <script>
     const client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    const INITIAL_CARD_LIMIT = 12;
-    const LOAD_MORE_AMOUNT = 12;
+    const INITIAL_CARD_LIMIT = 24;
+    const LOAD_MORE_AMOUNT = 24;
 
     let mistakes = [];
     let selectedNominationMistake = null;
@@ -2780,115 +2855,17 @@
     }
 
     // ==========================================================
-    // BATCHED ARTWORK LOADING
+    // FAST ARTWORK LOADING + FULL-PAINTING DISPLAY
     // ==========================================================
-    // Supabase transformations are working, but allowing dozens of images to
-    // request at the same time still makes the page visibly "paint" artwork.
-    // Only critical featured art loads immediately. All other artwork is
-    // queued when it nears the viewport, with a maximum of 4 simultaneous
-    // image downloads/decodes.
-
-    const IMAGE_LOAD_CONCURRENCY = 4;
-    const artworkLoadQueue = [];
-    const queuedArtworkElements = new WeakSet();
-    let activeArtworkLoads = 0;
-
-    const artworkObserver = ("IntersectionObserver" in window)
-      ? new IntersectionObserver((entries) => {
-          entries.forEach(entry => {
-            if (!entry.isIntersecting) return;
-            artworkObserver.unobserve(entry.target);
-            enqueueArtworkImage(entry.target);
-          });
-        }, {
-          root: null,
-          rootMargin: "100px 0px",
-          threshold: 0.01
-        })
-      : null;
-
-    function enqueueArtworkImage(img) {
-      if (!img || !img.dataset || !img.dataset.src) return;
-      if (img.dataset.loaded === "1" || img.dataset.loading === "1") return;
-      if (queuedArtworkElements.has(img)) return;
-
-      queuedArtworkElements.add(img);
-      artworkLoadQueue.push(img);
-      pumpArtworkQueue();
-    }
-
-    function pumpArtworkQueue() {
-      while (activeArtworkLoads < IMAGE_LOAD_CONCURRENCY && artworkLoadQueue.length) {
-        const img = artworkLoadQueue.shift();
-        if (!img || !img.isConnected || !img.dataset?.src) continue;
-        if (img.dataset.loaded === "1" || img.dataset.loading === "1") continue;
-
-        activeArtworkLoads++;
-        img.dataset.loading = "1";
-
-        const optimized = img.dataset.src;
-        const original = img.dataset.original || "";
-        let usingFallback = false;
-        let finished = false;
-
-        const finish = () => {
-          if (finished) return;
-          finished = true;
-          img.dataset.loading = "0";
-          img.dataset.loaded = "1";
-          img.classList.add("art-loaded");
-          activeArtworkLoads = Math.max(0, activeArtworkLoads - 1);
-          pumpArtworkQueue();
-        };
-
-        img.onload = finish;
-        img.onerror = () => {
-          if (!usingFallback && original && img.src !== original) {
-            usingFallback = true;
-            img.src = original;
-            return;
-          }
-          finish();
-        };
-
-        img.src = optimized;
-
-        // Cached images can already be complete immediately after src is set.
-        if (img.complete && img.naturalWidth > 0) finish();
-      }
-    }
-
-    function observeDeferredArtwork(root = document) {
-      const images = root.querySelectorAll
-        ? root.querySelectorAll("img.deferred-art[data-src]")
-        : [];
-
-      images.forEach(img => {
-        if (img.dataset.loaded === "1" || img.dataset.loading === "1") return;
-        if (artworkObserver) artworkObserver.observe(img);
-        else enqueueArtworkImage(img);
-      });
-    }
-
-    // Any homepage section can be rebuilt with innerHTML. Observe newly-added
-    // artwork automatically without requiring each renderer to remember.
-    const artworkMutationObserver = new MutationObserver((mutations) => {
-      mutations.forEach(mutation => {
-        mutation.addedNodes.forEach(node => {
-          if (!(node instanceof Element)) return;
-          if (node.matches?.("img.deferred-art[data-src]")) {
-            if (artworkObserver) artworkObserver.observe(node);
-            else enqueueArtworkImage(node);
-          }
-          observeDeferredArtwork(node);
-        });
-      });
-    });
-
-    artworkMutationObserver.observe(document.body, {
-      childList: true,
-      subtree: true
-    });
+    // The previous four-at-a-time queue actually slowed the page down by
+    // serializing image requests.  Supabase is already serving transformed
+    // images, so let the browser parallelize them normally and use native
+    // lazy loading for anything below the viewport.
+    //
+    // We also use resize=contain (not cover) so thumbnails show the entire
+    // painting instead of cropping to a face/arm.  A small HTML plaque is
+    // placed over the lower frame area using the CURRENT database title so
+    // hallucinated text baked into old AI artwork is no longer relied on.
 
     function optimizedArtworkUrl(originalUrl, size = "card") {
       const url = String(originalUrl || "").trim();
@@ -2897,18 +2874,25 @@
       const marker = "/storage/v1/object/public/";
       if (!url.includes(marker)) return url;
 
+      // Keep homepage payloads deliberately small.  These are display sizes,
+      // not source-art sizes; the original artwork remains untouched.
       const transforms = {
-        thumb:    { width: 140, height: 140, quality: 60 },
-        search:   { width: 240, height: 180, quality: 62 },
-        card:     { width: 360, height: 240, quality: 64 },
-        featured: { width: 900, height: 700, quality: 70 }
+        thumb:    { width: 110, height: 110, quality: 48 },
+        search:   { width: 220, height: 165, quality: 50 },
+        card:     { width: 320, height: 240, quality: 52 },
+        featured: { width: 820, height: 620, quality: 60 }
       };
 
       const t = transforms[size] || transforms.card;
       const transformed = url.replace(marker, "/storage/v1/render/image/public/");
       const joiner = transformed.includes("?") ? "&" : "?";
 
-      return `${transformed}${joiner}width=${t.width}&height=${t.height}&quality=${t.quality}&resize=cover`;
+      return `${transformed}${joiner}width=${t.width}&height=${t.height}&quality=${t.quality}&resize=contain`;
+    }
+
+    function artworkPlaqueHtml(m, size) {
+      const title = escapeHtml(m.title || "Sports Mistake");
+      return `<span class="correct-art-plaque plaque-${escapeHtml(size || "card")}" title="${title}">${title}</span>`;
     }
 
     function renderArt(m, size) {
@@ -2917,15 +2901,18 @@
       if (originalUrl) {
         const optimizedUrl = optimizedArtworkUrl(originalUrl, size);
         const alt = escapeHtml(m.title || "Sports mistake artwork");
+        const loading = size === "featured" ? "eager" : "lazy";
+        const priority = size === "featured" ? ` fetchpriority="high"` : ` fetchpriority="low"`;
 
-        // The one large featured image is critical and starts immediately.
-        if (size === "featured") {
-          return `<img src="${escapeHtml(optimizedUrl)}" data-original="${escapeHtml(originalUrl)}" onerror="this.onerror=null;if(this.dataset.original&&this.src!==this.dataset.original)this.src=this.dataset.original;" alt="${alt}" fetchpriority="high" decoding="async" />`;
-        }
-
-        // Everything else starts with no src. IntersectionObserver + the
-        // four-at-a-time queue decides when the network request begins.
-        return `<img class="deferred-art" data-src="${escapeHtml(optimizedUrl)}" data-original="${escapeHtml(originalUrl)}" alt="${alt}" decoding="async" />`;
+        return `<span class="artwork-shell artwork-${escapeHtml(size || "card")}">
+          <img src="${escapeHtml(optimizedUrl)}"
+               data-original="${escapeHtml(originalUrl)}"
+               onerror="this.onerror=null;if(this.dataset.original&&this.src!==this.dataset.original)this.src=this.dataset.original;"
+               alt="${alt}"
+               loading="${loading}"
+               decoding="async"${priority} />
+          ${artworkPlaqueHtml(m, size)}
+        </span>`;
       }
 
       if (size === "featured") {
