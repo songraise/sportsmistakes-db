@@ -2240,7 +2240,22 @@
     "Pressure":"Pression",
     "Decision-making":"Prise de décision",
     "Risk":"Risque",
-    "Teamwork":"Travail d’équipe"
+    "Teamwork":"Travail d’équipe",
+    "Explore the Database":"Explorer la base de données",
+    "🔥 Trending Now":"🔥 Tendances",
+    "💀 Most Controversial":"💀 Les plus controversées",
+    "👁 Most Viewed":"👁 Les plus consultées",
+    "🕘 Recently Added":"🕘 Ajoutées récemment",
+    "Recently added":"Ajoutée récemment",
+    "No items yet.":"Aucun élément pour le moment.",
+    "Contact":"Contact",
+    "YES":"OUI",
+    "NO":"NON",
+    "Be first":"Soyez le premier",
+    "Sport":"Sport",
+    "Untitled Mistake":"Erreur sans titre",
+    "Sports Mistake":"Erreur sportive",
+    "Sports mistake artwork":"Œuvre SportsMistakes"
   };
 
   const OPTION_FR={
@@ -2249,6 +2264,41 @@
     "All Teams":"Toutes les équipes",
     "All Years":"Toutes les années",
     "All Categories":"Toutes les catégories",
+    "Soccer":"Soccer",
+    "Tennis":"Tennis",
+    "Golf":"Golf",
+    "Curling":"Curling",
+    "Lacrosse":"Crosse",
+    "Paralympics":"Jeux paralympiques",
+    "Rugby":"Rugby",
+    "Cricket":"Cricket",
+    "Baseball":"Baseball",
+    "Basketball":"Basketball",
+    "Badminton":"Badminton",
+    "Biathlon":"Biathlon",
+    "Bobsleigh":"Bobsleigh",
+    "Cheerleading":"Cheerleading",
+    "CrossFit":"CrossFit",
+    "Disc Golf":"Disc golf",
+    "Drag Racing":"Course d’accélération",
+    "Formula E":"Formule E",
+    "Gaelic Football":"Football gaélique",
+    "Handball":"Handball",
+    "High Diving":"Plongeon de haut vol",
+    "IndyCar":"IndyCar",
+    "Judo":"Judo",
+    "Karting":"Karting",
+    "Kickboxing":"Kick-boxing",
+    "Kitesurfing":"Kitesurf",
+    "Luge":"Luge",
+    "Marathon":"Marathon",
+    "Modern Pentathlon":"Pentathlon moderne",
+    "Motocross":"Motocross",
+    "Muay Thai":"Muay-thaï",
+    "Netball":"Netball",
+    "Padel":"Padel",
+    "Parkour":"Parkour",
+    "Pickleball":"Pickleball",
     "Olympics":"Jeux olympiques",
     "Boxing":"Boxe",
     "Horse Racing":"Courses hippiques",
@@ -2898,6 +2948,18 @@
       return record?.[field] ?? "";
     }
 
+    function smUI(text) {
+      return window.SMLanguage ? window.SMLanguage.ui(text) : text;
+    }
+
+    function smLabel(text) {
+      return window.SMLanguage ? window.SMLanguage.optionLabel(String(text || "")) : String(text || "");
+    }
+
+    function smMeta(parts, separator = " • ") {
+      return parts.filter(Boolean).map(v => smLabel(v)).join(separator);
+    }
+
     async function fetchInitialMistakesLightweight() {
       const { data, error } = await client
         .from("mistakes")
@@ -3142,8 +3204,8 @@
       const art = renderArt(featured, "featured");
       const meta = [
         featured.year || "",
-        featured.sport || "",
-        featured.category || ""
+        smLabel(featured.sport || ""),
+        smLabel(featured.category || "")
       ].filter(Boolean).join(" • ");
 
       box.innerHTML = `
@@ -3186,13 +3248,13 @@
 
       renderList("trendingList", trending, m =>
         voteStatsLoaded && getVoteTotal(m.id) > 0
-          ? `🔥 ${getVoteTotal(m.id)} votes`
+          ? `🔥 ${getVoteTotal(m.id)} ${window.SMLanguage?.get()==="fr" ? "votes" : "votes"}`
           : `🔥 ${m.controversy_score || 0}/100`
       );
 
       renderList("controversialList", controversial, m => `${m.controversy_score || 0}%`);
       renderList("mostViewedList", viewed, m => `👁 ${formatNumber(m.views || 0)}`);
-      renderList("recentList", recent, m => m.year ? String(m.year) : "Recently added");
+      renderList("recentList", recent, m => m.year ? String(m.year) : smUI("Recently added"));
     }
 
     function renderList(id, items, extraFn) {
@@ -3200,7 +3262,7 @@
       if (!box) return;
 
       if (!items.length) {
-        box.innerHTML = `<div style="padding:16px;color:#a8b3c1;">No items yet.</div>`;
+        box.innerHTML = `<div style="padding:16px;color:#a8b3c1;">${smUI("No items yet.")}</div>`;
         return;
       }
 
@@ -3209,7 +3271,7 @@
           <div class="thumb">${renderArt(m, "thumb")}</div>
           <div>
             <div class="row-title">${escapeHtml(smField(m, "title") || "Untitled Mistake")}</div>
-            <div class="row-meta">${escapeHtml([m.year, m.sport, m.category].filter(Boolean).join(", "))}</div>
+            <div class="row-meta">${escapeHtml(smMeta([m.year, m.sport, m.category], ", "))}</div>
             <div class="row-meta-line">
               <div class="row-extra">${escapeHtml(extraFn(m))}</div>
               ${renderMiniCommunity(m.id, true)}
@@ -3217,6 +3279,7 @@
           </div>
         </a>
       `).join("");
+      if (window.SMLanguage) window.SMLanguage.translate(box);
     }
 
     // ==========================================================
@@ -3318,13 +3381,13 @@
 
       const verdictHtml = `
         <span class="mini-verdict"
-          title="${hasVotes ? `${yesPercent}% YES / ${100-yesPercent}% NO` : "No Fan Verdict votes yet"}">
+          title="${hasVotes ? `${yesPercent}% ${smUI("YES")} / ${100-yesPercent}% ${smUI("NO")}` : (window.SMLanguage?.get()==="fr" ? "Aucun vote au verdict des partisans" : "No Fan Verdict votes yet")}">
           <span class="mini-donut ${hasVotes ? "" : "mini-donut-empty"}"
             style="${hasVotes
               ? `background:conic-gradient(#e22424 0deg ${yesDegrees}deg,#64748b ${yesDegrees}deg 360deg)`
               : `background:conic-gradient(#334155 0deg 360deg)`}">
           </span>
-          <span>${hasVotes ? `${yesPercent}% YES` : "0 votes"}</span>
+          <span>${hasVotes ? `${yesPercent}% ${smUI("YES")}` : "0 votes"}</span>
         </span>`;
 
       const lessonHtml = lesson
@@ -3339,7 +3402,7 @@
            </span>`
         : `<span class="mini-lesson mini-lesson-empty" title="No Community Lesson votes yet">
              <span class="mini-lesson-head">
-               <span class="mini-lesson-name">💡 <strong>Be first</strong></span>
+               <span class="mini-lesson-name">💡 <strong>${smUI("Be first")}</strong></span>
                <span>0%</span>
              </span>
              <span class="mini-lesson-track">
@@ -3444,7 +3507,7 @@
       }
 
       list.innerHTML = matches.slice(0,6).map(m => {
-        const meta = [m.year, m.sport, m.category].filter(Boolean).join(" • ");
+        const meta = smMeta([m.year, m.sport, m.category]);
 
         return `
           <a class="search-result-card" href="mistake.html?id=${encodeURIComponent(m.id)}">
@@ -3486,10 +3549,10 @@
         <a class="card" href="mistake.html?id=${encodeURIComponent(m.id)}">
           <div class="card-image">${renderArt(m, "card")}</div>
           <div class="card-body">
-            <span class="badge">${escapeHtml(m.sport || "Sport")}</span>
+            <span class="badge">${escapeHtml(smLabel(m.sport || "Sport"))}</span>
             <span class="score">${escapeHtml(m.controversy_score || 0)}/100</span>
             <h2>${escapeHtml(smField(m, "title") || "Untitled Mistake")}</h2>
-            <div class="meta">${escapeHtml([m.year, m.category].filter(Boolean).join(" • "))}</div>
+            <div class="meta">${escapeHtml(smMeta([m.year, m.category]))}</div>
             <div class="card-stats">
               <span>👁 ${formatNumber(m.views || 0)}</span>
               ${renderMiniCommunity(m.id)}
@@ -3706,7 +3769,7 @@ function formatNumber(n) {
       const stats=voteStatsByMistake[m.id];
       const savedVote=localStorage.getItem(quickVoteKey(m.id));
       const alreadyVoted=savedVote==="yes" || savedVote==="no" || savedVote==="locked";
-      const meta=[m.year,m.sport,m.category].filter(Boolean).join(" • ");
+      const meta=smMeta([m.year,m.sport,m.category]);
       const resultCopy=alreadyVoted ? renderFanDonut(stats,savedVote) : "Vote to see how your judgment compares.";
       const yesSelected=savedVote==="yes"?" selected":"";
       const noSelected=savedVote==="no"?" selected":"";
@@ -3817,7 +3880,7 @@ function formatNumber(n) {
       const grid=document.getElementById("todaysFiveGrid"); if(!grid) return;
       const five=getQuickPlayPool().slice(0,5);
       grid.innerHTML=five.map((m)=>`<a class="today-card" href="mistake.html?id=${encodeURIComponent(m.id)}">
-        <div class="today-art">${renderArt(m,"card")}</div><div class="today-body"><div class="today-title">${escapeHtml(smField(m, "title")||"Untitled Mistake")}</div><div class="today-meta">${escapeHtml([m.year,m.sport].filter(Boolean).join(" • "))}</div><div class="today-meta-line"><span>👁 ${formatNumber(m.views||0)}</span>${renderMiniCommunity(m.id,true)}</div></div></a>`).join("");
+        <div class="today-art">${renderArt(m,"card")}</div><div class="today-body"><div class="today-title">${escapeHtml(smField(m, "title")||"Untitled Mistake")}</div><div class="today-meta">${escapeHtml(smMeta([m.year,m.sport]))}</div><div class="today-meta-line"><span>👁 ${formatNumber(m.views||0)}</span>${renderMiniCommunity(m.id,true)}</div></div></a>`).join("");
       if (window.SMLanguage) window.SMLanguage.translate(grid);
     }
 
@@ -3947,7 +4010,7 @@ function formatNumber(n) {
           <div class="nomination-match" data-id="${escapeHtml(String(m.id))}">
             <div>
               <div class="nomination-match-title">${escapeHtml(smField(m, "title")||"Untitled Mistake")}</div>
-              <div class="nomination-match-meta">${escapeHtml([m.year,m.sport,m.category].filter(Boolean).join(" • "))}</div>
+              <div class="nomination-match-meta">${escapeHtml(smMeta([m.year,m.sport,m.category]))}</div>
             </div>
             <a class="nomination-match-action"
                href="mistake.html?id=${encodeURIComponent(m.id)}"
@@ -4214,7 +4277,7 @@ function formatNumber(n) {
         dailyBox.onclick=()=>location.href=`mistake.html?id=${encodeURIComponent(daily.id)}`;
         dailyBox.style.cursor="pointer";
         if(dailyCaption){
-          dailyCaption.innerHTML=`${escapeHtml(smField(daily, "title")||"Today's Sports Mistake")}<br><span style="color:#9ca3af;font-weight:700">${escapeHtml([daily.year,daily.sport].filter(Boolean).join(" • "))}</span>`;
+          dailyCaption.innerHTML=`${escapeHtml(smField(daily, "title")||"Today's Sports Mistake")}<br><span style="color:#9ca3af;font-weight:700">${escapeHtml(smMeta([daily.year,daily.sport]))}</span>`;
         }
       }
     }
@@ -4244,7 +4307,7 @@ function formatNumber(n) {
             <div class="rank-thumb">${renderArt(m,"card")}</div>
             <div>
               <div class="rank-title">${escapeHtml(smField(m, "title")||"Untitled Mistake")}</div>
-              <div class="rank-meta">${escapeHtml([m.year,m.sport].filter(Boolean).join(" • "))}</div>
+              <div class="rank-meta">${escapeHtml(smMeta([m.year,m.sport]))}</div>
             </div>
             <div class="rank-score">${voteStatsLoaded && getVoteTotal(m.id)>0 ? getVoteTotal(m.id) : Number(m.controversy_score||0)}</div>
           </a>`).join("");
@@ -4262,7 +4325,7 @@ function formatNumber(n) {
             <div class="hall-art">${renderArt(m,"card")}</div>
             <div class="hall-copy">
               <strong>${escapeHtml(smField(m, "title")||"Untitled Mistake")}</strong>
-              <span>${escapeHtml([m.year,m.sport].filter(Boolean).join(" • "))}</span>
+              <span>${escapeHtml(smMeta([m.year,m.sport]))}</span>
             </div>
           </a>`).join("");
       }
