@@ -357,9 +357,9 @@ function confirmAiSuggestionOnSubmit(){
   const status=document.getElementById("status");
 
   status.className="status active good";
-  status.innerHTML=`
-    <strong>Thanks — event confirmed.</strong><br>
-    Finalizing the nomination and adding it to the SportsMistakes review queue…`;
+  status.innerHTML=SMLanguage.get()==="fr"
+    ? `<strong>Merci — événement confirmé.</strong><br>Finalisation de la proposition et ajout à la file de révision SportsMistakes…`
+    : `<strong>Thanks — event confirmed.</strong><br>Finalizing the nomination and adding it to the SportsMistakes review queue…`;
 
   nominate(true);
 }
@@ -368,7 +368,9 @@ function rejectAiSuggestionOnSubmit(){
   const input=document.getElementById("nominationInput");
   const status=document.getElementById("status");
   status.className="status active";
-  status.innerHTML=`<strong>Different mistake?</strong><br>Add one more clue to your wording, then click <strong>Nominate It</strong> again.`;
+  status.innerHTML=SMLanguage.get()==="fr"
+    ? `<strong>Une autre erreur?</strong><br>Ajoutez un indice à votre description, puis cliquez de nouveau sur <strong>Proposer</strong>.`
+    : `<strong>Different mistake?</strong><br>Add one more clue to your wording, then click <strong>Nominate It</strong> again.`;
   input?.focus();
   if(input){
     const len=input.value.length;
@@ -419,22 +421,30 @@ async function nominate(confirmedEvent=false){
     status.className="status active good";
 
     if(result.outcome==="existing_record"&&result.mistake_id){
-      status.innerHTML=`
-        <strong>Already in the Record.</strong><br>
-        ${esc(result.title||nomination)} is already a SportsMistakes entry. Go there to vote and share your opinion in Sports Court.
-        <div class="result-actions">
-          <a href="mistake.html?id=${encodeURIComponent(result.mistake_id)}">Go to Sports Court →</a>
-        </div>`;
+      status.innerHTML=SMLanguage.get()==="fr"
+        ? `<strong>Déjà dans le registre.</strong><br>
+           ${esc(result.title||nomination)} figure déjà dans SportsMistakes. Ouvrez la fiche pour voter et donner votre opinion au Tribunal sportif.
+           <div class="result-actions">
+             <a href="mistake.html?id=${encodeURIComponent(result.mistake_id)}">Voir cette erreur →</a>
+           </div>`
+        : `<strong>Already in the Record.</strong><br>
+           ${esc(result.title||nomination)} is already a SportsMistakes entry. Go there to vote and share your opinion in Sports Court.
+           <div class="result-actions">
+             <a href="mistake.html?id=${encodeURIComponent(result.mistake_id)}">Go to Sports Court →</a>
+           </div>`;
       return;
     }
 
     if(result.outcome==="new_record"){
       pendingAiSuggestion="";
       status.className="status active good";
-      status.innerHTML=`
-        <strong>Thanks! ${esc(result.title||nomination)}</strong><br>
-        Your nomination was successfully saved as a pending submission and is now in the SportsMistakes admin review queue.
-        ${result.submission_id ? `<br><br><span style="color:#a8b3c1">Submission ID: ${esc(String(result.submission_id))}</span>` : ""}`;
+      status.innerHTML=SMLanguage.get()==="fr"
+        ? `<strong>Merci! ${esc(result.title||nomination)}</strong><br>
+           Votre proposition a été enregistrée et ajoutée à la file de révision de SportsMistakes.
+           ${result.submission_id ? `<br><br><span style="color:#a8b3c1">Identifiant de la proposition : ${esc(String(result.submission_id))}</span>` : ""}`
+        : `<strong>Thanks! ${esc(result.title||nomination)}</strong><br>
+           Your nomination was successfully saved as a pending submission and is now in the SportsMistakes admin review queue.
+           ${result.submission_id ? `<br><br><span style="color:#a8b3c1">Submission ID: ${esc(String(result.submission_id))}</span>` : ""}`;
       input.value="";
       document.getElementById("matches").className="matches";
       document.getElementById("matches").innerHTML="";
@@ -454,33 +464,54 @@ async function nominate(confirmedEvent=false){
       pendingAiSuggestion=concreteSuggestion;
 
       if(concreteSuggestion){
-        status.innerHTML=`
-          <strong>${didYouMean ? `Did you mean: ${esc(didYouMean)}?` : `Possible event: ${esc(likelySubject)}`}</strong><br>
-          ${esc(question)}
-          <div class="result-actions">
-            <button class="nominate-btn" type="button" onclick="confirmAiSuggestionOnSubmit()">Yes — that's the event</button>
-            <button class="secondary-action" type="button" onclick="rejectAiSuggestionOnSubmit()">No — different mistake</button>
-          </div>`;
+        if(SMLanguage.get()==="fr"){
+          status.innerHTML=`
+            <strong>${didYouMean ? `Vouliez-vous dire : ${esc(didYouMean)}?` : `Événement possible : ${esc(likelySubject)}`}</strong><br>
+            L’événement semble identifiable, mais la recherche n’a pas retourné de source de vérification utilisable. Confirmez s’il s’agit bien du bon événement.
+            <div class="result-actions">
+              <button class="nominate-btn" type="button" onclick="confirmAiSuggestionOnSubmit()">OUI — C’EST LE BON ÉVÉNEMENT</button>
+              <button class="secondary-action" type="button" onclick="rejectAiSuggestionOnSubmit()">NON — UNE AUTRE ERREUR</button>
+            </div>`;
+        }else{
+          status.innerHTML=`
+            <strong>${didYouMean ? `Did you mean: ${esc(didYouMean)}?` : `Possible event: ${esc(likelySubject)}`}</strong><br>
+            ${esc(question)}
+            <div class="result-actions">
+              <button class="nominate-btn" type="button" onclick="confirmAiSuggestionOnSubmit()">Yes — that's the event</button>
+              <button class="secondary-action" type="button" onclick="rejectAiSuggestionOnSubmit()">No — different mistake</button>
+            </div>`;
+        }
       }else{
-        status.innerHTML=`
-          <strong>We need one more clue.</strong><br>
-          ${esc(question)}
-          <div class="result-actions">
-            <button class="nominate-btn" type="button" onclick="rejectAiSuggestionOnSubmit()">Add more detail</button>
-          </div>`;
+        status.innerHTML=SMLanguage.get()==="fr"
+          ? `<strong>Il nous faut un indice de plus.</strong><br>
+             Ajoutez un joueur, une équipe, un adversaire, une année, un match, une transaction, une décision ou un jeu qui permet d’identifier précisément l’événement.
+             <div class="result-actions">
+               <button class="nominate-btn" type="button" onclick="rejectAiSuggestionOnSubmit()">AJOUTER UN DÉTAIL</button>
+             </div>`
+          : `<strong>We need one more clue.</strong><br>
+             ${esc(question)}
+             <div class="result-actions">
+               <button class="nominate-btn" type="button" onclick="rejectAiSuggestionOnSubmit()">Add more detail</button>
+             </div>`;
       }
       return;
     }
 
     if(result.outcome==="possible_existing_record"){
       const existingId=explicitExistingMistakeId(result);
-      status.innerHTML=`
-        <strong>Possible existing record.</strong><br>
-        ${esc(result.message||"This may already be in SportsMistakes.")}
-        <div class="result-actions">
-          ${existingId ? `<a href="mistake.html?id=${encodeURIComponent(existingId)}">That's it →</a>` : ""}
-          <button class="secondary-action" type="button" onclick="rejectAiSuggestionOnSubmit()">No — different mistake</button>
-        </div>`;
+      status.innerHTML=SMLanguage.get()==="fr"
+        ? `<strong>Cette erreur est peut-être déjà dans le registre.</strong><br>
+           Nous avons trouvé une correspondance possible. Vérifiez la fiche avant de créer une nouvelle proposition.
+           <div class="result-actions">
+             ${existingId ? `<a href="mistake.html?id=${encodeURIComponent(existingId)}">C’EST ÇA →</a>` : ""}
+             <button class="secondary-action" type="button" onclick="rejectAiSuggestionOnSubmit()">NON — UNE AUTRE ERREUR</button>
+           </div>`
+        : `<strong>Possible existing record.</strong><br>
+           ${esc(result.message||"This may already be in SportsMistakes.")}
+           <div class="result-actions">
+             ${existingId ? `<a href="mistake.html?id=${encodeURIComponent(existingId)}">That's it →</a>` : ""}
+             <button class="secondary-action" type="button" onclick="rejectAiSuggestionOnSubmit()">No — different mistake</button>
+           </div>`;
       return;
     }
 
