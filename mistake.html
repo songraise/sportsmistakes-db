@@ -7,7 +7,359 @@
   <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
   <link rel="preconnect" href="https://scwjlljurircxuufhqih.supabase.co" crossorigin>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="sportsmistakes-language.js"></script>
+
+<script>
+/* SportsMistakes self-contained EN/FR runtime
+   No geolocation. No IP lookup. No cookie.
+   Manual choice stores only "en" or "fr" in localStorage. */
+(function(){
+  "use strict";
+  const KEY="sportsmistakes_language";
+  const VALID=new Set(["en","fr"]);
+
+  function saved(){
+    try{
+      const v=localStorage.getItem(KEY);
+      return VALID.has(v)?v:null;
+    }catch(e){ return null; }
+  }
+
+  function browserLanguage(){
+    const primary=String(
+      (Array.isArray(navigator.languages)&&navigator.languages[0]) ||
+      navigator.language || "en"
+    ).toLowerCase();
+    return primary.startsWith("fr")?"fr":"en";
+  }
+
+  function getLanguage(){ return saved() || browserLanguage(); }
+
+  function setLanguage(lang){
+    if(!VALID.has(lang)) return;
+    try{ localStorage.setItem(KEY,lang); }catch(e){}
+    document.documentElement.lang=lang;
+    location.reload();
+  }
+
+  function field(record,name){
+    if(!record) return "";
+    if(getLanguage()==="fr"){
+      const v=record[name+"_fr"];
+      if(v!==null && v!==undefined && String(v).trim()!=="") return v;
+    }
+    return record[name] ?? "";
+  }
+
+  const FR={
+    "Home":"Accueil",
+    "Rankings":"Classements",
+    "Collections":"Collections",
+    "Hall of Fame":"Temple de la renommée",
+    "Nominate":"Proposer",
+    "Submit":"Proposer",
+    "Nominate It":"Proposer",
+    "SEARCH":"RECHERCHER",
+    "Search":"Rechercher",
+    "SEARCH THE RECORD":"RECHERCHER DANS LE REGISTRE",
+    "Find a Sports Mistake":"Trouver une erreur sportive",
+    "Popular searches:":"Recherches populaires :",
+    "Learn from mistakes:":"Apprendre des erreurs :",
+    "TODAY'S ARTWORK":"ŒUVRE DU JOUR",
+    "🔥 TODAY'S 5":"🔥 LES 5 DU JOUR",
+    "Judge today's mistakes":"Jugez les erreurs du jour",
+    "Five moments. Make your call. Compare with other fans.":"Cinq moments. Rendez votre verdict. Comparez-le à celui des autres partisans.",
+    "START JUDGING →":"COMMENCER À JUGER →",
+    "Start judging →":"Commencer à juger →",
+    "📊 RANKINGS":"📊 CLASSEMENTS",
+    "How mistakes stack up":"Le classement des erreurs",
+    "View all →":"Tout voir →",
+    "🏆 HALL OF FAME":"🏆 TEMPLE DE LA RENOMMÉE",
+    "The mistakes the community remembers":"Les erreurs dont la communauté se souvient",
+    "A visual gallery of the most debated moments in the record.":"Une galerie visuelle des moments les plus débattus du registre.",
+    "View Hall of Fame →":"Voir le Temple de la renommée →",
+    "All Mistakes":"Toutes les erreurs",
+    "Loading mistakes...":"Chargement des erreurs...",
+    "Load More Mistakes":"Afficher plus d’erreurs",
+    "Read the Story":"Lire l’histoire",
+    "Read the Story ›":"Lire l’histoire ›",
+    "Read Story →":"Lire l’histoire →",
+    "Read →":"Lire →",
+    "← Back to Database":"← Retour à la base de données",
+    "Back to Database":"Retour à la base de données",
+    "Loading mistake...":"Chargement de l’erreur...",
+    "No mistake ID provided.":"Aucun identifiant d’erreur fourni.",
+    "Mistake not found.":"Erreur introuvable.",
+    "CONTROVERSY SCORE":"INDICE DE CONTROVERSE",
+    "Controversy Score":"Indice de controverse",
+    "Fan Verdict":"Verdict des partisans",
+    "Was this actually a mistake?":"Était-ce vraiment une erreur?",
+    "YES — Mistake":"OUI — Erreur",
+    "NO — Not a Mistake":"NON — Pas une erreur",
+    "The Story":"L’histoire",
+    "Why This Changed Sports":"Pourquoi ce moment a compté",
+    "Teams / People":"Équipes / Personnes",
+    "Share this mistake:":"Partager cette erreur :",
+    "Related Mistakes":"Erreurs connexes",
+    "Loading related mistakes...":"Chargement des erreurs connexes...",
+    "Could not load related mistakes.":"Impossible de charger les erreurs connexes.",
+    "No related mistakes yet.":"Aucune erreur connexe pour le moment.",
+    "Sources":"Sources",
+    "Source 1":"Source 1",
+    "Source 2":"Source 2",
+    "⚠️ Report an Issue":"⚠️ Signaler un problème",
+    "What is the issue?":"Quel est le problème?",
+    "Details":"Détails",
+    "Submit Report":"Envoyer le signalement",
+    "⚖️ Sports Court":"⚖️ Tribunal sportif",
+    "Join the Debate":"Participer au débat",
+    "Side":"Camp",
+    "Your argument":"Votre argument",
+    "Name or nickname optional":"Nom ou surnom (facultatif)",
+    "Submit Argument":"Soumettre l’argument",
+    "🔨 The Prosecution":"🔨 L’accusation",
+    "🛡️ The Defense":"🛡️ La défense",
+    "About":"À propos",
+    "How It Works":"Comment ça fonctionne",
+    "Privacy":"Confidentialité",
+    "Terms":"Conditions d’utilisation",
+    "Preparation":"Préparation",
+    "Pressure":"Pression",
+    "Decision-making":"Prise de décision",
+    "Risk":"Risque",
+    "Teamwork":"Travail d’équipe"
+  };
+
+  const OPTION_FR={
+    "All Sports":"Tous les sports",
+    "All Leagues":"Toutes les ligues",
+    "All Teams":"Toutes les équipes",
+    "All Years":"Toutes les années",
+    "All Categories":"Toutes les catégories",
+    "Olympics":"Jeux olympiques",
+    "Boxing":"Boxe",
+    "Horse Racing":"Courses hippiques",
+    "Sailing":"Voile",
+    "Track":"Athlétisme",
+    "Track & Field":"Athlétisme",
+    "Cycling":"Cyclisme",
+    "Running":"Course",
+    "Wrestling":"Lutte",
+    "Alpine Skiing":"Ski alpin",
+    "American Football":"Football américain",
+    "Archery":"Tir à l’arc",
+    "Artistic Swimming":"Natation artistique",
+    "Australian Rules Football":"Football australien",
+    "Beach Soccer":"Soccer de plage",
+    "Beach Volleyball":"Volleyball de plage",
+    "Billiards / Pool":"Billard",
+    "Bowling":"Quilles",
+    "Brazilian Jiu-Jitsu":"Jiu-jitsu brésilien",
+    "Canoe / Kayak":"Canoë / Kayak",
+    "Chess":"Échecs",
+    "Climbing":"Escalade",
+    "Cross-Country Skiing":"Ski de fond",
+    "Darts":"Fléchettes",
+    "Diving":"Plongeon",
+    "Equestrian":"Sports équestres",
+    "Esports":"Sports électroniques",
+    "Fencing":"Escrime",
+    "Field Hockey":"Hockey sur gazon",
+    "Figure Skating":"Patinage artistique",
+    "Freestyle Skiing":"Ski acrobatique",
+    "Gymnastics":"Gymnastique",
+    "Harness Racing":"Courses sous harnais",
+    "Ice Hockey":"Hockey sur glace",
+    "Karate":"Karaté",
+    "Mixed Martial Arts":"Arts martiaux mixtes",
+    "Mountain Biking":"Vélo de montagne",
+    "Open Water Swimming":"Natation en eau libre",
+    "Powerlifting":"Force athlétique",
+    "Rally Racing":"Rallye automobile",
+    "Rhythmic Gymnastics":"Gymnastique rythmique",
+    "Road Cycling":"Cyclisme sur route",
+    "Rowing":"Aviron",
+    "Shooting":"Tir sportif",
+    "Short Track Speed Skating":"Patinage de vitesse sur courte piste",
+    "Ski Jumping":"Saut à ski",
+    "Skateboarding":"Planche à roulettes",
+    "Snowboarding":"Planche à neige",
+    "Speed Skating":"Patinage de vitesse",
+    "Sport Climbing":"Escalade sportive",
+    "Surfing":"Surf",
+    "Swimming":"Natation",
+    "Synchronized Swimming":"Natation synchronisée",
+    "Table Tennis":"Tennis de table",
+    "Wakeboarding":"Wakeboard",
+    "Water Polo":"Water-polo",
+    "Waterskiing":"Ski nautique",
+    "Weightlifting":"Haltérophilie",
+    "Windsurfing":"Planche à voile",
+    "Other":"Autre",
+    "Coaching Mistake":"Erreur d’entraîneur",
+    "Referee Mistake":"Erreur d’arbitrage",
+    "Player Mistake":"Erreur de joueur",
+    "Front Office Mistake":"Erreur de direction",
+    "Ownership Mistake":"Erreur de propriétaire",
+    "League Mistake":"Erreur de ligue",
+    "Fan Interference":"Interférence d’un partisan",
+    "Prosecution — It was a mistake":"Accusation — C’était une erreur",
+    "Defense — Not a mistake / overblown":"Défense — Pas une erreur / exagéré",
+    "Incorrect information":"Information incorrecte",
+    "Duplicate entry":"Entrée en double",
+    "Broken source link":"Lien source brisé",
+    "Wrong sport/category":"Mauvais sport / mauvaise catégorie",
+    "Offensive or unsafe content":"Contenu offensant ou dangereux",
+    "Typo or formatting issue":"Faute ou problème de mise en forme",
+    "Other":"Autre"
+  };
+
+  const PLACEHOLDER_FR={
+    'Search mistakes, people, teams, or lessons like "leadership"...':
+      'Rechercher des erreurs, personnes, équipes ou leçons comme « leadership »...',
+    "e.g. Buckner lets ball pass through his legs":
+      "ex. : Buckner laisse la balle passer entre ses jambes",
+    "Focus on the play, decision, referee call, strategy, or historical context.":
+      "Concentrez-vous sur le jeu, la décision, l’arbitrage, la stratégie ou le contexte historique.",
+    "Anonymous fan":"Partisan anonyme",
+    "Briefly explain what should be fixed.":"Expliquez brièvement ce qui devrait être corrigé."
+  };
+
+  function translateText(root=document){
+    if(getLanguage()!=="fr" || !document.body) return;
+
+    const walker=document.createTreeWalker(
+      root===document ? document.body : root,
+      NodeFilter.SHOW_TEXT,
+      {
+        acceptNode(node){
+          const p=node.parentElement;
+          if(!p) return NodeFilter.FILTER_REJECT;
+          if(["SCRIPT","STYLE","NOSCRIPT","OPTION"].includes(p.tagName)) return NodeFilter.FILTER_REJECT;
+          return NodeFilter.FILTER_ACCEPT;
+        }
+      }
+    );
+
+    const nodes=[];
+    while(walker.nextNode()) nodes.push(walker.currentNode);
+
+    nodes.forEach(node=>{
+      const raw=node.nodeValue||"";
+      const t=raw.trim();
+      if(FR[t]) node.nodeValue=raw.replace(t,FR[t]);
+    });
+
+    document.querySelectorAll("input[placeholder],textarea[placeholder]").forEach(el=>{
+      const p=el.getAttribute("placeholder");
+      if(PLACEHOLDER_FR[p]) el.setAttribute("placeholder",PLACEHOLDER_FR[p]);
+    });
+
+    document.querySelectorAll("select option").forEach(option=>{
+      const original=option.dataset.enLabel || option.textContent.trim();
+      if(!option.dataset.enLabel) option.dataset.enLabel=original;
+      if(OPTION_FR[original]) option.textContent=OPTION_FR[original];
+    });
+
+    const kicker=document.querySelector(".home-fast-intro .museum-kicker");
+    if(kicker) kicker.textContent="LE REGISTRE PARTICIPATIF DES ERREURS SPORTIVES";
+
+    const h1=document.querySelector(".home-fast-intro h1");
+    if(h1) h1.innerHTML='Apprendre des plus grandes <span>erreurs sportives</span> de l’histoire';
+
+    const nomTitle=document.querySelector(".homepage-nominate-card h2");
+    if(nomTitle) nomTitle.textContent="Proposer une erreur sportive";
+
+    const nomCopy=document.querySelector(".homepage-nominate-card .nominate-title-row p");
+    if(nomCopy) nomCopy.textContent="Quelle erreur mérite sa place dans le registre?";
+
+    const searchKicker=document.querySelector(".top-search .engage-kicker");
+    if(searchKicker) searchKicker.textContent="RECHERCHER DANS LE REGISTRE";
+
+    const searchTitle=document.querySelector(".top-search h2");
+    if(searchTitle) searchTitle.textContent="Trouver une erreur sportive";
+
+    const searchCopy=document.querySelector(".top-search .search-topline p");
+    if(searchCopy) searchCopy.textContent="Recherchez par moment, athlète, équipe, sport, année ou leçon.";
+
+    const dailyKicker=document.querySelector(".daily-art-kicker");
+    if(dailyKicker) dailyKicker.textContent="ŒUVRE DU JOUR";
+
+    const brandTag=document.querySelector(".brand-tag");
+    if(brandTag) brandTag.innerHTML="La base de données Internet<br>des erreurs sportives";
+
+    document.querySelectorAll(".popular").forEach(el=>{
+      [...el.childNodes].forEach(node=>{
+        if(node.nodeType!==Node.TEXT_NODE) return;
+        const raw=node.nodeValue||"";
+        const t=raw.trim();
+        if(t==="Popular searches:") node.nodeValue=raw.replace(t,"Recherches populaires :");
+        if(t==="Learn from mistakes:") node.nodeValue=raw.replace(t,"Apprendre des erreurs :");
+      });
+    });
+
+    const lessonMap={
+      "Leadership":"Leadership","Preparation":"Préparation","Pressure":"Pression",
+      "Communication":"Communication","Decision-making":"Prise de décision",
+      "Risk":"Risque","Teamwork":"Travail d’équipe"
+    };
+    document.querySelectorAll(".learn-searches button").forEach(btn=>{
+      const original=btn.dataset.enLabel || btn.textContent.trim();
+      if(!btn.dataset.enLabel) btn.dataset.enLabel=original;
+      if(lessonMap[original]) btn.textContent=lessonMap[original];
+    });
+  }
+
+  function mountSelector(){
+    const nav=document.querySelector(".nav-links") || document.querySelector(".top-nav");
+    if(!nav || document.getElementById("smLanguageSwitch")) return;
+
+    const current=getLanguage();
+    const div=document.createElement("div");
+    div.id="smLanguageSwitch";
+    div.className="sm-language-switch";
+    div.innerHTML=
+      '<button type="button" data-lang="en" class="'+(current==="en"?"active":"")+'">EN</button>'+
+      '<span aria-hidden="true">/</span>'+
+      '<button type="button" data-lang="fr" class="'+(current==="fr"?"active":"")+'">FR</button>';
+
+    div.querySelectorAll("button").forEach(btn=>{
+      btn.addEventListener("click",()=>setLanguage(btn.dataset.lang));
+    });
+    nav.appendChild(div);
+  }
+
+  function styles(){
+    if(document.getElementById("smLangStyle")) return;
+    const s=document.createElement("style");
+    s.id="smLangStyle";
+    s.textContent=`
+      .sm-language-switch{display:inline-flex;align-items:center;gap:5px;margin-left:4px;padding:5px 8px;border:1px solid rgba(255,255,255,.18);border-radius:999px;background:rgba(255,255,255,.04);color:#a8b3c1;font:900 12px Arial,Helvetica,sans-serif;letter-spacing:.5px;white-space:nowrap}
+      .sm-language-switch button{appearance:none;border:0;background:transparent;color:#a8b3c1;padding:3px 4px;margin:0;cursor:pointer;font:inherit;line-height:1}
+      .sm-language-switch button.active{color:#fff}
+      .sm-language-switch button:hover{color:#ff6464}
+    `;
+    document.head.appendChild(s);
+  }
+
+  window.SMLanguage={
+    get:getLanguage,
+    set:setLanguage,
+    field:field,
+    translate:translateText,
+    optionLabel:function(english){ return getLanguage()==="fr" ? (OPTION_FR[english]||english) : english; },
+    ui:function(english){ return getLanguage()==="fr" ? (FR[english]||english) : english; }
+  };
+
+  document.documentElement.lang=getLanguage();
+
+  document.addEventListener("DOMContentLoaded",()=>{
+    styles();
+    mountSelector();
+    translateText();
+  });
+})();
+</script>
+
 
   <style>
     :root{
@@ -871,10 +1223,15 @@ async function loadMistake(){
 
   const{data,error}=await client
     .from("mistakes")
-    .select("id,title,title_fr,sport,league,year,category,subcategory,teams_people,summary,summary_fr,why_it_matters,why_it_matters_fr,lessons_learned,lessons_learned_fr,controversy_score,source_1,source_2,views,artwork_url,ai_artwork_url")
+    .select("*")
     .eq("id",id)
     .single();
-  if(error||!data){console.error(error);content.innerHTML=`<div class="error">Mistake not found.</div>`;return}
+  if(error){
+    console.error("Mistake load error:",error);
+    content.innerHTML=`<div class="error">${window.SMLanguage?.ui("Mistake not found.")||"Mistake not found."}<br><small>${escapeHtml(error.message||"Database query failed.")}</small></div>`;
+    return;
+  }
+  if(!data){content.innerHTML=`<div class="error">${window.SMLanguage?.ui("Mistake not found.")||"Mistake not found."}</div>`;return}
 
   currentMistake=data;
   const newViewCount=(data.views||0)+1;
@@ -1026,6 +1383,8 @@ async function loadMistake(){
     </section>
   `;
 
+  if(window.SMLanguage) window.SMLanguage.translate();
+
   await Promise.allSettled([
     loadVotes(),
     loadCourtArguments(),
@@ -1129,7 +1488,7 @@ async function loadRelatedMistakes(){
   if(!box||!currentMistake)return;
   const{data,error}=await client
     .from("mistakes")
-    .select("id,title,title_fr,sport,league,year,category,subcategory,controversy_score,views,artwork_url,ai_artwork_url")
+    .select("*")
     .neq("id",id)
     .or(`sport.eq.${currentMistake.sport},category.eq.${currentMistake.category},subcategory.eq.${currentMistake.subcategory}`)
     .order("controversy_score",{ascending:false})
@@ -1156,6 +1515,7 @@ async function loadRelatedMistakes(){
       </div>
     </div>`
   }).join("")}</div>`;
+  if(window.SMLanguage) window.SMLanguage.translate(box);
 }
 
 function toggleReportBox(){
