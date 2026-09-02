@@ -6,6 +6,187 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
+<script>
+(function(){
+  const KEY="sportsmistakes_language";
+  const valid=new Set(["en","fr"]);
+
+  function get(){
+    try{
+      const saved=localStorage.getItem(KEY);
+      if(valid.has(saved)) return saved;
+    }catch(e){}
+    const primary=String((navigator.languages&&navigator.languages[0])||navigator.language||"en").toLowerCase();
+    return primary.startsWith("fr")?"fr":"en";
+  }
+
+  function set(lang){
+    if(!valid.has(lang)) return;
+    try{localStorage.setItem(KEY,lang)}catch(e){}
+    document.documentElement.lang=lang;
+    location.reload();
+  }
+
+  function field(row,name){
+    if(!row) return "";
+    if(get()==="fr"){
+      const v=row[name+"_fr"];
+      if(v!==null&&v!==undefined&&String(v).trim()!=="") return v;
+    }
+    return row[name]??"";
+  }
+
+  const UI={
+    "Home":"Accueil","Rankings":"Classements","Collections":"Collections",
+    "Hall of Fame":"Temple de la renommée","Add a Mistake":"Proposer","Nominate":"Proposer",
+    "About":"À propos","How It Works":"Comment ça fonctionne","Contact":"Contact",
+    "Privacy":"Confidentialité","Terms":"Conditions d’utilisation",
+
+    "The definitive leaderboard":"Le classement de référence",
+    "The Most Controversial Mistakes in Sports History":"Les erreurs les plus controversées de l’histoire du sport",
+    "Explore the moments fans still argue about, ranked by their SportsMistakes controversy score.":
+      "Explorez les moments dont les partisans débattent encore, classés selon leur indice de controverse SportsMistakes.",
+    "Choose a ranking":"Choisir un classement",
+    "Top Overall":"Classement général","Top NFL":"Meilleures erreurs NFL","Top NHL":"Meilleures erreurs LNH",
+    "Top NBA":"Meilleures erreurs NBA","Top MLB":"Meilleures erreurs MLB","Top Soccer":"Meilleures erreurs de soccer",
+    "Coaching":"Entraîneurs","Referee":"Arbitrage","Player":"Joueurs","Front Office":"Direction",
+    "Loading rankings...":"Chargement des classements...",
+    "Could not load rankings.":"Impossible de charger les classements.",
+    "The rankings could not be loaded. Please try again.":"Impossible de charger les classements. Veuillez réessayer.",
+    "No ranked mistakes found":"Aucune erreur classée trouvée",
+    "No mistakes are available for this ranking yet.":"Aucune erreur n’est encore disponible pour ce classement.",
+
+    "CURATED SPORTS HISTORY":"HISTOIRE DU SPORT — SÉLECTIONS",
+    "SportsMistakes Collections":"Collections SportsMistakes",
+    "Browse themed collections of famous mistakes, referee controversies, coaching blunders, player errors and front-office disasters.":
+      "Parcourez des collections thématiques d’erreurs célèbres, de controverses d’arbitrage, de décisions d’entraîneurs, d’erreurs de joueurs et de fiascos de direction.",
+    "Search the full database":"Rechercher dans toute la base de données",
+    "Search":"Rechercher","All Collections":"Toutes les collections",
+    "Worst Referee Calls":"Les pires décisions arbitrales","Coaching Blunders":"Erreurs d’entraîneurs",
+    "Player Mistakes":"Erreurs de joueurs","Draft & Front Office":"Repêchage et direction",
+    "Loading exhibit...":"Chargement de la collection...","Loading collections...":"Chargement des collections...",
+    "No mistakes found in this collection yet.":"Aucune erreur trouvée dans cette collection pour le moment.",
+    "Read story →":"Lire l’histoire →",
+
+    "The permanent exhibit":"L’exposition permanente",
+    "The most infamous mistakes in sports history—preserved, debated and ranked by controversy, with fan interest breaking the ties.":
+      "Les erreurs les plus célèbres de l’histoire du sport — conservées, débattues et classées selon leur controverse, l’intérêt des partisans départageant les égalités.",
+    "🏆 Top 25 Overall":"🏆 Top 25 général","⚖️ Referee Calls":"⚖️ Décisions arbitrales",
+    "🧠 Coaching Decisions":"🧠 Décisions d’entraîneurs","💥 Player Blunders":"💥 Erreurs de joueurs",
+    "📉 Front Office":"📉 Direction","👁 Most Viewed":"👁 Les plus consultées",
+    "Top 25 Sports Mistakes Ever":"Top 25 des erreurs sportives",
+    "The highest-ranked mistakes across the entire database.":"Les erreurs les mieux classées de toute la base de données.",
+    "Loading Hall of Fame...":"Chargement du Temple de la renommée...",
+    "Could not load Hall of Fame.":"Impossible de charger le Temple de la renommée.",
+    "No entries found for this Hall of Fame yet.":"Aucune entrée trouvée dans cette catégorie du Temple de la renommée.",
+    "Read the story →":"Lire l’histoire →",
+
+    "Human nomination • AI research • Fan verdict":"Proposition humaine • Recherche par IA • Verdict des partisans",
+    "You remember the moment. We'll research the rest. Just tell SportsMistakes what happened in a few words.":
+      "Vous vous souvenez du moment. Nous ferons les recherches. Dites simplement à SportsMistakes ce qui s’est passé en quelques mots.",
+    "A few words are enough.":"Quelques mots suffisent.",
+    "AI identifies, verifies and sources it.":"L’IA identifie, vérifie et trouve les sources.",
+    "Vote and debate it in Sports Court.":"Votez et débattez-en au Tribunal sportif.",
+    "What happened?":"Que s’est-il passé?",
+    "Start typing. We check the existing SportsMistakes Record first. If it's already here, go directly to that mistake. If it's genuinely new, SportsMistakes researches it for you.":
+      "Commencez à écrire. Nous vérifions d’abord le registre SportsMistakes. Si le moment existe déjà, allez directement à cette erreur. S’il est vraiment nouveau, SportsMistakes fait les recherches pour vous.",
+    "Nominate It":"Proposer",
+    "The factual record and fan opinion stay separate.":"Le dossier factuel et l’opinion des partisans demeurent séparés."
+  };
+
+  const SPORT={
+    "Boxing":"Boxe","Horse Racing":"Courses hippiques","Sailing":"Voile","Olympics":"Jeux olympiques",
+    "Track":"Athlétisme","Track & Field":"Athlétisme","Cycling":"Cyclisme","Running":"Course",
+    "Wrestling":"Lutte","Ice Hockey":"Hockey sur glace","Field Hockey":"Hockey sur gazon"
+  };
+
+  const CAT={
+    "Coaching Mistake":"Erreur d’entraîneur","Referee Mistake":"Erreur d’arbitrage",
+    "Player Mistake":"Erreur de joueur","Front Office Mistake":"Erreur de direction",
+    "Ownership Mistake":"Erreur de propriétaire","League Mistake":"Erreur de ligue",
+    "Fan Interference":"Interférence d’un partisan"
+  };
+
+  const PH={
+    "Search mistakes, teams, players, referees...":"Rechercher des erreurs, équipes, joueurs, arbitres...",
+    "e.g. Seahawks pass at the goal line":"ex. : la passe des Seahawks près de la ligne des buts"
+  };
+
+  function t(s){ return get()==="fr" ? (UI[s]||s) : s; }
+  function sport(s){ return get()==="fr" ? (SPORT[s]||s) : s; }
+  function category(s){ return get()==="fr" ? (CAT[s]||s) : s; }
+
+  function translateStatic(root=document){
+    if(get()!=="fr"||!document.body) return;
+    const target=root===document?document.body:root;
+    const walker=document.createTreeWalker(target,NodeFilter.SHOW_TEXT,{
+      acceptNode(node){
+        const p=node.parentElement;
+        if(!p||["SCRIPT","STYLE","NOSCRIPT","OPTION"].includes(p.tagName)) return NodeFilter.FILTER_REJECT;
+        return NodeFilter.FILTER_ACCEPT;
+      }
+    });
+
+    const nodes=[];
+    while(walker.nextNode()) nodes.push(walker.currentNode);
+
+    nodes.forEach(node=>{
+      const raw=node.nodeValue||"";
+      const x=raw.trim();
+      if(UI[x]) node.nodeValue=raw.replace(x,UI[x]);
+    });
+
+    document.querySelectorAll("input[placeholder],textarea[placeholder]").forEach(el=>{
+      const p=el.getAttribute("placeholder");
+      if(PH[p]) el.setAttribute("placeholder",PH[p]);
+    });
+  }
+
+  function mount(){
+    const nav=document.querySelector(".nav-links");
+    if(!nav||document.getElementById("smLanguageSwitch")) return;
+
+    const cur=get();
+    const div=document.createElement("div");
+    div.id="smLanguageSwitch";
+    div.className="sm-language-switch";
+    div.innerHTML=
+      `<button type="button" data-lang="en" class="${cur==="en"?"active":""}">EN</button>`+
+      `<span>/</span>`+
+      `<button type="button" data-lang="fr" class="${cur==="fr"?"active":""}">FR</button>`;
+
+    div.querySelectorAll("button").forEach(b=>{
+      b.addEventListener("click",()=>set(b.dataset.lang));
+    });
+
+    nav.appendChild(div);
+  }
+
+  function css(){
+    if(document.getElementById("smLanguageStyles")) return;
+    const s=document.createElement("style");
+    s.id="smLanguageStyles";
+    s.textContent=`
+      .sm-language-switch{display:inline-flex;align-items:center;gap:5px;padding:5px 8px;border:1px solid rgba(255,255,255,.18);border-radius:999px;background:rgba(255,255,255,.04);color:#a8b3c1;font:900 12px Arial,Helvetica,sans-serif;letter-spacing:.5px;white-space:nowrap}
+      .sm-language-switch button{border:0;background:transparent;color:#a8b3c1;padding:3px 4px;cursor:pointer;font:inherit}
+      .sm-language-switch button.active{color:#fff}
+      .sm-language-switch button:hover{color:#ff6464}
+    `;
+    document.head.appendChild(s);
+  }
+
+  window.SMLanguage={get,set,field,t,sport,category,translate:translateStatic};
+  document.documentElement.lang=get();
+
+  document.addEventListener("DOMContentLoaded",()=>{
+    css();
+    mount();
+    translateStatic();
+  });
+})();
+</script>
+
+
   <style>
     :root{
       --bg:#05080c;
@@ -454,10 +635,29 @@
     return [...mistakes];
   }
 
+
+  function collectionDisplayInfo(key){
+    const base=collectionInfo[key]||collectionInfo.all;
+    if(SMLanguage.get()!=="fr") return base;
+    const fr={
+      all:{title:"Toutes les collections",description:"Parcourez les meilleures entrées de toute la base de données SportsMistakes."},
+      referee:{title:"Les pires décisions arbitrales",description:"Décisions manquées, reprises controversées, erreurs de jugement et moments d’arbitrage dont les partisans débattent encore."},
+      coaching:{title:"Erreurs d’entraîneurs",description:"Décisions tactiques, gestion du temps et choix d’alignement qui ont changé des matchs."},
+      player:{title:"Erreurs de joueurs",description:"Erreurs, revirements, pénalités et moments individuels devenus célèbres."},
+      frontoffice:{title:"Repêchage et direction",description:"Échanges, repêchages et décisions de direction qui ont transformé des franchises."},
+      nfl:{title:"Principales erreurs NFL",description:"Les plus grandes erreurs d’entraîneurs, d’arbitrage, de joueurs et de direction dans la NFL."},
+      mlb:{title:"Principales erreurs MLB",description:"Erreurs de Série mondiale, controverses d’arbitrage, échanges, effondrements et gaffes de baseball."},
+      soccer:{title:"Principales controverses de soccer",description:"Mains à la Coupe du monde, décisions manquées, tirs de pénalité ratés, effondrements et erreurs emblématiques."},
+      nhl:{title:"Principales erreurs LNH",description:"Erreurs en séries, buts controversés, échanges, gaffes de gardiens et histoire du hockey."},
+      nba:{title:"Principales erreurs NBA",description:"Erreurs en finale, repêchages, controverses d’arbitrage, erreurs de chronomètre et effondrements en séries."}
+    };
+    return fr[key]||base;
+  }
+
   function renderCollection(){
     const grid=document.getElementById("collectionGrid");
     const message=document.getElementById("message");
-    const info=collectionInfo[currentCollection]||collectionInfo.all;
+    const info=collectionDisplayInfo(currentCollection);
     const filtered=getCollectionItems().sort((a,b)=>(b.controversy_score||0)-(a.controversy_score||0));
     const display=filtered.slice(0,25);
 
@@ -467,7 +667,7 @@
 
     if(!display.length){
       message.style.display="block";
-      message.innerText="No mistakes found in this collection yet.";
+      message.innerText=SMLanguage.t("No mistakes found in this collection yet.");
       grid.innerHTML="";
       return;
     }
@@ -475,7 +675,7 @@
     message.style.display="none";
     grid.innerHTML=display.map((m,index)=>{
       const artwork=m.artwork_url||m.ai_artwork_url||m.image_url||m.thumbnail_url||"";
-      const art=artwork?`<img src="${escapeHtml(artwork)}" alt="${escapeHtml(m.title||"Sports mistake artwork")}" />`:getSportIcon(m.sport);
+      const art=artwork?`<img src="${escapeHtml(artwork)}" alt="${escapeHtml(SMLanguage.field(m,"title")||"Sports mistake artwork")}" />`:getSportIcon(m.sport);
       return `
         <a class="card" href="mistake.html?id=${encodeURIComponent(m.id)}">
           <div class="card-image">
@@ -484,17 +684,18 @@
           </div>
           <div class="card-body">
             <div class="card-top">
-              <span class="badge">${escapeHtml(m.sport||"Sport")}</span>
+              <span class="badge">${escapeHtml(SMLanguage.sport(m.sport||"Sport"))}</span>
               <span class="score">${escapeHtml(m.controversy_score||0)}/100</span>
             </div>
-            <h2>${escapeHtml(m.title||"Untitled Mistake")}</h2>
+            <h2>${escapeHtml(SMLanguage.field(m,"title")||"Untitled Mistake")}</h2>
             <div class="meta">${escapeHtml([m.year,m.league||"",m.category||"",m.subcategory||""].filter(Boolean).join(" • "))}</div>
             <div class="card-stats"><span>👁 ${formatNumber(m.views||0)}</span><span>🔥 ${m.controversy_score||0}/100</span></div>
-            <div class="summary">${escapeHtml(m.summary||"No summary added yet.")}</div>
+            <div class="summary">${escapeHtml(SMLanguage.field(m,"summary")||(SMLanguage.get()==="fr"?"Aucun résumé pour le moment.":"No summary added yet."))}</div>
             <span class="read-link">Read Story →</span>
           </div>
         </a>`;
     }).join("");
+    SMLanguage.translate();
   }
 
   function getSportIcon(sport){
