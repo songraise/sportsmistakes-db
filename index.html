@@ -2524,7 +2524,64 @@
 })();
 </script>
 
-<script src="sportsmistakes-analytics.js" defer></script>
+<script>
+/* SportsMistakes first-party analytics. No cookie; session ID lasts for the browser tab/session. */
+(function(){
+  "use strict";
+  const ANALYTICS_URL="https://scwjlljurircxuufhqih.supabase.co/rest/v1/analytics_events";
+  const ANALYTICS_ANON_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNjd2psbGp1cmlyY3h1dWZocWloIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyNjUyMjcsImV4cCI6MjA5Njg0MTIyN30.WF0HRRb9mAkuOySjabTd8CZXVZRqF0MhMl0N2mafnns";
+  const SESSION_KEY="sportsmistakes_analytics_session_id";
+
+  function getSessionId(){
+    try{
+      let value=sessionStorage.getItem(SESSION_KEY);
+      if(!value){
+        value=(globalThis.crypto&&crypto.randomUUID)
+          ? crypto.randomUUID()
+          : "sm-session-"+Date.now()+"-"+Math.random().toString(36).slice(2);
+        sessionStorage.setItem(SESSION_KEY,value);
+      }
+      return value;
+    }catch(e){
+      return "sm-session-"+Date.now()+"-"+Math.random().toString(36).slice(2);
+    }
+  }
+
+  async function track(eventType,extra={}){
+    try{
+      const payload={
+        event_type:eventType,
+        path:location.pathname+location.search,
+        mistake_id:extra.mistake_id ?? null,
+        session_id:getSessionId(),
+        share_platform:extra.share_platform ?? null,
+        referrer:document.referrer || null
+      };
+      await fetch(ANALYTICS_URL,{
+        method:"POST",
+        headers:{
+          "apikey":ANALYTICS_ANON_KEY,
+          "Authorization":"Bearer "+ANALYTICS_ANON_KEY,
+          "Content-Type":"application/json",
+          "Prefer":"return=minimal"
+        },
+        body:JSON.stringify(payload),
+        keepalive:true
+      });
+    }catch(error){
+      console.warn("SportsMistakes analytics event was not recorded:",error);
+    }
+  }
+
+  window.SMAnalytics={track,getSessionId};
+
+  document.addEventListener("DOMContentLoaded",()=>{
+    const isMistake=/\/mistake\.html$/i.test(location.pathname);
+    const mistakeId=isMistake ? new URLSearchParams(location.search).get("id") : null;
+    track("page_view",{mistake_id:mistakeId});
+  },{once:true});
+})();
+</script>
 </head>
 
 <body>
