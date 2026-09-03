@@ -1499,6 +1499,11 @@
     .detail-tab-panel .related-meta,.detail-tab-panel .related-stats,.detail-tab-panel .related-read{font-size:9px;margin-top:4px}
     .detail-tab-panel .related-badge,.detail-tab-panel .related-score{font-size:8px}
 
+    /* v2 interaction emphasis + compact reason chooser */
+    .reason-popover-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px;padding-bottom:7px;border-bottom:1px solid rgba(255,255,255,.10);color:#fff;font-size:12px}
+    .reason-close-btn{width:30px;height:30px;display:inline-flex;align-items:center;justify-content:center;border:1px solid rgba(255,255,255,.18);border-radius:8px;background:#151d29;color:#fff;font-size:20px;line-height:1;cursor:pointer;flex:0 0 auto}
+    .reason-close-btn:hover{background:#e22424;border-color:#e22424}
+
     @media(min-width:901px){
       html,body{height:100%;overflow:hidden}
       .top-nav{min-height:68px!important;height:68px!important;padding:10px 26px!important}
@@ -1520,21 +1525,21 @@
       .hero-title{font-size:clamp(27px,2.5vw,40px)!important;line-height:.98!important;letter-spacing:-1px!important;margin:0 0 5px!important}
       .hero-subtitle{font-size:12px!important;line-height:1.32!important;margin:0 0 5px!important;max-width:none!important;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
       .hero-views{font-size:11px!important}
-      .one-page-verdict{padding:10px!important;border-radius:11px!important;display:grid;grid-template-columns:minmax(190px,.74fr) minmax(0,1.26fr);gap:10px;align-items:start}
-      .verdict-vote{padding:0 10px 0 0;border-right:1px solid rgba(255,255,255,.12)}
-      .vote-head h2{font-size:15px!important}.vote-head p{font-size:10px!important;margin:2px 0 0!important}
-      .vote-buttons{margin-top:7px!important;gap:6px!important}.vote-buttons button{padding:8px 9px!important;font-size:10px!important}
-      .verdict-results-wrap{margin-top:7px!important;gap:8px!important}
-      .vote-pie{width:52px!important;height:52px!important;flex-basis:52px!important;border-width:2px!important}.vote-pie::after{inset:14px!important}
-      #voteResults{font-size:10px!important;line-height:1.3!important;margin-top:0!important}
+      .one-page-verdict{padding:13px!important;border-radius:12px!important;display:grid;grid-template-columns:minmax(260px,1fr) minmax(0,1fr);gap:14px;align-items:start;border:1px solid rgba(226,36,36,.28)!important;box-shadow:0 0 0 1px rgba(226,36,36,.06),0 14px 34px rgba(0,0,0,.34)!important}
+      .verdict-vote{padding:2px 14px 2px 2px;border-right:1px solid rgba(255,255,255,.14)}
+      .vote-head h2{font-size:24px!important;line-height:1!important;letter-spacing:-.4px}.vote-head p{font-size:12px!important;margin:5px 0 0!important;color:#dbe4ef!important}
+      .vote-buttons{margin-top:11px!important;gap:8px!important}.vote-buttons button{padding:11px 13px!important;font-size:12px!important;min-height:40px}
+      .verdict-results-wrap{margin-top:11px!important;gap:12px!important}
+      .vote-pie{width:72px!important;height:72px!important;flex-basis:72px!important;border-width:3px!important}.vote-pie::after{inset:20px!important}
+      #voteResults{font-size:12px!important;line-height:1.4!important;margin-top:0!important;font-weight:800}
       .verdict-learn{border-top:0!important;padding-top:0!important;min-width:0}
-      .verdict-learn h2{font-size:15px!important}.verdict-learn-head p{font-size:10px!important;margin:2px 0 6px!important}
+      .verdict-learn h2{font-size:16px!important;line-height:1.15}.verdict-learn-head p{font-size:10px!important;margin:3px 0 7px!important}
       .verdict-learn-grid{grid-template-columns:minmax(150px,.78fr) minmax(0,1.22fr)!important;gap:7px!important}
       .lesson-picker,.lesson-results{padding:7px!important;border-radius:9px!important}
       .lesson-dropdown-toggle{padding:8px 9px!important;font-size:10px!important;line-height:1.2}
-      .reason-popover{position:absolute;left:0;top:calc(100% + 4px);width:min(330px,78vw);max-height:430px;overflow:auto;margin:0!important;padding:9px!important;background:#08111d;border:1px solid rgba(226,36,36,.55)!important;border-radius:10px;box-shadow:0 20px 50px rgba(0,0,0,.70)}
+      .reason-popover{position:absolute;left:0;top:calc(100% + 4px);width:430px;max-width:min(430px,calc(100vw - 40px));max-height:285px;overflow:auto;margin:0!important;padding:10px!important;background:#08111d;border:1px solid rgba(226,36,36,.55)!important;border-radius:10px;box-shadow:0 20px 50px rgba(0,0,0,.70);z-index:80}
       .reason-popover .lesson-picker-note{font-size:10px;margin-bottom:7px}
-      .reason-popover .lesson-options{gap:5px!important}.reason-popover .lesson-option{min-height:31px;padding:6px 8px!important;font-size:10px!important;gap:7px!important}
+      .reason-popover .lesson-options{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:6px!important}.reason-popover .lesson-option{min-height:34px;padding:7px 8px!important;font-size:10px!important;gap:7px!important;white-space:normal}
       .reason-popover .lesson-option input{width:14px;height:14px}.reason-popover .lesson-submit{margin-top:8px;padding:7px 9px;font-size:10px}
       .lesson-message{font-size:9px!important;min-height:10px!important;margin-top:4px!important}
       .lesson-results-title{font-size:10px!important;margin-bottom:5px!important}.lesson-result-row{margin-bottom:5px!important}.lesson-result-top{font-size:9px!important;margin-bottom:2px!important}.lesson-bar-track{height:6px!important}
@@ -1558,11 +1563,15 @@
       .hero-title{font-size:clamp(30px,8vw,44px)!important;margin:12px 0 8px!important}
       .hero-subtitle{font-size:16px!important;line-height:1.4!important;margin-bottom:9px!important}
       .hero-meta-row{align-items:flex-start}
-      .one-page-verdict{margin-top:12px;display:block!important;padding:14px!important}
-      .verdict-vote{padding:0 0 14px;border-right:0;border-bottom:1px solid rgba(255,255,255,.12)}
+      .one-page-verdict{margin-top:12px;display:block!important;padding:16px!important;border:1px solid rgba(226,36,36,.30)!important;box-shadow:0 10px 28px rgba(0,0,0,.30)!important}
+      .verdict-vote{padding:0 0 16px;border-right:0;border-bottom:1px solid rgba(255,255,255,.12)}
+      .vote-head h2{font-size:28px!important}.vote-head p{font-size:14px!important;margin-top:5px!important}
+      .vote-buttons{gap:9px!important;margin-top:12px!important}.vote-buttons button{flex:1;min-height:48px;font-size:14px!important;padding:12px!important}
+      .verdict-results-wrap{gap:14px!important;margin-top:13px!important}.vote-pie{width:82px!important;height:82px!important;flex-basis:82px!important}.vote-pie::after{inset:23px!important}
+      #voteResults{font-size:14px!important;line-height:1.45!important}
       .verdict-learn{padding-top:14px!important}
       .verdict-learn-grid{grid-template-columns:1fr!important}
-      .reason-popover{position:static!important;width:auto!important;max-height:none!important;overflow:visible!important;margin-top:9px!important;padding-top:9px!important;box-shadow:none!important;background:transparent!important;border-left:0!important;border-right:0!important;border-bottom:0!important}
+      .reason-popover{position:fixed!important;left:12px!important;right:12px!important;bottom:12px!important;top:auto!important;width:auto!important;max-width:none!important;max-height:68vh!important;overflow:auto!important;margin:0!important;padding:12px!important;box-shadow:0 24px 70px rgba(0,0,0,.82)!important;background:#08111d!important;border:1px solid rgba(226,36,36,.62)!important;border-radius:14px!important;z-index:200!important}
       .lesson-options{grid-template-columns:1fr!important;gap:7px!important}
       .lesson-option{padding:10px 11px!important;font-size:13px!important;min-height:42px}
       .detail-tabs-shell{margin-top:12px;height:auto;display:block;overflow:visible}
@@ -1811,7 +1820,7 @@ async function loadMistake(){
           <div class="verdict-learn">
             <div class="verdict-learn-head">
               <div>
-                <h2>${smText("Why Was It a Mistake?","Pourquoi était-ce une erreur?")}</h2>
+                <h2>${smText("Why Was It a Mistake? LET\'S LEARN.","Pourquoi était-ce une erreur? APPRENONS.")}</h2>
                 <p>${smText("Choose up to 3 reasons.","Choisissez jusqu’à 3 raisons.")}</p>
               </div>
             </div>
@@ -1823,6 +1832,10 @@ async function loadMistake(){
                   <span id="lessonDropdownSummary">▾</span>
                 </button>
                 <div id="lessonDropdownPanel" class="lesson-dropdown-panel reason-popover">
+                  <div class="reason-popover-head">
+                    <strong>${smText("Choose your reasons","Choisissez vos raisons")}</strong>
+                    <button type="button" class="reason-close-btn" onclick="closeLessonDropdown(event)" aria-label="${smText("Close reasons","Fermer les raisons")}">×</button>
+                  </div>
                   <div class="lesson-picker-note">${smText("Choose up to 3. You can update your choices later on this device.","Choisissez jusqu’à 3 raisons. Vous pourrez modifier vos choix plus tard sur cet appareil.")}</div>
                   <div id="lessonOptions" class="lesson-options">${smText("Loading reasons...","Chargement des raisons...")}</div>
                   <button id="lessonSubmitBtn" class="lesson-submit" onclick="submitLessonVotes()">${smText("Save My Reasons","Enregistrer mes raisons")}</button>
@@ -2047,6 +2060,24 @@ function toggleLessonDropdown(){
   const panel=document.getElementById("lessonDropdownPanel");
   if(panel) panel.classList.toggle("open");
 }
+
+function closeLessonDropdown(event){
+  if(event){ event.preventDefault(); event.stopPropagation(); }
+  const panel=document.getElementById("lessonDropdownPanel");
+  if(panel) panel.classList.remove("open");
+}
+
+document.addEventListener("keydown",event=>{
+  if(event.key==="Escape") closeLessonDropdown();
+});
+
+document.addEventListener("click",event=>{
+  const panel=document.getElementById("lessonDropdownPanel");
+  const picker=document.querySelector(".compact-reason-picker");
+  if(panel?.classList.contains("open") && picker && !picker.contains(event.target)){
+    closeLessonDropdown();
+  }
+});
 
 function updateLessonDropdownSummary(){
   const summary=document.getElementById("lessonDropdownSummary");
