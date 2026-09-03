@@ -4253,7 +4253,15 @@ function formatNumber(n) {
         const url=buckner.artwork_url||buckner.ai_artwork_url||"";
         if(url){
           const optimizedUrl=optimizedArtworkUrl(url,"thumb");
-          navBuckner.innerHTML=`<img class="deferred-art" data-src="${escapeHtml(optimizedUrl)}" data-original="${escapeHtml(url)}" alt="Bill Buckner SportsMistakes artwork" decoding="async">`;
+          navBuckner.innerHTML=`
+          <img
+            src="${escapeHtml(optimizedUrl)}"
+            data-original="${escapeHtml(url)}"
+            alt="Bill Buckner SportsMistakes artwork"
+            decoding="async"
+            onerror="this.onerror=null;if(this.dataset.original&&this.src!==this.dataset.original)this.src=this.dataset.original;"
+          >
+        `;
           navBuckner.onclick=()=>location.href=`mistake.html?id=${encodeURIComponent(buckner.id)}`;
           navBuckner.style.cursor="pointer";
           navBuckner.title=buckner.title||"Bill Buckner";
