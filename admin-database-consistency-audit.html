@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SportsMistakes — Database Consistency Audit</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{--bg:#05080c;--panel:#0b1118;--panel2:#0e1620;--line:#243140;--text:#f8fafc;--muted:#a8b3c1;--red:#e22424;--green:#1f9d55;--yellow:#d79a12;--orange:#d36a20}
+*{box-sizing:border-box}body{margin:0;font-family:Arial,Helvetica,sans-serif;background:linear-gradient(180deg,#05080c,#091017 50%,#05080c);color:var(--text)}
+.top{position:sticky;top:0;z-index:5;background:#05080cf2;border-bottom:1px solid #202a35;padding:14px 22px;display:flex;justify-content:space-between;align-items:center}.brand{font-size:22px;font-weight:1000}.brand span{color:var(--red)}.top a{color:#fff;text-decoration:none;font-weight:800;margin-left:18px;font-size:13px}
+.wrap{max-width:1400px;margin:auto;padding:24px 18px 70px}h1{margin:0 0 6px;font-size:34px}.sub{color:#c7d2df;max-width:950px;line-height:1.5}.safe{background:#0d151e;border:1px solid #2c3b4a;border-left:4px solid var(--green);border-radius:10px;padding:13px 15px;margin:16px 0;color:#d7e1eb}
+.stats{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:9px;margin:16px 0}.stat{background:var(--panel);border:1px solid #25313d;border-radius:11px;padding:12px}.num{font-size:26px;font-weight:1000}.lbl{font-size:10px;color:#9fb0c2;text-transform:uppercase;font-weight:900;margin-top:3px}
+.controlbox{background:var(--panel);border:1px solid #25313d;border-radius:12px;padding:14px;margin:14px 0}.controls{display:flex;gap:9px;align-items:center;flex-wrap:wrap}button,select{border:1px solid #374656;border-radius:8px;padding:10px 12px;font-weight:850;font-size:13px}button{background:var(--red);color:white;cursor:pointer}button.secondary{background:#263443}button.stop{background:#6b2730}button:disabled{opacity:.45;cursor:not-allowed}select{background:#08111b;color:#fff}
+.progress{height:13px;background:#111a24;border:1px solid #2a3744;border-radius:999px;overflow:hidden;margin:10px 0 5px}.fill{height:100%;width:0;background:var(--green);transition:width .2s}.small{font-size:12px;color:#9fb0c2}.overall{margin:9px 0;font-weight:800}.error{color:#ff9b9b}.success{color:#7ce2a0}
+.card{background:var(--panel);border:1px solid #263340;border-radius:12px;padding:16px;margin:12px 0}.card.conflict{border-color:#7d3a23}.card h2{margin:0;font-size:20px}.meta{color:#aab7c5;font-size:12px;margin:5px 0 12px}.badges{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}.badge{padding:5px 8px;border-radius:999px;font-size:10px;font-weight:1000;text-transform:uppercase;background:#202b36}.badge.err{background:#4b2718;color:#ffc08f}.badge.ok{background:#153824;color:#86efac}.badge.warn{background:#4b3a12;color:#ffe08a}
+.compare{display:grid;grid-template-columns:1fr 1fr;gap:12px}.box{background:#080e15;border:1px solid #202d3a;border-radius:9px;padding:12px;line-height:1.45;font-size:13px}.label{font-size:10px;font-weight:1000;letter-spacing:.07em;text-transform:uppercase;color:#8fa1b5;margin-bottom:6px}.fieldgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:12px}.field{background:#080e15;border:1px solid #202d3a;border-radius:8px;padding:9px}.field .name{font-size:10px;color:#8fa1b5;text-transform:uppercase;font-weight:900}.field .val{font-size:13px;font-weight:850;margin-top:4px;word-break:break-word}.field.bad{border-color:#8a472c}.field.bad .val{color:#ffbd8a}.field.uncertain .val{color:#ffe08a}
+.correction{margin-top:12px;background:#17120c;border:1px solid #60431d;border-radius:9px;padding:11px}.correction b{color:#ffd279}.sources{margin-top:10px;font-size:12px}.sources a{color:#7cc5ff}.actions{margin-top:12px}.actions a{display:inline-block;color:#fff;text-decoration:none;background:#263443;border-radius:7px;padding:8px 10px;font-weight:800;font-size:12px}
+@media(max-width:1000px){.stats{grid-template-columns:repeat(3,1fr)}.fieldgrid{grid-template-columns:repeat(2,1fr)}}@media(max-width:700px){.top{align-items:flex-start;gap:8px;flex-direction:column}.top a{margin:0 12px 0 0}.wrap{padding:16px 10px 50px}.stats{grid-template-columns:repeat(2,1fr)}.compare,.fieldgrid{grid-template-columns:1fr}h1{font-size:28px}}
+</style>
+</head>
+<body>
+<div class="top"><div class="brand">Sports<span>Mistakes</span> Admin</div><div><a href="admin-dashboard.html">Dashboard</a><a href="admin-mistakes.html">Mistakes</a><a href="index.html">Public Site</a></div></div>
+<main class="wrap">
+<h1>Database-Wide Consistency Audit</h1>
+<div class="sub">Verifies every SportsMistakes record against reliable web evidence and specifically checks whether the plaque/metadata fields agree with the Story: title, year, sport, league, category, subcategory, teams/people and key people.</div>
+<div class="safe"><b>SAFE AUDIT MODE:</b> this page never changes <code>public.mistakes</code>. It only stores findings and proposed corrections in <code>mistake_content_audits</code>. There is deliberately no “Apply All” button.</div>
+
+<section class="stats">
+<div class="stat"><div id="s-total" class="num">—</div><div class="lbl">Database Records</div></div>
+<div class="stat"><div id="s-audited" class="num">—</div><div class="lbl">Consistency Audited</div></div>
+<div class="stat"><div id="s-remain" class="num">—</div><div class="lbl">Remaining</div></div>
+<div class="stat"><div id="s-meta" class="num">—</div><div class="lbl">Metadata Conflicts</div></div>
+<div class="stat"><div id="s-year" class="num">—</div><div class="lbl">Year Conflicts</div></div>
+<div class="stat"><div id="s-cat" class="num">—</div><div class="lbl">Category Conflicts</div></div>
+<div class="stat"><div id="s-title" class="num">—</div><div class="lbl">Title Conflicts</div></div>
+<div class="stat"><div id="s-team" class="num">—</div><div class="lbl">People/Team Conflicts</div></div>
+<div class="stat"><div id="s-story" class="num">—</div><div class="lbl">Story Conflicts</div></div>
+<div class="stat"><div id="s-clean" class="num">—</div><div class="lbl">Clean / Consistent</div></div>
+<div class="stat"><div id="s-unverified" class="num">—</div><div class="lbl">Unverified</div></div>
+<div class="stat"><div id="s-quick" class="num">—</div><div class="lbl">Quick Year Candidates</div></div>
+</section>
+
+<section class="controlbox">
+<b>Full audit — resumable</b>
+<div class="progress"><div id="fill" class="fill"></div></div><div id="progressLabel" class="small">Refresh counts to begin.</div>
+<div class="controls">
+<select id="batchSize"><option value="5">5 at a time</option><option value="10" selected>10 at a time</option><option value="15">15 at a time</option><option value="25">25 at a time</option></select>
+<button id="fullBtn" onclick="startFullAudit()">Start / Resume Full Audit</button>
+<button id="stopBtn" class="stop" onclick="stopAudit()" disabled>Stop After Current Record</button>
+<button class="secondary" onclick="loadNextBatch()">Load Next Batch Only</button>
+<button id="batchBtn" class="secondary" onclick="auditLoadedBatch()" disabled>Audit Loaded Batch</button>
+<select id="filter" onchange="loadFilter()"><option value="">Review results…</option><option value="metadata_conflict">All Metadata Conflicts</option><option value="year_conflict">Year Conflicts</option><option value="category_conflict">Category Conflicts</option><option value="title_conflict">Title Conflicts</option><option value="teams_people_conflict">People / Team Conflicts</option><option value="story_conflict">Story Conflicts</option><option value="possible_error">Possible Errors</option><option value="unverified">Unverified</option><option value="clean_consistent">Clean / Consistent</option><option value="all_audited">All Audited</option></select>
+<button class="secondary" onclick="refreshStats()">Refresh Counts</button><button class="secondary" onclick="clearSecret()">Forget Admin Secret</button>
+</div>
+<div id="overall" class="overall"></div>
+</section>
+<div id="cards"></div>
+</main>
+<script>
+const SUPABASE_URL="https://scwjlljurircxuufhqih.supabase.co";
+const SUPABASE_ANON_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJIUzI1NiIsInR5cCI6IkpXVCJ9";
+// Use the real project anon key below. Kept separate so it is easy to verify before upload.
+const REAL_ANON_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNjd2psbGp1cmlyY3h1dWZocWloIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyNjUyMjcsImV4cCI6MjA5Njg0MTIyN30.WF0HRRb9mAkuOySjabTd8CZXVZRqF0MhMl0N2mafnns";
+let rows=[];let stopRequested=false;let fullRunning=false;let lastStats={};
+function esc(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
+function getSecret(){let s=sessionStorage.getItem("sportsmistakes_artwork_admin_secret")||"";if(!s){s=prompt("Enter your ARTWORK_ADMIN_SECRET:")||"";if(s)sessionStorage.setItem("sportsmistakes_artwork_admin_secret",s)}return s}
+function clearSecret(){sessionStorage.removeItem("sportsmistakes_artwork_admin_secret");alert("Admin secret forgotten for this browser session.")}
+async function fn(body){const secret=getSecret();if(!secret)throw new Error("Admin secret is required.");const r=await fetch(`${SUPABASE_URL}/functions/v1/audit-mistake-record`,{method:"POST",headers:{"Content-Type":"application/json","apikey":REAL_ANON_KEY,"Authorization":`Bearer ${REAL_ANON_KEY}`,"x-admin-secret":secret},body:JSON.stringify(body)});const raw=await r.text();let d={};try{d=raw?JSON.parse(raw):{}}catch{d={success:false,error:"Invalid server response"}}if(!r.ok||!d.success)throw new Error(d.error||d.details||"Request failed");return d}
+function n(v){return Number(v||0).toLocaleString()}
+async function refreshStats(){try{const d=await fn({action:"stats"});const s=d.stats||{};lastStats=s;const ids={"s-total":"total_database","s-audited":"audited","s-remain":"remaining","s-meta":"metadata_conflicts","s-year":"year_conflicts","s-cat":"category_conflicts","s-title":"title_conflicts","s-team":"teams_people_conflicts","s-story":"story_conflicts","s-clean":"clean_consistent","s-unverified":"unverified","s-quick":"quick_year_candidates"};for(const [id,k] of Object.entries(ids))document.getElementById(id).textContent=n(s[k]);const total=Number(s.total_database||0),done=Number(s.audited||0),pct=total?Math.round(done/total*100):0;document.getElementById("fill").style.width=pct+"%";document.getElementById("progressLabel").textContent=`${n(done)} of ${n(total)} records consistency-audited (${pct}%). ${n(s.remaining)} remaining.`;return s}catch(e){document.getElementById("progressLabel").innerHTML=`<span class="error">${esc(e.message)}</span>`;throw e}}
+async function loadNextBatch(silent=false){const size=Number(document.getElementById("batchSize").value||10);if(!silent)document.getElementById("overall").textContent="Loading next unaudited records…";const d=await fn({action:"next_batch",batch_size:size});rows=(d.rows||[]).map(x=>({...x,audit_status:"not_audited",findings:{},proposed_corrections:{}}));render();document.getElementById("batchBtn").disabled=!rows.length;if(!silent)document.getElementById("overall").innerHTML=rows.length?`Loaded <b>${rows.length}</b> records. Records with an obvious year-vs-Story candidate are prioritized.`:"<b>No records remain for this consistency audit.</b>";return rows}
+function stopAudit(){stopRequested=true;document.getElementById("overall").textContent="Stop requested. The current record will finish, then the audit will stop safely."}
+async function startFullAudit(){if(fullRunning)return;fullRunning=true;stopRequested=false;document.getElementById("fullBtn").disabled=true;document.getElementById("stopBtn").disabled=false;try{while(!stopRequested){const s=await refreshStats();if(Number(s.remaining||0)<=0){document.getElementById("overall").innerHTML='<span class="success">Full database consistency audit is complete.</span>';break}await loadNextBatch(true);if(!rows.length)break;await auditLoadedBatch(true)}}catch(e){document.getElementById("overall").innerHTML=`<span class="error">${esc(e.message)}</span>`}finally{fullRunning=false;document.getElementById("fullBtn").disabled=false;document.getElementById("stopBtn").disabled=true;await refreshStats().catch(()=>{})}}
+async function auditLoadedBatch(fromFull=false){if(!rows.length)return;document.getElementById("batchBtn").disabled=true;let ok=0;for(let i=0;i<rows.length;i++){if(stopRequested)break;document.getElementById("overall").textContent=`Auditing record ${i+1} of ${rows.length}: ${rows[i].title||"Untitled"}…`;if(await auditOne(i))ok++}document.getElementById("overall").innerHTML=`Finished <b>${ok}/${rows.length}</b> audit requests. No live database fields were changed.`;await refreshStats();document.getElementById("batchBtn").disabled=false;if(!fromFull)render()}
+async function auditOne(i){const r=rows[i];try{const d=await fn({action:"audit",mistake_id:r.id});Object.assign(r,{audit_status:d.audit_status,confidence:d.confidence,audit_reason:d.audit_reason||"",findings:d.findings||{},proposed_corrections:d.proposed_corrections||{},verification_url:d.verification_url||"",verification_url_2:d.verification_url_2||""});render();return true}catch(e){r.audit_error=e.message;render();return false}}
+async function loadFilter(){const status=document.getElementById("filter").value;if(!status)return;document.getElementById("overall").textContent="Loading audit results…";try{const d=await fn({action:"list_status",status,limit:200});rows=d.rows||[];render();document.getElementById("batchBtn").disabled=true;document.getElementById("overall").innerHTML=`Showing <b>${rows.length}</b> result(s).`}catch(e){document.getElementById("overall").innerHTML=`<span class="error">${esc(e.message)}</span>`}}
+function findClass(v){return v==="possible_error"?"bad":v==="uncertain"?"uncertain":""}
+function correctionRows(c){const pairs=Object.entries(c||{}).filter(([k,v])=>k!=="notes"&&v!==null&&v!==undefined&&String(v).trim()!=="");if(!pairs.length&&!c?.notes)return '<span class="small">No specific correction proposed.</span>';return pairs.map(([k,v])=>`<div><b>${esc(k.replaceAll("_"," "))}:</b> ${esc(v)}</div>`).join("")+(c?.notes?`<div style="margin-top:6px"><b>Notes:</b> ${esc(c.notes)}</div>`:"")}
+function render(){document.getElementById("cards").innerHTML=rows.map((r,i)=>{const f=r.findings||{},c=r.proposed_corrections||{},conf=Boolean(f.metadata_conflict||f.story_conflict||r.audit_status==="possible_error");const fields=[["title",r.title],["year",r.year],["sport",r.sport],["league",r.league],["category",r.category],["subcategory",r.subcategory],["teams_people",r.teams_people],["key_people",r.key_people],["summary_consistency","Story vs metadata"]];return `<article class="card ${conf?"conflict":""}"><h2>${esc(r.title||"Untitled")}</h2><div class="meta">${esc([r.year,r.sport,r.league,r.category].filter(Boolean).join(" • "))}${r.quick_year_candidate?' • <b style="color:#ffd279">Quick year candidate</b>':''}</div><div class="badges"><span class="badge ${r.audit_status==="possible_error"?"err":r.audit_status==="verified"?"ok":"warn"}">${esc((r.audit_status||"not audited").replaceAll("_"," "))}</span>${f.metadata_conflict?'<span class="badge err">metadata conflict</span>':''}${f.story_conflict?'<span class="badge err">story conflict</span>':''}${r.confidence!=null?`<span class="badge">${esc(r.confidence)}% confidence</span>`:""}</div><div class="compare"><div><div class="label">CURRENT STORY</div><div class="box">${esc(r.summary||"(empty)")}</div></div><div><div class="label">AUDIT RESULT</div><div class="box">${esc(r.audit_reason||r.audit_error||"Not audited yet.")}</div></div></div><div class="fieldgrid">${fields.map(([k,v])=>`<div class="field ${findClass(f[k])}"><div class="name">${esc(k.replaceAll("_"," "))}</div><div class="val">${esc(f[k]||"not audited")}${k!=="summary_consistency"?`<br><span class="small">Live: ${esc(v||"—")}</span>`:""}</div></div>`).join("")}</div><div class="correction"><b>PROPOSED CORRECTIONS — REVIEW ONLY</b><div style="margin-top:7px">${correctionRows(c)}</div></div><div class="sources">${r.verification_url?`<a target="_blank" rel="noopener" href="${esc(r.verification_url)}">Primary verification source</a>`:"No source captured."}${r.verification_url_2?` &nbsp; <a target="_blank" rel="noopener" href="${esc(r.verification_url_2)}">Second source</a>`:""}</div><div class="actions"><a target="_blank" href="mistake.html?id=${encodeURIComponent(r.id)}">Open live mistake ↗</a></div></article>`}).join("")}
+refreshStats().catch(()=>{});
+</script>
+</body></html>
