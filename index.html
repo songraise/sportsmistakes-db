@@ -3057,6 +3057,540 @@
       }
     }
 
+
+    /* =========================================================
+       SPORTSMISTAKES MOBILE / SOCIAL TRAFFIC OPTIMIZATION
+       SEP 4 2026
+       Goal: fast first-screen impact for TikTok / Reels / social,
+       thumb-friendly controls, artwork-first scrolling, less text.
+       Desktop styles remain unchanged.
+       ========================================================= */
+
+    @media(max-width:760px){
+
+      html,body{
+        overflow-x:hidden !important;
+      }
+
+      body{
+        background:#08131e !important;
+      }
+
+      .page-shell{
+        width:100% !important;
+        max-width:none !important;
+        padding:0 10px 86px !important;
+      }
+
+      /* ---------- MOBILE NAV ---------- */
+      .top-nav{
+        position:sticky !important;
+        top:0 !important;
+        z-index:100 !important;
+        min-height:56px !important;
+        padding:8px 10px !important;
+        display:grid !important;
+        grid-template-columns:auto 1fr auto !important;
+        align-items:center !important;
+        gap:8px !important;
+        background:rgba(5,15,24,.985) !important;
+        border-bottom:1px solid rgba(255,255,255,.08) !important;
+        backdrop-filter:blur(12px) !important;
+      }
+
+      .brand-wrap{
+        width:auto !important;
+        margin:0 !important;
+        justify-content:flex-start !important;
+        gap:7px !important;
+      }
+
+      .nav-brand{
+        font-size:13px !important;
+        line-height:.85 !important;
+        letter-spacing:-.4px !important;
+        text-align:left !important;
+      }
+
+      .nav-buckner-art{
+        width:32px !important;
+        height:32px !important;
+        flex-basis:32px !important;
+        max-height:32px !important;
+      }
+
+      .nav-links{
+        display:flex !important;
+        justify-content:flex-end !important;
+        align-items:center !important;
+        flex-wrap:nowrap !important;
+        gap:7px !important;
+        overflow:hidden !important;
+      }
+
+      .nav-links a{
+        display:none !important;
+      }
+
+      .nav-links a[href="rankings.html"],
+      .nav-links a[href="collections.html"],
+      .nav-links a[href="hall-of-fame.html"]{
+        display:none !important;
+      }
+
+      .nav-links .nav-nominate{
+        display:inline-flex !important;
+        min-height:34px !important;
+        padding:0 11px !important;
+        border-radius:7px !important;
+        background:#e22424 !important;
+        color:#fff !important;
+        font-size:10px !important;
+        letter-spacing:.25px !important;
+      }
+
+      .lang-toggle,
+      .language-toggle,
+      .lang-switch{
+        font-size:10px !important;
+        min-height:32px !important;
+        padding:0 9px !important;
+      }
+
+      /* ---------- HERO: SOCIAL-FIRST ---------- */
+      .gallery-hero{
+        margin:0 -10px !important;
+        min-height:0 !important;
+        background:
+          radial-gradient(circle at 50% 95%,rgba(215,176,98,.07),transparent 38%),
+          linear-gradient(180deg,#102539,#0c1d2d) !important;
+      }
+
+      .gallery-hero-inner{
+        width:100% !important;
+        max-width:none !important;
+        padding:25px 17px 22px !important;
+      }
+
+      .gallery-kicker{
+        font-size:8px !important;
+        letter-spacing:.9px !important;
+        margin-bottom:7px !important;
+        opacity:.75 !important;
+      }
+
+      .gallery-hero h1{
+        max-width:340px !important;
+        margin:0 auto 9px !important;
+        font-size:31px !important;
+        line-height:.96 !important;
+        letter-spacing:-1px !important;
+      }
+
+      .gallery-hero p{
+        max-width:330px !important;
+        margin:0 auto 15px !important;
+        font-size:13px !important;
+        line-height:1.35 !important;
+        color:#cbd5df !important;
+      }
+
+      .gallery-hero-actions{
+        display:grid !important;
+        grid-template-columns:1fr 1fr !important;
+        gap:8px !important;
+        max-width:350px !important;
+        margin:0 auto !important;
+      }
+
+      .gallery-hero-actions button{
+        min-width:0 !important;
+        width:100% !important;
+        min-height:42px !important;
+        padding:0 8px !important;
+        border-radius:999px !important;
+        font-size:10px !important;
+        white-space:nowrap !important;
+      }
+
+      /* ---------- TODAY'S 5: SWIPE ROW ---------- */
+      .gallery-today{
+        margin:0 -10px !important;
+        padding:13px 0 14px !important;
+        background:#102233 !important;
+      }
+
+      .gallery-today-heading{
+        margin-bottom:9px !important;
+      }
+
+      .gallery-today-title{
+        font-size:15px !important;
+      }
+
+      .gallery-today-sub{
+        font-size:10px !important;
+      }
+
+      .gallery-medallions{
+        display:flex !important;
+        grid-template-columns:none !important;
+        gap:10px !important;
+        max-width:none !important;
+        overflow-x:auto !important;
+        overscroll-behavior-inline:contain !important;
+        scroll-snap-type:x mandatory !important;
+        padding:0 14px 5px !important;
+        margin:0 !important;
+        scrollbar-width:none !important;
+      }
+
+      .gallery-medallions::-webkit-scrollbar{
+        display:none !important;
+      }
+
+      .gallery-medallions .today-card{
+        flex:0 0 78px !important;
+        width:78px !important;
+        scroll-snap-align:start !important;
+      }
+
+      .gallery-medallions .today-art{
+        width:66px !important;
+        height:66px !important;
+        margin:0 auto 6px !important;
+        border-width:2px !important;
+      }
+
+      .gallery-medallions .today-title{
+        max-width:76px !important;
+        font-size:9px !important;
+        line-height:1.12 !important;
+        -webkit-line-clamp:3 !important;
+      }
+
+      /* ---------- FEATURED EXHIBITS: TRADING-CARD / REELS FLOW ---------- */
+      .gallery-exhibits{
+        margin:0 -10px !important;
+        padding:20px 10px 24px !important;
+      }
+
+      .gallery-exhibit-heading{
+        align-items:flex-end !important;
+        gap:10px !important;
+        margin-bottom:12px !important;
+      }
+
+      .gallery-exhibit-heading .section-kicker{
+        font-size:8px !important;
+      }
+
+      .gallery-exhibit-heading h2{
+        font-size:18px !important;
+        line-height:1.04 !important;
+      }
+
+      .gallery-exhibit-heading .museum-link{
+        font-size:9px !important;
+        white-space:nowrap !important;
+      }
+
+      .gallery-frame-grid{
+        display:flex !important;
+        grid-template-columns:none !important;
+        gap:12px !important;
+        overflow-x:auto !important;
+        scroll-snap-type:x mandatory !important;
+        overscroll-behavior-inline:contain !important;
+        padding:0 1px 8px !important;
+        scrollbar-width:none !important;
+      }
+
+      .gallery-frame-grid::-webkit-scrollbar{
+        display:none !important;
+      }
+
+      .gallery-frame-grid .hall-card{
+        flex:0 0 86vw !important;
+        max-width:360px !important;
+        scroll-snap-align:center !important;
+        padding:8px !important;
+      }
+
+      .gallery-frame-grid .hall-art{
+        width:100% !important;
+        height:auto !important;
+        aspect-ratio:4/3 !important;
+        border-width:4px !important;
+      }
+
+      .gallery-frame-grid .hall-copy{
+        min-height:64px !important;
+        padding:10px 11px !important;
+      }
+
+      .gallery-frame-grid .hall-copy strong{
+        font-size:16px !important;
+        line-height:1.12 !important;
+      }
+
+      .gallery-frame-grid .hall-copy span{
+        font-size:9px !important;
+        line-height:1.2 !important;
+      }
+
+      .gallery-ribbon{
+        top:14px !important;
+        right:-5px !important;
+        padding:6px 10px !important;
+        font-size:8px !important;
+      }
+
+      /* ---------- RANKINGS: SWIPEABLE MINI EXHIBITS ---------- */
+      .gallery-rankings-wrap{
+        margin-top:14px !important;
+      }
+
+      .gallery-rankings-wrap .rankings-panel{
+        padding:14px 10px 14px !important;
+      }
+
+      .gallery-rankings-wrap .panel-title-row{
+        align-items:end !important;
+      }
+
+      .gallery-rankings-wrap .panel-title-row h2{
+        font-size:18px !important;
+      }
+
+      .gallery-rankings-wrap .museum-ranking-list{
+        display:flex !important;
+        grid-template-columns:none !important;
+        gap:10px !important;
+        overflow-x:auto !important;
+        scroll-snap-type:x mandatory !important;
+        padding:1px 1px 7px !important;
+        margin-top:10px !important;
+        scrollbar-width:none !important;
+      }
+
+      .gallery-rankings-wrap .museum-ranking-list::-webkit-scrollbar{
+        display:none !important;
+      }
+
+      .gallery-rank-card{
+        flex:0 0 155px !important;
+        width:155px !important;
+        min-height:190px !important;
+        padding:9px !important;
+        scroll-snap-align:start !important;
+      }
+
+      .gallery-rank-card .rank-num{
+        font-size:18px !important;
+      }
+
+      .gallery-rank-card .rank-thumb{
+        width:100% !important;
+        height:auto !important;
+        aspect-ratio:4/3 !important;
+      }
+
+      .gallery-rank-card .rank-title{
+        font-size:11px !important;
+        line-height:1.15 !important;
+      }
+
+      .gallery-rank-score{
+        font-size:9px !important;
+      }
+
+      /* ---------- EXPLORE DATABASE: TWO-CARD SHELVES ---------- */
+      .database-title{
+        margin:24px 0 12px !important;
+        grid-template-columns:1fr auto 1fr !important;
+        gap:10px !important;
+        font-size:17px !important;
+      }
+
+      .dashboard-four{
+        grid-template-columns:1fr !important;
+        gap:12px !important;
+        margin-bottom:22px !important;
+      }
+
+      .dash-panel{
+        border-radius:9px !important;
+      }
+
+      .panel-head{
+        padding:13px 12px !important;
+        font-size:14px !important;
+      }
+
+      .gallery-shelf-item{
+        grid-template-columns:116px minmax(0,1fr) !important;
+        min-height:106px !important;
+        padding:10px !important;
+      }
+
+      .gallery-shelf-item .thumb{
+        width:116px !important;
+        height:86px !important;
+      }
+
+      .gallery-shelf-item .row-title{
+        font-size:14px !important;
+        line-height:1.16 !important;
+        -webkit-line-clamp:2 !important;
+      }
+
+      .gallery-shelf-meta{
+        font-size:9px !important;
+        margin-bottom:6px !important;
+      }
+
+      .gallery-shelf-item .row-extra{
+        font-size:10px !important;
+      }
+
+      /* ---------- SEARCH / NOMINATE TOOL: MOBILE SHEET ---------- */
+      .gallery-tools{
+        margin:14px 0 18px !important;
+        border-radius:10px !important;
+      }
+
+      .gallery-tool-tabs button{
+        min-height:44px !important;
+        font-size:10px !important;
+      }
+
+      .gallery-tool-panel{
+        padding:12px !important;
+      }
+
+      .gallery-tools .nominate-title-row{
+        align-items:flex-start !important;
+      }
+
+      .gallery-tools .nominate-title-row h2,
+      .gallery-tools .search-topline h2{
+        font-size:18px !important;
+      }
+
+      .gallery-tools .nominate-title-row p,
+      .gallery-tools .search-topline p{
+        font-size:12px !important;
+      }
+
+      .gallery-tools #nominationInput,
+      .gallery-tools #searchInput{
+        font-size:16px !important; /* prevents iPhone zoom */
+      }
+
+      .gallery-tools .filter-row{
+        grid-template-columns:1fr 1fr !important;
+      }
+
+      .gallery-tools .filter-row button{
+        grid-column:1/-1 !important;
+        min-height:44px !important;
+      }
+
+      .gallery-tools .popular{
+        display:none !important;
+      }
+
+      /* ---------- CLEAN ENDING ---------- */
+      .record-ending{
+        margin:20px 0 0 !important;
+        padding:25px 15px 27px !important;
+      }
+
+      .record-ending h2{
+        font-size:24px !important;
+      }
+
+      .record-ending p{
+        font-size:13px !important;
+      }
+
+      .record-ending-actions{
+        display:grid !important;
+        grid-template-columns:1fr 1fr !important;
+        gap:8px !important;
+      }
+
+      .record-ending-actions button{
+        min-height:42px !important;
+        font-size:10px !important;
+        padding:0 8px !important;
+      }
+
+      /* ---------- FOOTER ---------- */
+      footer{
+        margin-top:22px !important;
+        padding:18px 2px 10px !important;
+        font-size:11px !important;
+        gap:10px !important;
+      }
+
+      footer a{
+        margin-right:10px !important;
+      }
+
+      /* ---------- STICKY SOCIAL CTA BAR ---------- */
+      .mobile-action-bar{
+        position:fixed;
+        left:8px;
+        right:8px;
+        bottom:8px;
+        z-index:180;
+        display:grid;
+        grid-template-columns:1fr 1fr;
+        gap:8px;
+        padding:8px;
+        border:1px solid rgba(255,255,255,.13);
+        border-radius:14px;
+        background:rgba(5,15,24,.94);
+        box-shadow:0 16px 38px rgba(0,0,0,.45);
+        backdrop-filter:blur(14px);
+      }
+
+      .mobile-action-bar button{
+        min-height:44px;
+        border-radius:10px;
+        font-size:11px;
+        font-weight:1000;
+        text-transform:uppercase;
+        letter-spacing:.2px;
+        cursor:pointer;
+      }
+
+      .mobile-action-judge{
+        border:1px solid rgba(215,176,98,.48);
+        background:#152638;
+        color:#fff;
+      }
+
+      .mobile-action-nominate{
+        border:1px solid #ff7440;
+        background:linear-gradient(135deg,#ff672d,#e94818);
+        color:#fff;
+      }
+
+      /* Hide social CTA on form/tool interaction so it doesn't cover inputs */
+      body.mobile-tool-open .mobile-action-bar{
+        display:none !important;
+      }
+    }
+
+    @media(min-width:761px){
+      .mobile-action-bar{
+        display:none !important;
+      }
+    }
+
 </style>
 
 <script>
@@ -5445,6 +5979,38 @@ function formatNumber(n) {
       }
     }, 450);
   }
+</script>
+
+
+  <div class="mobile-action-bar" aria-label="Quick actions">
+    <button type="button" class="mobile-action-judge"
+      onclick="document.getElementById('todaysFivePanel')?.scrollIntoView({behavior:'smooth',block:'start'})">
+      Judge Today's 5
+    </button>
+    <button type="button" class="mobile-action-nominate" onclick="openHomepageTool('nominate')">
+      Nominate
+    </button>
+  </div>
+
+
+<script>
+  (function(){
+    const originalOpenHomepageTool = window.openHomepageTool;
+    if(typeof originalOpenHomepageTool === "function"){
+      window.openHomepageTool = function(which){
+        document.body.classList.add("mobile-tool-open");
+        return originalOpenHomepageTool(which);
+      };
+    }
+
+    document.addEventListener("click", function(e){
+      if(window.innerWidth > 760) return;
+      const tools = document.getElementById("homepageTools");
+      if(!tools || !tools.classList.contains("active")) return;
+      if(tools.contains(e.target)) return;
+      if(e.target.closest(".mobile-action-bar")) return;
+    });
+  })();
 </script>
 
 </body>
