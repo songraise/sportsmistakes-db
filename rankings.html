@@ -769,24 +769,245 @@
     /* SEO: make database cards real crawlable links without changing their appearance */
     .podium-card { color:inherit; text-decoration:none; }
     .rank-row { color:inherit; text-decoration:none; }
+
+/* =========================================================
+   SPORTSMISTAKES UNIFIED PUBLIC UI — SEP 4 2026
+   Same desktop/mobile brand system as the redesigned homepage.
+   ========================================================= */
+:root{
+  --sm-deep:#07131f;
+  --sm-deep2:#0a1824;
+  --sm-wall:#102235;
+  --sm-wall2:#14283b;
+  --sm-panel:#101d29;
+  --sm-panel2:#0b1620;
+  --sm-orange:#ff5b22;
+  --sm-red:#e92329;
+  --sm-gold:#d7b062;
+  --sm-text:#f7f9fb;
+  --sm-muted:#aebbc8;
+}
+
+html,body{max-width:100%;overflow-x:hidden}
+body{
+  background:
+    radial-gradient(circle at 50% -8%,rgba(45,79,108,.24),transparent 34%),
+    linear-gradient(180deg,#07131f 0%,#0b1722 48%,#071019 100%) !important;
+  color:var(--sm-text) !important;
+  font-family:Arial,Helvetica,sans-serif !important;
+}
+
+/* Same header on every public page */
+.sm-unified-nav{
+  position:sticky !important;
+  top:0 !important;
+  z-index:120 !important;
+  min-height:64px !important;
+  height:auto !important;
+  padding:9px 24px !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:space-between !important;
+  gap:18px !important;
+  background:rgba(5,15,24,.985) !important;
+  border-bottom:1px solid rgba(255,255,255,.08) !important;
+  box-shadow:0 8px 24px rgba(0,0,0,.18) !important;
+  backdrop-filter:blur(12px) !important;
+}
+.sm-unified-nav .brand-wrap{
+  display:flex !important;
+  align-items:center !important;
+  gap:11px !important;
+  flex:0 0 auto !important;
+  cursor:pointer !important;
+}
+.sm-unified-nav .nav-brand{
+  font-family:Arial,Helvetica,sans-serif !important;
+  font-size:17px !important;
+  font-weight:1000 !important;
+  line-height:.86 !important;
+  letter-spacing:-.55px !important;
+  text-transform:uppercase !important;
+  color:#fff !important;
+}
+.sm-unified-nav .nav-brand span{color:var(--sm-red) !important}
+.sm-brand-ring{
+  width:40px;height:40px;flex:0 0 40px;border-radius:50%;
+  border:2px solid rgba(215,176,98,.76);
+  background:rgba(255,255,255,.02);
+}
+.sm-unified-nav .brand-tag{display:none !important}
+.sm-unified-nav .nav-links{
+  display:flex !important;
+  align-items:center !important;
+  justify-content:flex-end !important;
+  gap:24px !important;
+  flex-wrap:nowrap !important;
+  min-width:0 !important;
+}
+.sm-unified-nav .nav-links a{
+  margin:0 !important;
+  color:#f1f4f7 !important;
+  text-decoration:none !important;
+  font:1000 12px Arial,Helvetica,sans-serif !important;
+  letter-spacing:.45px !important;
+  text-transform:uppercase !important;
+  white-space:nowrap !important;
+}
+.sm-unified-nav .nav-links a:hover,
+.sm-unified-nav .nav-links a.active:not(.nav-nominate){color:var(--sm-orange) !important}
+.sm-unified-nav .nav-nominate{
+  min-height:40px !important;
+  padding:0 18px !important;
+  display:inline-flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  border-radius:8px !important;
+  background:var(--sm-red) !important;
+  color:#fff !important;
+  box-shadow:0 7px 18px rgba(233,35,41,.18);
+}
+.sm-unified-nav .nav-nominate:hover{filter:brightness(1.08)}
+.sm-unified-nav .sm-language-switch{
+  margin-left:4px !important;
+  min-height:34px !important;
+  padding:4px 10px !important;
+  border-color:rgba(255,255,255,.22) !important;
+  background:rgba(255,255,255,.035) !important;
+}
+
+/* Align non-homepage page surfaces with the navy museum system */
+.hero,
+.tabs-wrap,
+.search-panel,
+.hero-board,
+.card,
+.podium-card,
+.rank-row,
+.row,
+.collection-heading-box,
+.content-grid,
+.detail-tabs-shell,
+.vote-box,
+.sources-card,
+.related-card-wrap{
+  border-color:rgba(255,255,255,.11) !important;
+}
+.hero{
+  background:
+    radial-gradient(circle at 18% 15%,rgba(255,91,34,.06),transparent 27%),
+    linear-gradient(180deg,#102337,#0d1e2e) !important;
+}
+.hero .eyebrow,.hero-kicker{color:var(--sm-gold) !important}
+.tabs-wrap,.search-panel,.hero-board,.card,.podium-card,.rank-row,.row,
+.collection-heading-box,.content-grid,.detail-tabs-shell,.vote-box,
+.sources-card,.related-card-wrap{
+  background:linear-gradient(180deg,var(--sm-panel),var(--sm-panel2)) !important;
+}
+
+/* ---------- MOBILE PUBLIC HEADER ---------- */
+@media(max-width:760px){
+  .sm-unified-nav{
+    min-height:56px !important;
+    padding:8px 10px !important;
+    gap:8px !important;
+  }
+  .sm-unified-nav .brand-wrap{gap:7px !important}
+  .sm-unified-nav .nav-brand{
+    font-size:13px !important;
+    line-height:.84 !important;
+    letter-spacing:-.4px !important;
+  }
+  .sm-brand-ring{
+    width:32px;height:32px;flex-basis:32px;border-width:2px;
+  }
+  .sm-unified-nav .nav-links{
+    margin-left:auto !important;
+    gap:8px !important;
+    overflow:visible !important;
+  }
+  .sm-unified-nav .nav-links > a:not(.nav-nominate){
+    display:none !important;
+  }
+  .sm-unified-nav .nav-nominate{
+    display:inline-flex !important;
+    min-height:34px !important;
+    padding:0 11px !important;
+    font-size:10px !important;
+    border-radius:7px !important;
+  }
+  .sm-unified-nav .sm-language-switch{
+    min-height:32px !important;
+    margin:0 !important;
+    padding:3px 8px !important;
+    font-size:10px !important;
+  }
+}
+
+/* =========================================================
+   RANKINGS / COLLECTIONS / HALL — MOBILE MUSEUM ALIGNMENT
+   ========================================================= */
+@media(max-width:760px){
+  .page-shell,.container{
+    width:100% !important;
+    max-width:100% !important;
+    padding-left:12px !important;
+    padding-right:12px !important;
+    margin-left:auto !important;
+    margin-right:auto !important;
+  }
+  .hero{
+    padding:28px 16px 24px !important;
+    border-radius:0 !important;
+    margin-left:-12px !important;
+    margin-right:-12px !important;
+  }
+  .hero h1{
+    font-size:34px !important;
+    line-height:1 !important;
+    letter-spacing:-1px !important;
+  }
+  .hero p{font-size:14px !important;line-height:1.45 !important}
+  .tabs,.collection-tabs{
+    display:flex !important;
+    flex-wrap:nowrap !important;
+    overflow-x:auto !important;
+    gap:8px !important;
+    scrollbar-width:none;
+  }
+  .tabs::-webkit-scrollbar,.collection-tabs::-webkit-scrollbar{display:none}
+  .tabs button,.collection-tabs button{flex:0 0 auto !important}
+  .grid{grid-template-columns:1fr !important}
+  .podium{grid-template-columns:1fr !important}
+  .podium-card{display:block !important}
+  .rank-row,.row{
+    grid-template-columns:38px 84px minmax(0,1fr) !important;
+    gap:10px !important;
+  }
+  .row-score{
+    grid-column:3 !important;
+    justify-self:start !important;
+  }
+}
+
 </style>
   <script src="sportsmistakes-analytics.js" defer></script>
 </head>
 
 <body>
-  <nav class="top-nav">
-    <div class="brand-wrap" onclick="window.location.href='index.html'">
-      <div class="nav-brand">Sports<br><span>Mistakes</span></div>
-    </div>
-
-    <div class="nav-links">
-      <a href="index.html">Home</a>
-      <a class="active" href="rankings.html">Rankings</a>
-      <a href="collections.html">Collections</a>
-      <a href="hall-of-fame.html">Hall of Fame</a>
-      <a href="submit.html">Add a Mistake</a>
-    </div>
-  </nav>
+  <nav class="top-nav sm-unified-nav">
+  <div class="brand-wrap" onclick="window.location.href='index.html'">
+    <div class="nav-brand">Sports<br><span>Mistakes</span></div>
+    <div class="sm-brand-ring" aria-hidden="true"></div>
+  </div>
+  <div class="nav-links">
+    <a href="index.html">Home</a>
+    <a class="active" href="rankings.html">Rankings</a>
+    <a href="collections.html">Collections</a>
+    <a href="hall-of-fame.html">Hall of Fame</a>
+    <a class="nav-nominate" href="submit.html">Nominate</a>
+  </div>
+</nav>
 
   <main class="page-shell">
     <section class="hero">
