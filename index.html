@@ -3766,6 +3766,105 @@ body{
   }
 }
 
+
+/* =========================================================
+   MOBILE PORTRAIT NAVIGATION + RANKINGS SWIPE — SEP 4 2026
+   ========================================================= */
+@media(max-width:760px) and (orientation:portrait){
+  .sm-unified-nav{
+    display:grid !important;
+    grid-template-columns:auto auto !important;
+    grid-template-areas:
+      "brand tools"
+      "links links" !important;
+    align-items:center !important;
+    row-gap:8px !important;
+    padding:8px 10px 9px !important;
+  }
+
+  .sm-unified-nav .brand-wrap{
+    grid-area:brand !important;
+  }
+
+  .sm-unified-nav .nav-links{
+    grid-area:links !important;
+    width:100% !important;
+    margin:0 !important;
+    display:flex !important;
+    align-items:center !important;
+    justify-content:flex-start !important;
+    gap:16px !important;
+    overflow-x:auto !important;
+    overflow-y:hidden !important;
+    white-space:nowrap !important;
+    padding:2px 0 3px !important;
+    scrollbar-width:none !important;
+    -webkit-overflow-scrolling:touch !important;
+  }
+
+  .sm-unified-nav .nav-links::-webkit-scrollbar{
+    display:none !important;
+  }
+
+  .sm-unified-nav .nav-links > a:not(.nav-nominate){
+    display:inline-flex !important;
+    flex:0 0 auto !important;
+    font-size:10px !important;
+    min-height:30px !important;
+    align-items:center !important;
+  }
+
+  .sm-unified-nav .nav-nominate{
+    position:absolute !important;
+    top:8px !important;
+    right:104px !important;
+    min-height:34px !important;
+    padding:0 12px !important;
+    font-size:10px !important;
+  }
+
+  .sm-unified-nav .sm-language-switch{
+    position:absolute !important;
+    top:9px !important;
+    right:10px !important;
+    min-height:32px !important;
+  }
+
+  /* Push page content down enough for the two-row sticky nav. */
+  .gallery-hero{
+    margin-top:0 !important;
+  }
+
+  /* Rankings should behave like the Hall of Fame horizontal gallery. */
+  .gallery-rankings-wrap .museum-ranking-list{
+    display:flex !important;
+    grid-template-columns:none !important;
+    gap:12px !important;
+    overflow-x:auto !important;
+    overflow-y:hidden !important;
+    scroll-snap-type:x mandatory !important;
+    overscroll-behavior-inline:contain !important;
+    -webkit-overflow-scrolling:touch !important;
+    padding:2px 2px 8px !important;
+    scrollbar-width:none !important;
+  }
+
+  .gallery-rankings-wrap .museum-ranking-list::-webkit-scrollbar{
+    display:none !important;
+  }
+
+  .gallery-rank-card{
+    flex:0 0 76vw !important;
+    max-width:310px !important;
+    min-width:250px !important;
+    scroll-snap-align:start !important;
+  }
+
+  .gallery-rank-card .rank-thumb{
+    aspect-ratio:4/3 !important;
+  }
+}
+
 </style>
 
 <script>
