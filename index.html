@@ -2998,6 +2998,65 @@
       }
     }
 
+
+    /* =========================================================
+       RANKINGS ARTWORK — SEP 4 2026
+       Let the artwork fill the ranking card instead of appearing
+       as a tiny square floating inside a large frame.
+       ========================================================= */
+    .gallery-rank-card{
+      padding:10px 10px 12px !important;
+      min-height:230px !important;
+    }
+
+    .gallery-rank-card .rank-num{
+      width:100%;
+      margin-bottom:2px;
+    }
+
+    .gallery-rank-card .rank-thumb{
+      width:100% !important;
+      height:auto !important;
+      aspect-ratio:4/3 !important;
+      max-width:none !important;
+      border-radius:6px !important;
+      overflow:hidden !important;
+      background:#070b10 !important;
+      border:1px solid rgba(215,176,98,.34) !important;
+    }
+
+    .gallery-rank-card .rank-thumb .artwork-shell,
+    .gallery-rank-card .rank-thumb img{
+      width:100% !important;
+      height:100% !important;
+      object-fit:cover !important;
+      display:block !important;
+    }
+
+    .gallery-rank-card .rank-thumb .correct-art-plaque{
+      display:none !important;
+    }
+
+    .gallery-rank-card .gallery-rank-copy{
+      padding-top:2px;
+    }
+
+    .gallery-rank-card .rank-title{
+      font-size:13px !important;
+      line-height:1.18 !important;
+      -webkit-line-clamp:2 !important;
+    }
+
+    @media(max-width:760px){
+      .gallery-rank-card{
+        min-height:200px !important;
+      }
+
+      .gallery-rank-card .rank-thumb{
+        aspect-ratio:1/1 !important;
+      }
+    }
+
 </style>
 
 <script>
