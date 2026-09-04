@@ -374,19 +374,100 @@ async function loadMistakes(){
   mistakes=data||[];
 }
 
+function meaningfulTokens(value){
+  const stop=new Set(["the","a","an","and","or","of","to","in","on","at","for","with","vs","v","be","become","became"]);
+  return normalize(value).split(" ").filter(w=>w.length>=3&&!stop.has(w));
+}
+
+function matchScore(m,query){
+  const q=normalize(query);
+  if(!q)return 0;
+
+  const title=normalize(m.title||"");
+  const people=normalize(`${m.teams_people||""} ${m.key_people||""}`);
+  const full=normalize(`${m.title||""} ${m.sport||""} ${m.year||""} ${m.category||""} ${m.subcategory||""} ${m.teams_people||""} ${m.key_people||""} ${m.summary||""} ${m.why_it_matters||""}`);
+
+  if(title===q)return 1000;
+  if(title.includes(q))return 950;
+  if(full.includes(q))return 900;
+
+  const tokens=meaningfulTokens(query);
+  if(!tokens.length)return 0;
+
+  let hits=0;
+  let titleHits=0;
+  let peopleHits=0;
+
+  tokens.forEach(t=>{
+    if(full.includes(t))hits++;
+    if(title.includes(t))titleHits++;
+    if(people.includes(t))peopleHits++;
+  });
+
+  const coverage=hits/tokens.length;
+  if(coverage<0.6)return 0;
+
+  return Math.round(coverage*500)+(titleHits*35)+(peopleHits*20);
+}
+
 function searchExisting(query){
   const q=normalize(query);
   if(q.length<2)return [];
-  return mistakes.filter(m=>{
-    const full=normalize(`${m.title||""} ${m.sport||""} ${m.year||""} ${m.category||""} ${m.subcategory||""} ${m.teams_people||""} ${m.key_people||""} ${m.summary||""} ${m.why_it_matters||""}`);
-    return full.includes(q);
-  }).sort((a,b)=>{
-    const at=normalize(a.title),bt=normalize(b.title);
-    const ar=at===q?0:at.startsWith(q)?1:at.includes(q)?2:3;
-    const br=bt===q?0:bt.startsWith(q)?1:bt.includes(q)?2:3;
-    if(ar!==br)return ar-br;
-    return Number(b.controversy_score||0)-Number(a.controversy_score||0);
-  }).slice(0,5);
+
+  return mistakes
+    .map(m=>({m,score:matchScore(m,query)}))
+    .filter(x=>x.score>0)
+    .sort((a,b)=>{
+      if(b.score!==a.score)return b.score-a.score;
+      return Number(b.m.controversy_score||0)-Number(a.m.controversy_score||0);
+    })
+    .slice(0,5)
+    .map(x=>x.m);
+}
+
+async function resolveExistingMistake(query){
+  const subject=String(query||"").trim();
+  if(!subject)return null;
+
+  // 1) Fast local fuzzy match against records already loaded in the browser.
+  const local=searchExisting(subject);
+  if(local.length && matchScore(local[0],subject)>=650){
+    return local[0];
+  }
+
+  // 2) If the initial page load did not yet contain a usable match,
+  // query the live mistakes table using the strongest subject token.
+  const tokens=meaningfulTokens(subject);
+  const probe=tokens.find(t=>t.length>=5)||tokens[0]||"";
+  if(!probe)return null;
+
+  try{
+    const {data,error}=await client
+      .from("mistakes")
+      .select("id,title,sport,year,category,subcategory,teams_people,key_people,summary,why_it_matters,controversy_score")
+      .ilike("title",`%${probe}%`)
+      .limit(40);
+
+    if(error)throw error;
+
+    const candidates=data||[];
+    const ranked=candidates
+      .map(m=>({m,score:matchScore(m,subject)}))
+      .filter(x=>x.score>0)
+      .sort((a,b)=>b.score-a.score);
+
+    if(ranked.length && ranked[0].score>=600){
+      // Keep local cache current for later searches.
+      ranked.forEach(x=>{
+        if(!mistakes.some(m=>String(m.id)===String(x.m.id)))mistakes.push(x.m);
+      });
+      return ranked[0].m;
+    }
+  }catch(err){
+    console.warn("Could not resolve existing mistake from live table:",err);
+  }
+
+  return null;
 }
 
 function renderMatches(){
@@ -421,41 +502,27 @@ function explicitExistingMistakeId(result){
   ).trim();
 }
 
-function confirmAiSuggestionOnSubmit(){
+async function confirmAiSuggestionOnSubmit(){
   const status=document.getElementById("status");
   const suggestion=String(pendingAiSuggestion||"").trim();
-
-  // IMPORTANT:
-  // "Yes — that's the event" is a confirmation of identity, NOT permission
-  // to create a new submission. First resolve the confirmed event against
-  // the live SportsMistakes record and open it if it already exists.
-  const directMatches=searchExisting(suggestion);
-
-  if(directMatches.length){
-    const best=directMatches[0];
-    window.location.href=`mistake.html?id=${encodeURIComponent(best.id)}`;
-    return;
-  }
-
-  // A second, slightly broader pass using the user's original wording.
   const original=document.getElementById("nominationInput")?.value.trim()||"";
-  const originalMatches=searchExisting(original);
 
-  if(originalMatches.length){
-    const best=originalMatches[0];
-    window.location.href=`mistake.html?id=${encodeURIComponent(best.id)}`;
+  status.className="status active";
+  status.innerHTML=`<strong>Opening the matching SportsMistakes record…</strong>`;
+
+  const match=
+    await resolveExistingMistake(suggestion) ||
+    await resolveExistingMistake(original);
+
+  if(match?.id){
+    window.location.href=`mistake.html?id=${encodeURIComponent(match.id)}`;
     return;
   }
 
-  // If the AI recognized an event but we still cannot map it to an existing
-  // database record, do NOT silently add it to the queue. Ask for one more
-  // clue instead. A new record should only be created through an explicit
-  // nomination action after the user has established that it is not already
-  // in the Record.
   status.className="status active";
   status.innerHTML=`
-    <strong>We found the event, but not an exact existing SportsMistakes record yet.</strong><br>
-    Please add one more clue — player, team, opponent, year or game — and click <strong>Nominate It</strong> again.
+    <strong>We identified the event, but it is not yet in the SportsMistakes Record.</strong><br>
+    If this is a genuinely new event, click <strong>Nominate It</strong> to send it through research and review.
     <div class="result-actions">
       <button class="secondary-action" type="button" onclick="rejectAiSuggestionOnSubmit()">Add more detail</button>
     </div>`;
@@ -537,11 +604,12 @@ async function nominate(confirmedEvent=false){
       let existingId=explicitExistingMistakeId(result);
       pendingAiSuggestion=didYouMean||likelySubject||"";
 
-      // Backend responses do not always include an existing mistake id even
-      // when the suggested event is already in the Record. Resolve it locally.
+      // If the AI can identify the event, immediately resolve that subject
+      // against the live SportsMistakes database. Do not make the fan provide
+      // more clues for an event that already exists.
       if(!existingId && pendingAiSuggestion){
-        const localMatches=searchExisting(pendingAiSuggestion);
-        if(localMatches.length) existingId=String(localMatches[0].id||"");
+        const resolved=await resolveExistingMistake(pendingAiSuggestion);
+        if(resolved?.id) existingId=String(resolved.id);
       }
 
       if(existingId){
@@ -549,7 +617,7 @@ async function nominate(confirmedEvent=false){
           <strong>${didYouMean ? `Did you mean: ${esc(didYouMean)}?` : "Possible existing mistake"}</strong><br>
           ${esc(question)}
           <div class="result-actions">
-            <a href="mistake.html?id=${encodeURIComponent(existingId)}">That's it →</a>
+            <a href="mistake.html?id=${encodeURIComponent(existingId)}">✓ That's it — open mistake</a>
             <button class="secondary-action" type="button" onclick="rejectAiSuggestionOnSubmit()">No — different mistake</button>
           </div>`;
       }else{
@@ -566,12 +634,17 @@ async function nominate(confirmedEvent=false){
     }
 
     if(result.outcome==="possible_existing_record"){
-      const existingId=explicitExistingMistakeId(result);
+      let existingId=explicitExistingMistakeId(result);
+      if(!existingId){
+        const subject=String(result.did_you_mean||result.likely_subject||result.title||nomination||"").trim();
+        const resolved=await resolveExistingMistake(subject);
+        if(resolved?.id) existingId=String(resolved.id);
+      }
       status.innerHTML=`
         <strong>Possible existing record.</strong><br>
         ${esc(result.message||"This may already be in SportsMistakes.")}
         <div class="result-actions">
-          ${existingId ? `<a href="mistake.html?id=${encodeURIComponent(existingId)}">That's it →</a>` : ""}
+          ${existingId ? `<a href="mistake.html?id=${encodeURIComponent(existingId)}">✓ That's it — open mistake</a>` : ""}
           <button class="secondary-action" type="button" onclick="rejectAiSuggestionOnSubmit()">No — different mistake</button>
         </div>`;
       return;
