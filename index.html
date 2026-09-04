@@ -2822,6 +2822,182 @@
       }
     }
 
+
+.container{display:none !important;}
+
+    /* FINAL DESKTOP RANKINGS REFINEMENT */
+    .gallery-rankings-wrap .museum-ranking-list{
+      display:grid !important;
+      grid-template-columns:repeat(5,minmax(0,1fr)) !important;
+      gap:14px !important;
+      margin-top:14px !important;
+    }
+
+    .gallery-rank-card{
+      display:flex !important;
+      flex-direction:column !important;
+      align-items:center !important;
+      justify-content:flex-start !important;
+      gap:8px !important;
+      min-height:190px !important;
+      padding:13px 10px 12px !important;
+      border:1px solid rgba(255,255,255,.08) !important;
+      border-radius:9px !important;
+      background:rgba(255,255,255,.025) !important;
+      text-align:center !important;
+      text-decoration:none !important;
+      overflow:hidden !important;
+    }
+
+    .gallery-rank-card:hover{
+      background:rgba(255,255,255,.05) !important;
+      border-color:rgba(215,176,98,.34) !important;
+      transform:translateY(-2px);
+    }
+
+    .gallery-rank-card .rank-num{
+      order:1;
+      width:100%;
+      font-size:22px !important;
+      line-height:1 !important;
+      color:#f4b632 !important;
+      text-align:left !important;
+      padding-left:2px;
+    }
+
+    .gallery-rank-card .rank-thumb{
+      order:2;
+      width:92px !important;
+      height:92px !important;
+      border-radius:6px !important;
+      overflow:hidden !important;
+      flex:0 0 auto !important;
+    }
+
+    .gallery-rank-card .gallery-rank-copy{
+      order:3;
+      width:100%;
+      min-width:0;
+    }
+
+    .gallery-rank-card .rank-title{
+      margin:0 0 6px !important;
+      font-size:12px !important;
+      line-height:1.2 !important;
+      display:-webkit-box;
+      -webkit-line-clamp:3;
+      -webkit-box-orient:vertical;
+      overflow:hidden;
+      text-align:center !important;
+    }
+
+    .gallery-rank-score{
+      color:#ff5b55 !important;
+      font-size:10px !important;
+      font-weight:1000 !important;
+      text-align:center !important;
+    }
+
+    /* CLEAN HOMEPAGE ENDING */
+    .record-ending{
+      margin:34px 0 0;
+      padding:36px 28px 40px;
+      border:1px solid rgba(255,255,255,.10);
+      border-radius:12px;
+      background:
+        radial-gradient(circle at 50% 0%,rgba(215,176,98,.08),transparent 42%),
+        linear-gradient(180deg,#101d29,#0b151f);
+      text-align:center;
+      box-shadow:0 16px 34px rgba(0,0,0,.20);
+    }
+
+    .record-ending-inner{
+      max-width:760px;
+      margin:0 auto;
+    }
+
+    .record-ending .section-kicker{
+      color:#d7b062 !important;
+      margin-bottom:7px;
+    }
+
+    .record-ending h2{
+      margin:0 0 10px;
+      font-size:34px;
+      line-height:1.02;
+      letter-spacing:-.8px;
+      text-transform:uppercase;
+    }
+
+    .record-ending p{
+      margin:0 auto 20px;
+      max-width:650px;
+      color:#b8c3cf;
+      font-size:15px;
+      line-height:1.45;
+    }
+
+    .record-ending-actions{
+      display:flex;
+      justify-content:center;
+      gap:12px;
+      flex-wrap:wrap;
+    }
+
+    .record-ending-actions button{
+      min-height:44px;
+      padding:0 23px;
+      border-radius:999px;
+      font-size:12px;
+      font-weight:1000;
+      letter-spacing:.25px;
+      text-transform:uppercase;
+      cursor:pointer;
+    }
+
+    .record-ending-primary{
+      border:1px solid #ff743e;
+      background:linear-gradient(135deg,#ff672d,#ef4715);
+      color:#fff;
+    }
+
+    .record-ending-secondary{
+      border:1px solid rgba(255,255,255,.50);
+      background:transparent;
+      color:#fff;
+    }
+
+    @media(max-width:760px){
+      .gallery-rankings-wrap .museum-ranking-list{
+        grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+      }
+
+      .gallery-rank-card{
+        min-height:170px !important;
+      }
+
+      .gallery-rank-card .rank-thumb{
+        width:82px !important;
+        height:82px !important;
+      }
+
+      .record-ending{
+        padding:28px 16px 30px;
+      }
+
+      .record-ending h2{
+        font-size:27px;
+      }
+
+      .record-ending-actions{
+        flex-direction:column;
+      }
+
+      .record-ending-actions button{
+        width:100%;
+      }
+    }
+
 </style>
 
 <script>
@@ -3636,7 +3812,19 @@
       </div>
     </section>
 
-    <footer>
+    
+    <section class="record-ending" id="recordEnding">
+      <div class="record-ending-inner">
+        <div class="section-kicker">THE RECORD KEEPS GROWING</div>
+        <h2>There’s more in the record.</h2>
+        <p>Explore sports mistakes across athletes, teams, leagues and eras — then judge, learn and add your own.</p>
+        <div class="record-ending-actions">
+          <button type="button" class="record-ending-primary" onclick="openHomepageTool('search')">Explore the Database</button>
+          <button type="button" class="record-ending-secondary" onclick="openHomepageTool('nominate')">Nominate a Mistake</button>
+        </div>
+      </div>
+    </section>
+<footer>
       <div>
         <a href="about.html">About</a>
         <a href="how-it-works.html">How It Works</a>
@@ -3993,23 +4181,23 @@
     function renderDashboardLists() {
       const controversial = [...mistakes]
         .sort((a,b) => Number(b.controversy_score || 0) - Number(a.controversy_score || 0))
-        .slice(0,3);
+        .slice(0,2);
 
       const trending = voteStatsLoaded
         ? [...mistakes]
             .sort((a,b) => getVoteTotal(b.id) - getVoteTotal(a.id))
             .filter(m => getVoteTotal(m.id) > 0)
-            .slice(0,3)
+            .slice(0,2)
         : controversial;
 
       const viewed = [...mistakes]
         .sort((a,b) => Number(b.views || 0) - Number(a.views || 0))
-        .slice(0,3);
+        .slice(0,2);
 
       // Without requesting extra date columns, use higher years as the lightweight recent proxy.
       const recent = [...mistakes]
         .sort((a,b) => Number(b.year || 0) - Number(a.year || 0))
-        .slice(0,3);
+        .slice(0,2);
 
       renderList("trendingList", trending, m =>
         voteStatsLoaded && getVoteTotal(m.id) > 0
