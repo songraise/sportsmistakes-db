@@ -2540,6 +2540,288 @@
       .gallery-rankings-wrap{margin-top:16px !important}
     }
 
+
+    /* =========================================================
+       SPORTSMISTAKES MUSEUM REFINEMENT — SEP 4 2026
+       Curated gallery + simplified rankings + visual collection shelves.
+       ========================================================= */
+
+    /* Give the three featured paintings more authority */
+    .gallery-exhibits{
+      padding-top:30px !important;
+      padding-bottom:38px !important;
+    }
+
+    .gallery-frame-grid{
+      gap:30px !important;
+    }
+
+    .gallery-featured-exhibit{
+      position:relative;
+    }
+
+    .gallery-frame-grid .hall-art{
+      height:285px !important;
+      border-width:6px !important;
+    }
+
+    .gallery-frame-grid .hall-copy{
+      min-height:73px;
+      display:flex;
+      flex-direction:column;
+      justify-content:center;
+      padding:12px 14px 13px !important;
+    }
+
+    .gallery-frame-grid .hall-copy strong{
+      font-size:18px !important;
+      line-height:1.12 !important;
+    }
+
+    .gallery-frame-grid .hall-copy span{
+      margin-top:6px !important;
+      color:#dfc686 !important;
+      font-size:10px !important;
+      line-height:1.25;
+    }
+
+    .gallery-ribbon{
+      position:absolute;
+      z-index:8;
+      top:22px;
+      right:-8px;
+      padding:8px 15px 7px;
+      background:linear-gradient(180deg,#ebd08b,#c39a45);
+      color:#2c1a08;
+      border:1px solid #73501f;
+      box-shadow:0 6px 12px rgba(0,0,0,.28);
+      font-size:10px;
+      font-weight:1000;
+      letter-spacing:.55px;
+      text-transform:uppercase;
+      transform:rotate(-1deg);
+    }
+
+    .gallery-ribbon::after{
+      content:"";
+      position:absolute;
+      right:0;
+      bottom:-7px;
+      border-top:7px solid #76501e;
+      border-right:8px solid transparent;
+    }
+
+    /* Rankings: five clean exhibit labels rather than a compressed data table */
+    .gallery-rankings-wrap .rankings-panel{
+      padding:20px !important;
+    }
+
+    .gallery-rankings-wrap .museum-ranking-list{
+      display:grid !important;
+      grid-template-columns:repeat(5,minmax(0,1fr)) !important;
+      gap:14px !important;
+      margin-top:14px;
+    }
+
+    .gallery-rank-card{
+      display:grid !important;
+      grid-template-columns:30px 72px minmax(0,1fr) !important;
+      gap:10px !important;
+      align-items:center !important;
+      min-height:94px !important;
+      padding:10px !important;
+      border:1px solid rgba(255,255,255,.08) !important;
+      border-radius:8px !important;
+      background:rgba(255,255,255,.025) !important;
+      text-decoration:none !important;
+    }
+
+    .gallery-rank-card:hover{
+      background:rgba(255,255,255,.05) !important;
+      border-color:rgba(215,176,98,.32) !important;
+    }
+
+    .gallery-rank-card .rank-num{
+      font-size:22px !important;
+      color:#f4b632 !important;
+      text-align:center;
+    }
+
+    .gallery-rank-card .rank-thumb{
+      width:72px !important;
+      height:72px !important;
+      border-radius:5px !important;
+      overflow:hidden;
+    }
+
+    .gallery-rank-card .rank-title{
+      font-size:12px !important;
+      line-height:1.18 !important;
+      margin:0 0 6px !important;
+    }
+
+    .gallery-rank-score{
+      color:#ff5b55;
+      font-size:10px;
+      font-weight:1000;
+      line-height:1.2;
+    }
+
+    /* Explore the Database: turn four dense columns into visual collection shelves */
+    .database-title{
+      margin:34px 0 18px !important;
+      font-size:20px !important;
+      letter-spacing:.45px !important;
+    }
+
+    .dashboard-four{
+      display:grid !important;
+      grid-template-columns:repeat(4,minmax(0,1fr)) !important;
+      gap:18px !important;
+      margin-bottom:32px !important;
+    }
+
+    .dash-panel{
+      min-height:0 !important;
+      border-radius:10px !important;
+      overflow:hidden !important;
+      background:linear-gradient(180deg,#101d29,#0b151f) !important;
+      border:1px solid rgba(255,255,255,.10) !important;
+    }
+
+    .panel-head{
+      padding:16px 15px !important;
+      font-size:15px !important;
+      border-bottom:1px solid rgba(255,255,255,.09) !important;
+    }
+
+    .panel-head .view-link{
+      font-size:10px !important;
+      color:#ff5b55 !important;
+    }
+
+    .gallery-shelf-item{
+      display:grid !important;
+      grid-template-columns:112px minmax(0,1fr) !important;
+      gap:12px !important;
+      align-items:center !important;
+      min-height:128px !important;
+      padding:12px !important;
+      border-bottom:1px solid rgba(255,255,255,.075) !important;
+      text-decoration:none !important;
+    }
+
+    .gallery-shelf-item:last-child{
+      border-bottom:0 !important;
+    }
+
+    .gallery-shelf-item:hover{
+      background:rgba(255,255,255,.035) !important;
+    }
+
+    .gallery-shelf-item .thumb{
+      width:112px !important;
+      height:92px !important;
+      border-radius:6px !important;
+      background:#080c11 !important;
+      overflow:hidden !important;
+    }
+
+    .gallery-shelf-item .thumb .artwork-shell,
+    .gallery-shelf-item .thumb img{
+      width:100% !important;
+      height:100% !important;
+      object-fit:cover !important;
+    }
+
+    .gallery-shelf-item .correct-art-plaque{
+      display:none !important;
+    }
+
+    .gallery-shelf-copy{
+      min-width:0;
+    }
+
+    .gallery-shelf-item .row-title{
+      margin:0 0 6px !important;
+      font-size:15px !important;
+      line-height:1.18 !important;
+      display:-webkit-box;
+      -webkit-line-clamp:3;
+      -webkit-box-orient:vertical;
+      overflow:hidden;
+    }
+
+    .gallery-shelf-meta{
+      margin-bottom:8px;
+      color:#96a4b3;
+      font-size:10px;
+      font-weight:700;
+      text-transform:uppercase;
+      letter-spacing:.25px;
+    }
+
+    .gallery-shelf-item .row-extra{
+      margin:0 !important;
+      color:#ff5b55 !important;
+      font-size:11px !important;
+      font-weight:1000 !important;
+    }
+
+    /* Keep the giant All Mistakes grid visually secondary until the user scrolls deeper */
+    .container{
+      margin-top:36px !important;
+      padding-top:8px;
+      border-top:1px solid rgba(255,255,255,.08);
+    }
+
+    @media(max-width:1100px){
+      .gallery-frame-grid .hall-art{
+        height:235px !important;
+      }
+
+      .gallery-rankings-wrap .museum-ranking-list{
+        grid-template-columns:repeat(2,1fr) !important;
+      }
+
+      .dashboard-four{
+        grid-template-columns:repeat(2,1fr) !important;
+      }
+    }
+
+    @media(max-width:760px){
+      .gallery-frame-grid .hall-art{
+        height:auto !important;
+        aspect-ratio:4/3;
+      }
+
+      .gallery-frame-grid .hall-copy strong{
+        font-size:17px !important;
+      }
+
+      .gallery-rankings-wrap .museum-ranking-list{
+        grid-template-columns:1fr !important;
+      }
+
+      .gallery-rank-card{
+        grid-template-columns:32px 76px 1fr !important;
+      }
+
+      .dashboard-four{
+        grid-template-columns:1fr !important;
+        gap:14px !important;
+      }
+
+      .gallery-shelf-item{
+        grid-template-columns:118px 1fr !important;
+      }
+
+      .gallery-shelf-item .thumb{
+        width:118px !important;
+        height:96px !important;
+      }
+    }
+
 </style>
 
 <script>
@@ -3711,23 +3993,23 @@
     function renderDashboardLists() {
       const controversial = [...mistakes]
         .sort((a,b) => Number(b.controversy_score || 0) - Number(a.controversy_score || 0))
-        .slice(0,5);
+        .slice(0,3);
 
       const trending = voteStatsLoaded
         ? [...mistakes]
             .sort((a,b) => getVoteTotal(b.id) - getVoteTotal(a.id))
             .filter(m => getVoteTotal(m.id) > 0)
-            .slice(0,5)
+            .slice(0,3)
         : controversial;
 
       const viewed = [...mistakes]
         .sort((a,b) => Number(b.views || 0) - Number(a.views || 0))
-        .slice(0,5);
+        .slice(0,3);
 
       // Without requesting extra date columns, use higher years as the lightweight recent proxy.
       const recent = [...mistakes]
         .sort((a,b) => Number(b.year || 0) - Number(a.year || 0))
-        .slice(0,5);
+        .slice(0,3);
 
       renderList("trendingList", trending, m =>
         voteStatsLoaded && getVoteTotal(m.id) > 0
@@ -3750,15 +4032,12 @@
       }
 
       box.innerHTML = items.map(m => `
-        <a class="list-row" href="mistake.html?id=${encodeURIComponent(m.id)}">
-          <div class="thumb">${renderArt(m, "thumb")}</div>
-          <div>
+        <a class="list-row gallery-shelf-item" href="mistake.html?id=${encodeURIComponent(m.id)}">
+          <div class="thumb">${renderArt(m, "card")}</div>
+          <div class="gallery-shelf-copy">
             <div class="row-title">${escapeHtml(smField(m, "title") || "Untitled Mistake")}</div>
-            <div class="row-meta">${escapeHtml(smMeta([m.year, m.sport, m.category], ", "))}</div>
-            <div class="row-meta-line">
-              <div class="row-extra">${escapeHtml(extraFn(m))}</div>
-              ${renderMiniCommunity(m.id, true)}
-            </div>
+            <div class="gallery-shelf-meta">${escapeHtml(smMeta([m.year, m.sport], " • "))}</div>
+            <div class="row-extra">${escapeHtml(extraFn(m))}</div>
           </div>
         </a>
       `).join("");
@@ -4792,33 +5071,84 @@ function formatNumber(n) {
 
       const rankBox=document.getElementById("museumRankings");
       if(rankBox){
-        rankBox.innerHTML=ranked.map((m,i)=>`
-          <a class="museum-rank-row" href="mistake.html?id=${encodeURIComponent(m.id)}">
+        rankBox.innerHTML=ranked.map((m,i)=>{
+          const votes=getVoteTotal(m.id);
+          const scoreText=voteStatsLoaded && votes>0
+            ? `${votes} vote${votes===1?"":"s"}`
+            : `${Number(m.controversy_score||0)}/100`;
+          return `
+          <a class="museum-rank-row gallery-rank-card" href="mistake.html?id=${encodeURIComponent(m.id)}">
             <div class="rank-num">${i+1}</div>
             <div class="rank-thumb">${renderArt(m,"card")}</div>
-            <div>
+            <div class="gallery-rank-copy">
               <div class="rank-title">${escapeHtml(smField(m, "title")||"Untitled Mistake")}</div>
-              <div class="rank-meta">${escapeHtml(smMeta([m.year,m.sport]))}</div>
+              <div class="gallery-rank-score">🔥 ${escapeHtml(scoreText)}</div>
             </div>
-            <div class="rank-score">${voteStatsLoaded && getVoteTotal(m.id)>0 ? getVoteTotal(m.id) : Number(m.controversy_score||0)}</div>
-          </a>`).join("");
+          </a>`;
+        }).join("");
       }
 
-      const hall=[...mistakes]
-        .filter(m=>m.artwork_url)
-        .sort((a,b)=>Number(b.controversy_score||0)-Number(a.controversy_score||0))
-        .slice(0,3);
+      // Curated "front wall" of the SportsMistakes museum.
+      // We deliberately prefer three iconic, visually recognizable records.
+      // If one is unavailable, the strongest remaining artwork record fills the slot.
+      const artworkMistakes=[...mistakes].filter(m=>m.artwork_url);
+
+      const preferredExhibits=[
+        ["super bowl li","super bowl 51","28-3"],
+        ["hand of god"],
+        ["buckner"]
+      ];
+
+      const hall=[];
+      const usedIds=new Set();
+
+      preferredExhibits.forEach(terms=>{
+        const match=artworkMistakes.find(m=>{
+          if(usedIds.has(m.id)) return false;
+          const title=String(smField(m,"title")||m.title||"").toLowerCase();
+          return terms.some(term=>title.includes(term));
+        });
+        if(match){
+          hall.push(match);
+          usedIds.add(match.id);
+        }
+      });
+
+      const fallback=[...artworkMistakes]
+        .filter(m=>!usedIds.has(m.id))
+        .sort((a,b)=>Number(b.controversy_score||0)-Number(a.controversy_score||0));
+
+      while(hall.length<3 && fallback.length){
+        const next=fallback.shift();
+        if(next && !usedIds.has(next.id)){
+          hall.push(next);
+          usedIds.add(next.id);
+        }
+      }
 
       const hallBox=document.getElementById("museumHallGrid");
       if(hallBox){
-        hallBox.innerHTML=hall.map(m=>`
-          <a class="hall-card" href="mistake.html?id=${encodeURIComponent(m.id)}">
-            <div class="hall-art">${renderArt(m,"card")}</div>
+        hallBox.innerHTML=hall.map((m,index)=>{
+          const vote=voteStatsByMistake[m.id];
+          const lesson=lessonStatsByMistake[m.id];
+          const yesPercent=vote && vote.total ? Math.round((vote.yes/vote.total)*100) : null;
+
+          const communityLine = yesPercent !== null
+            ? `${yesPercent}% say mistake${lesson ? ` · Top lesson: ${escapeHtml(lesson.name)}` : ""}`
+            : (lesson
+                ? `Top lesson: ${escapeHtml(lesson.name)}`
+                : escapeHtml(smMeta([m.year,m.sport]," • ")));
+
+          return `
+          <a class="hall-card gallery-featured-exhibit" href="mistake.html?id=${encodeURIComponent(m.id)}">
+            ${index===1 ? `<div class="gallery-ribbon">HALL OF FAME</div>` : ""}
+            <div class="hall-art">${renderArt(m,"featured")}</div>
             <div class="hall-copy">
               <strong>${escapeHtml(smField(m, "title")||"Untitled Mistake")}</strong>
-              <span>${escapeHtml(smMeta([m.year,m.sport]))}</span>
+              <span>${communityLine}</span>
             </div>
-          </a>`).join("");
+          </a>`;
+        }).join("");
       }
 
       const totalJudgments=Object.values(voteStatsByMistake||{})
