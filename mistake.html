@@ -2,8 +2,27 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>SportsMistakes | Mistake Detail</title>
+  <title>SportsMistakes | Sports History's Biggest Mistakes</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- SEO + social fallbacks. These are replaced with the individual mistake data after Supabase loads. -->
+  <meta id="smMetaDescription" name="description" content="Explore, judge and learn from the decisions, plays, calls and moments that changed sports history." />
+  <link id="smCanonical" rel="canonical" href="https://sportsmistakes.com/mistake.html" />
+
+  <meta id="smOgType" property="og:type" content="article" />
+  <meta id="smOgSiteName" property="og:site_name" content="SportsMistakes" />
+  <meta id="smOgTitle" property="og:title" content="SportsMistakes | Sports History's Biggest Mistakes" />
+  <meta id="smOgDescription" property="og:description" content="Explore, judge and learn from the decisions, plays, calls and moments that changed sports history." />
+  <meta id="smOgUrl" property="og:url" content="https://sportsmistakes.com/mistake.html" />
+  <meta id="smOgImage" property="og:image" content="" />
+
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta id="smTwitterTitle" name="twitter:title" content="SportsMistakes | Sports History's Biggest Mistakes" />
+  <meta id="smTwitterDescription" name="twitter:description" content="Explore, judge and learn from the decisions, plays, calls and moments that changed sports history." />
+  <meta id="smTwitterImage" name="twitter:image" content="" />
+
+  <script id="smStructuredData" type="application/ld+json">{}</script>
+
   <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
   <link rel="preconnect" href="https://scwjlljurircxuufhqih.supabase.co" crossorigin>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -2032,6 +2051,111 @@ body{
   }
 }
 
+
+/* =========================================================
+   SEO / SHARING / LEARNING UPGRADE — SEP 8 2026
+   ========================================================= */
+.editorial-learn-card{
+  margin-top:12px;
+  padding:13px 14px;
+  border:1px solid rgba(215,176,98,.28);
+  border-radius:11px;
+  background:
+    linear-gradient(135deg,rgba(215,176,98,.08),rgba(255,255,255,.025)),
+    rgba(3,10,20,.46);
+}
+.editorial-learn-kicker{
+  color:#e4c477;
+  font-size:11px;
+  font-weight:1000;
+  letter-spacing:.9px;
+  text-transform:uppercase;
+  margin-bottom:7px;
+}
+.editorial-learn-text{
+  color:#edf3f8;
+  font-size:13px;
+  line-height:1.48;
+  font-weight:700;
+}
+
+/* Portrait phones: keep HOME / RANKINGS / COLLECTIONS / HALL OF FAME available.
+   They swipe horizontally beneath the compact primary header. */
+@media(max-width:760px) and (orientation:portrait){
+  .sm-unified-nav{
+    position:sticky !important;
+    top:0 !important;
+    display:grid !important;
+    grid-template-columns:auto 1fr !important;
+    grid-template-areas:
+      "brand tools"
+      "links links" !important;
+    align-items:center !important;
+    min-height:0 !important;
+    padding:8px 10px 7px !important;
+    row-gap:7px !important;
+    overflow:visible !important;
+  }
+
+  .sm-unified-nav .brand-wrap{
+    grid-area:brand !important;
+    align-self:center !important;
+  }
+
+  .sm-unified-nav .nav-links{
+    grid-area:links !important;
+    width:100% !important;
+    display:flex !important;
+    flex-wrap:nowrap !important;
+    justify-content:flex-start !important;
+    gap:17px !important;
+    margin:0 !important;
+    padding:1px 1px 4px !important;
+    overflow-x:auto !important;
+    overflow-y:hidden !important;
+    white-space:nowrap !important;
+    -webkit-overflow-scrolling:touch !important;
+    scrollbar-width:none !important;
+  }
+
+  .sm-unified-nav .nav-links::-webkit-scrollbar{
+    display:none !important;
+  }
+
+  .sm-unified-nav .nav-links > a:not(.nav-nominate){
+    display:inline-flex !important;
+    flex:0 0 auto !important;
+    align-items:center !important;
+    min-height:28px !important;
+    font-size:10px !important;
+  }
+
+  .sm-unified-nav .nav-nominate{
+    position:absolute !important;
+    top:8px !important;
+    right:104px !important;
+    display:inline-flex !important;
+    min-height:34px !important;
+    padding:0 11px !important;
+    font-size:10px !important;
+  }
+
+  .sm-unified-nav .sm-language-switch{
+    position:absolute !important;
+    top:9px !important;
+    right:10px !important;
+    min-height:32px !important;
+    margin:0 !important;
+    padding:3px 8px !important;
+    font-size:10px !important;
+  }
+
+  .editorial-learn-card{
+    margin-top:10px;
+    padding:12px;
+  }
+}
+
 </style>
   <link rel="stylesheet" href="styles.css" />
 <script>
@@ -2155,6 +2279,89 @@ function smLessonLabel(name){
     : name;
 }
 
+function cleanMetaText(value,max=170){
+  const text=String(value||"")
+    .replace(/\s+/g," ")
+    .replace(/<[^>]*>/g,"")
+    .trim();
+  if(text.length<=max) return text;
+  return text.slice(0,max-1).replace(/\s+\S*$/,"")+"…";
+}
+
+function setMetaContent(selector,value){
+  const el=document.querySelector(selector);
+  if(el && value) el.setAttribute("content",value);
+}
+
+function updateMistakeSEO(m){
+  if(!m)return;
+
+  const title=cleanMetaText(smField(m,"title")||"Sports Mistake",110);
+  const sport=cleanMetaText(m.sport||"",40);
+  const year=cleanMetaText(m.year||"",16);
+  const description=cleanMetaText(
+    smField(m,"summary") ||
+    smField(m,"why_it_matters") ||
+    smField(m,"lessons_learned") ||
+    `Explore, judge and learn from ${title} on SportsMistakes.`,
+    165
+  );
+
+  const canonical=`${window.location.origin}${window.location.pathname}?id=${encodeURIComponent(m.id||id)}`;
+  const artwork=m.artwork_url||m.ai_artwork_url||m.image_url||"";
+  const browserTitle=`${title}${sport?` | ${sport}`:""} | SportsMistakes`;
+
+  document.title=browserTitle;
+
+  const desc=document.getElementById("smMetaDescription");
+  if(desc) desc.setAttribute("content",description);
+
+  const canonicalEl=document.getElementById("smCanonical");
+  if(canonicalEl) canonicalEl.setAttribute("href",canonical);
+
+  setMetaContent("#smOgTitle",browserTitle);
+  setMetaContent("#smOgDescription",description);
+  setMetaContent("#smOgUrl",canonical);
+  if(artwork) setMetaContent("#smOgImage",artwork);
+
+  setMetaContent("#smTwitterTitle",browserTitle);
+  setMetaContent("#smTwitterDescription",description);
+  if(artwork) setMetaContent("#smTwitterImage",artwork);
+
+  const structured={
+    "@context":"https://schema.org",
+    "@type":"Article",
+    "headline":title,
+    "description":description,
+    "mainEntityOfPage":{"@type":"WebPage","@id":canonical},
+    "publisher":{
+      "@type":"Organization",
+      "name":"SportsMistakes",
+      "url":"https://sportsmistakes.com/"
+    },
+    "about":[
+      sport,
+      m.league||"",
+      m.category||"",
+      m.subcategory||"",
+      m.teams_people||""
+    ].filter(Boolean),
+    "keywords":[
+      "sports mistakes",
+      sport,
+      m.league||"",
+      m.category||"",
+      m.subcategory||"",
+      year
+    ].filter(Boolean).join(", ")
+  };
+
+  if(artwork) structured.image=[artwork];
+
+  const ld=document.getElementById("smStructuredData");
+  if(ld) ld.textContent=JSON.stringify(structured);
+}
+
 async function loadMistake(){
   const content=document.getElementById("content");
   if(!id){content.innerHTML=`<div class="error">No mistake ID provided.</div>`;return}
@@ -2172,6 +2379,7 @@ async function loadMistake(){
   if(!data){content.innerHTML=`<div class="error">${window.SMLanguage?.ui("Mistake not found.")||"Mistake not found."}</div>`;return}
 
   currentMistake=data;
+  updateMistakeSEO(data);
   const newViewCount=(data.views||0)+1;
 
   const shareText=getShareText(data);
@@ -2279,6 +2487,18 @@ async function loadMistake(){
                 <div class="lesson-results-title">${smText("Community Reasons","Raisons de la communauté")}</div>
                 <div id="lessonResults"><div class="lesson-empty">${smText("Loading community results...","Chargement des résultats de la communauté...")}</div></div>
               </div>
+            </div>
+
+            <div class="editorial-learn-card">
+              <div class="editorial-learn-kicker">💡 ${smText("WHAT CAN WE LEARN?","QUE POUVONS-NOUS APPRENDRE?")}</div>
+              <div class="editorial-learn-text">${escapeHtml(
+                smField(data,"lessons_learned") ||
+                smField(data,"why_it_matters") ||
+                smText(
+                  "Even famous mistakes are worth revisiting because they reveal how decisions, preparation, pressure and communication shape outcomes.",
+                  "Même les erreurs célèbres méritent d’être revisitées, car elles montrent comment les décisions, la préparation, la pression et la communication influencent les résultats."
+                )
+              )}</div>
             </div>
           </div>
         </div>
