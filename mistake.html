@@ -2386,6 +2386,49 @@ body{
   }
 }
 
+
+/* =========================================================
+   SPORTS COURT DESKTOP FOCUS MODE — SEP 9 2026
+   On desktop only, opening Sports Court temporarily hides the
+   large Judge/Reasons panel so the debate area gets a clean,
+   full-height workspace. Mobile layouts are untouched.
+   ========================================================= */
+@media(min-width:901px){
+  .one-page-info.court-focus{
+    grid-template-rows:auto auto minmax(0,1fr) !important;
+  }
+
+  .one-page-info.court-focus .one-page-verdict{
+    display:none !important;
+  }
+
+  .one-page-info.court-focus .detail-tabs-shell{
+    min-height:0 !important;
+    height:100% !important;
+    overflow:hidden !important;
+  }
+
+  .one-page-info.court-focus #detailTab-court{
+    height:100% !important;
+    max-height:none !important;
+    overflow:auto !important;
+    padding:12px 14px !important;
+  }
+
+  .one-page-info.court-focus .compact-court-grid{
+    grid-template-columns:1fr 1fr !important;
+    gap:10px !important;
+  }
+
+  .one-page-info.court-focus .compact-court-grid .court-side{
+    max-height:130px !important;
+  }
+
+  .one-page-info.court-focus .court-compose{
+    margin-top:10px !important;
+  }
+}
+
 </style>
   <link rel="stylesheet" href="styles.css" />
 <script>
@@ -2899,7 +2942,9 @@ function openSportsCourtAndCompose(){
   if(courtTab) openDetailTab("court",courtTab);
 
   const shell=document.querySelector(".detail-tabs-shell");
-  if(shell) shell.scrollIntoView({behavior:"smooth",block:"start"});
+  if(shell && window.innerWidth<=900){
+    shell.scrollIntoView({behavior:"smooth",block:"start"});
+  }
 
   setTimeout(()=>{
     const compose=document.querySelector(".court-compose");
@@ -2908,12 +2953,19 @@ function openSportsCourtAndCompose(){
       const box=document.getElementById("courtArgument");
       if(box) box.focus({preventScroll:true});
     }
-  },400);
+  },250);
 }
 
 function openDetailTab(name,button){
   document.querySelectorAll(".detail-tab-panel").forEach(panel=>panel.classList.remove("active"));
   document.querySelectorAll(".detail-tab").forEach(tab=>tab.classList.remove("active"));
+
+  const info=document.querySelector(".one-page-info");
+  if(info){
+    if(name==="court") info.classList.add("court-focus");
+    else info.classList.remove("court-focus");
+  }
+
   const panel=document.getElementById("detailTab-"+name);
   if(panel) panel.classList.add("active");
   if(button) button.classList.add("active");
