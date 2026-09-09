@@ -2429,6 +2429,183 @@ body{
   }
 }
 
+
+/* =========================================================
+   SIMPLE 3-STEP PARTICIPATION — SEP 9 2026
+   Vote -> Pick 3 -> Add your take.
+   ========================================================= */
+.simple-engage-now .engage-step-num{
+  font-size:12px;
+}
+.simple-engage-now .engage-step strong{
+  font-size:13px !important;
+}
+.simple-debate{
+  margin-top:12px;
+  padding:14px;
+  border:1px solid rgba(255,255,255,.13);
+  border-radius:12px;
+  background:linear-gradient(180deg,rgba(11,24,36,.96),rgba(7,16,24,.96));
+}
+.simple-debate-head{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:14px;
+  margin-bottom:10px;
+}
+.simple-debate-head h3{
+  margin:0;
+  color:#fff;
+  font-size:18px;
+}
+.simple-debate-head p{
+  margin:5px 0 0;
+  color:#c7d1db;
+  font-size:12px;
+}
+.simple-debate-badge{
+  flex:0 0 auto;
+  padding:6px 9px;
+  border-radius:999px;
+  border:1px solid rgba(215,176,98,.35);
+  color:#e4c477;
+  font-size:9px;
+  font-weight:1000;
+  letter-spacing:.55px;
+}
+#quickDebateText{
+  width:100%;
+  min-height:76px;
+  resize:vertical;
+  box-sizing:border-box;
+  border:1px solid rgba(255,255,255,.18);
+  border-radius:9px;
+  background:#07111f;
+  color:#fff;
+  padding:11px 12px;
+  font:600 13px/1.4 Arial,Helvetica,sans-serif;
+}
+#quickDebateText:focus{
+  outline:2px solid rgba(226,36,36,.45);
+  border-color:#e22424;
+}
+.simple-debate-actions{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto;
+  gap:9px;
+  margin-top:9px;
+}
+#quickDebateName{
+  width:100%;
+  min-width:0;
+  border:1px solid rgba(255,255,255,.18);
+  border-radius:8px;
+  background:#07111f;
+  color:#fff;
+  padding:10px 11px;
+}
+.simple-debate-actions button{
+  border:0;
+  border-radius:8px;
+  background:linear-gradient(135deg,#e22424,#bd1117);
+  color:#fff;
+  padding:0 15px;
+  font-weight:1000;
+  cursor:pointer;
+}
+.simple-debate-message{
+  min-height:16px;
+  margin-top:7px;
+  color:#e4c477;
+  font-size:11px;
+  font-weight:900;
+}
+.simple-debate-columns{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+  margin-top:10px;
+}
+.simple-debate-side{
+  min-width:0;
+  border:1px solid rgba(255,255,255,.11);
+  border-radius:9px;
+  padding:10px;
+  background:rgba(255,255,255,.025);
+}
+.simple-debate-side.yes-side{
+  border-color:rgba(226,36,36,.32);
+}
+.simple-debate-side.no-side{
+  border-color:rgba(148,163,184,.22);
+}
+.simple-debate-side-title{
+  margin-bottom:8px;
+  font-size:10px;
+  font-weight:1000;
+  letter-spacing:.65px;
+  color:#fff;
+}
+.simple-comment{
+  padding:8px 0;
+  border-top:1px solid rgba(255,255,255,.08);
+}
+.simple-comment:first-child{
+  border-top:0;
+  padding-top:0;
+}
+.simple-comment-text{
+  color:#eef3f7;
+  font-size:12px;
+  line-height:1.42;
+}
+.simple-comment-meta{
+  margin-top:4px;
+  color:#9eacb9;
+  font-size:10px;
+}
+.simple-comment-empty{
+  color:#93a2b1;
+  font-size:11px;
+  line-height:1.4;
+}
+.view-all-debate{
+  margin-top:10px;
+  border:0;
+  background:transparent;
+  color:#ff6464;
+  padding:0;
+  font-size:10px;
+  font-weight:1000;
+  letter-spacing:.55px;
+  cursor:pointer;
+}
+.full-court-hidden{
+  display:none !important;
+}
+@media(max-width:760px){
+  .simple-debate{
+    padding:12px;
+  }
+  .simple-debate-head{
+    display:block;
+  }
+  .simple-debate-badge{
+    display:inline-flex;
+    margin-top:8px;
+  }
+  .simple-debate-actions{
+    grid-template-columns:1fr;
+  }
+  .simple-debate-actions button{
+    min-height:44px;
+  }
+  .simple-debate-columns{
+    grid-template-columns:1fr;
+  }
+}
+
 </style>
   <link rel="stylesheet" href="styles.css" />
 <script>
@@ -2712,29 +2889,29 @@ async function loadMistake(){
           <div id="shareMessage" class="share-message"></div>
         </div>
 
-        <div class="engage-now">
-          <div class="engage-now-title">${smText("YOUR TURN — 3 EASY WAYS TO JOIN IN","À VOUS — 3 FAÇONS SIMPLES DE PARTICIPER")}</div>
+        <div class="engage-now simple-engage-now">
+          <div class="engage-now-title">${smText("YOUR TURN","À VOUS")}</div>
           <div class="engage-now-steps">
             <button class="engage-step" type="button" onclick="goToVote()">
-              <span class="engage-step-num">${smText("STEP 1","ÉTAPE 1")}</span>
-              <strong>${smText("JUDGE IT","JUGEZ-LE")}</strong>
-              <small>${smText("One tap: YES or NO.","Un clic : OUI ou NON.")}</small>
+              <span class="engage-step-num">${smText("1","1")}</span>
+              <strong>${smText("VOTE","VOTER")}</strong>
+              <small>${smText("YES or NO.","OUI ou NON.")}</small>
             </button>
             <button class="engage-step" type="button" onclick="goToReasons()">
-              <span class="engage-step-num">${smText("STEP 2","ÉTAPE 2")}</span>
-              <strong>${smText("PICK UP TO 3 REASONS","CHOISISSEZ JUSQU’À 3 RAISONS")}</strong>
-              <small>${smText("Tell us why it was a mistake.","Dites-nous pourquoi c’était une erreur.")}</small>
+              <span class="engage-step-num">${smText("2","2")}</span>
+              <strong>${smText("PICK 3 REASONS","CHOISIR 3 RAISONS")}</strong>
+              <small>${smText("Why was it a mistake?","Pourquoi était-ce une erreur?")}</small>
             </button>
-            <button class="engage-step" type="button" onclick="openSportsCourtAndCompose()">
-              <span class="engage-step-num">${smText("STEP 3","ÉTAPE 3")}</span>
-              <strong>${smText("JOIN SPORTS COURT","PARTICIPEZ AU TRIBUNAL SPORTIF")}</strong>
-              <small>${smText("Make your case — or defend it.","Plaidez votre cause — ou défendez-la.")}</small>
+            <button class="engage-step" type="button" onclick="goToDebate()">
+              <span class="engage-step-num">${smText("3","3")}</span>
+              <strong>${smText("ADD YOUR TAKE","AJOUTER VOTRE AVIS")}</strong>
+              <small>${smText("Say why you agree or disagree.","Dites pourquoi vous êtes d’accord ou non.")}</small>
             </button>
           </div>
         </div>
 
         <div class="vote-box verdict-combined one-page-verdict">
-          <div class="verdict-vote">
+          <div class="verdict-vote" id="voteStep">
             <div class="vote-head">
               <div>
                 <div class="action-kicker">${smText("STEP 1 — MAKE YOUR CALL","ÉTAPE 1 — RENDEZ VOTRE VERDICT")}</div>
@@ -2752,7 +2929,7 @@ async function loadMistake(){
             </div>
           </div>
 
-          <div class="verdict-learn">
+          <div class="verdict-learn" id="reasonStep">
             <div class="verdict-learn-head">
               <div>
                 <div class="action-kicker">${smText("STEP 2 — ADD YOUR REASONS","ÉTAPE 2 — AJOUTEZ VOS RAISONS")}</div>
@@ -2797,14 +2974,36 @@ async function loadMistake(){
               )}</div>
             </div>
 
-            <button class="sports-court-cta" type="button" onclick="openSportsCourtAndCompose()">
-              <span class="sports-court-cta-copy">
-                <span class="action-kicker">${smText("STEP 3 — HAVE A TAKE?","ÉTAPE 3 — VOUS AVEZ UNE OPINION?")}</span>
-                <strong>${smText("ADD IT TO SPORTS COURT","AJOUTEZ-LA AU TRIBUNAL SPORTIF")}</strong>
-                <small>${smText("Argue that it WAS a mistake — or defend the other side.","Soutenez que C’ÉTAIT une erreur — ou défendez l’autre camp.")}</small>
-              </span>
-              <span class="sports-court-cta-arrow">→</span>
-            </button>
+            <section class="simple-debate" id="debateStep">
+              <div class="simple-debate-head">
+                <div>
+                  <div class="action-kicker">${smText("3 — ADD YOUR TAKE","3 — AJOUTEZ VOTRE AVIS")}</div>
+                  <h3>${smText("What do you think?","Qu’en pensez-vous?")}</h3>
+                  <p id="debateVoteHint">${smText("Vote first, then tell us why.","Votez d’abord, puis dites-nous pourquoi.")}</p>
+                </div>
+                <span class="simple-debate-badge">${smText("SPORTS COURT","TRIBUNAL SPORTIF")}</span>
+              </div>
+
+              <textarea id="quickDebateText" maxlength="800" placeholder="Why was this a mistake — or why wasn't it?"></textarea>
+              <div class="simple-debate-actions">
+                <input id="quickDebateName" maxlength="80" placeholder="Name or nickname optional" />
+                <button type="button" onclick="submitQuickDebate()">${smText("POST YOUR TAKE","PUBLIER VOTRE AVIS")}</button>
+              </div>
+              <div id="quickDebateMessage" class="simple-debate-message"></div>
+
+              <div class="simple-debate-columns">
+                <div class="simple-debate-side yes-side">
+                  <div class="simple-debate-side-title">${smText("WHY FANS SAY YES","POURQUOI LES PARTISANS DISENT OUI")}</div>
+                  <div id="quickYesComments" class="simple-comment-list">${smText("Loading comments...","Chargement des commentaires...")}</div>
+                </div>
+                <div class="simple-debate-side no-side">
+                  <div class="simple-debate-side-title">${smText("WHY FANS SAY NO","POURQUOI LES PARTISANS DISENT NON")}</div>
+                  <div id="quickNoComments" class="simple-comment-list">${smText("Loading comments...","Chargement des commentaires...")}</div>
+                </div>
+              </div>
+
+              <button class="view-all-debate" type="button" onclick="openFullSportsCourt()">${smText("VIEW FULL DEBATE →","VOIR TOUT LE DÉBAT →")}</button>
+            </section>
           </div>
         </div>
 
@@ -2812,7 +3011,7 @@ async function loadMistake(){
           <div class="detail-tab-bar" role="tablist">
             <button class="detail-tab active" data-tab="story" onclick="openDetailTab('story',this)">${smText("Story","Histoire")}</button>
             <button class="detail-tab" data-tab="why" onclick="openDetailTab('why',this)">${smText("Why It Matters","Pourquoi ça compte")}</button>
-            <button class="detail-tab" data-tab="court" onclick="openDetailTab('court',this)">${smText("Join Sports Court","Participer au Tribunal")}</button>
+  
             <button class="detail-tab" data-tab="sources" onclick="openDetailTab('sources',this)">${smText("Sources","Sources")}</button>
             <button class="detail-tab" data-tab="related" onclick="openDetailTab('related',this)">${smText("Related","Connexes")}</button>
           </div>
@@ -2827,7 +3026,7 @@ async function loadMistake(){
               <p class="tab-story-text">${escapeHtml(smField(data,"why_it_matters")||smText("No additional context has been added yet.","Aucun contexte supplémentaire n’a encore été ajouté."))}</p>
             </div>
 
-            <div id="detailTab-court" class="detail-tab-panel">
+            <div id="detailTab-court" class="detail-tab-panel full-court-hidden">
               <div class="court-compact-head">
                 <div>
                   <h2>⚖️ ${smText("Sports Court","Tribunal sportif")}</h2>
@@ -2924,12 +3123,12 @@ async function loadMistake(){
 
 
 function goToVote(){
-  const target=document.querySelector(".verdict-vote");
+  const target=document.getElementById("voteStep");
   if(target) target.scrollIntoView({behavior:"smooth",block:"center"});
 }
 
 function goToReasons(){
-  const target=document.querySelector(".verdict-learn");
+  const target=document.getElementById("reasonStep");
   if(target) target.scrollIntoView({behavior:"smooth",block:"center"});
   setTimeout(()=>{
     const panel=document.getElementById("lessonDropdownPanel");
@@ -2937,34 +3136,118 @@ function goToReasons(){
   },350);
 }
 
-function openSportsCourtAndCompose(){
-  const courtTab=document.querySelector('.detail-tab[data-tab="court"]');
-  if(courtTab) openDetailTab("court",courtTab);
+function goToDebate(){
+  const target=document.getElementById("debateStep");
+  if(target) target.scrollIntoView({behavior:"smooth",block:"center"});
+  setTimeout(()=>{
+    const box=document.getElementById("quickDebateText");
+    if(box) box.focus({preventScroll:true});
+  },350);
+}
 
-  const shell=document.querySelector(".detail-tabs-shell");
-  if(shell && window.innerWidth<=900){
-    shell.scrollIntoView({behavior:"smooth",block:"start"});
+function getSavedVote(){
+  return localStorage.getItem("sportsmistakes_vote_"+id)||"";
+}
+
+function updateDebateVoteHint(){
+  const hint=document.getElementById("debateVoteHint");
+  if(!hint)return;
+  const vote=getSavedVote();
+  if(vote==="yes"){
+    hint.innerHTML=smText(
+      'You voted <strong>YES — MISTAKE</strong>. Why?',
+      'Vous avez voté <strong>OUI — ERREUR</strong>. Pourquoi?'
+    );
+  }else if(vote==="no"){
+    hint.innerHTML=smText(
+      'You voted <strong>NO — NOT A MISTAKE</strong>. Why?',
+      'Vous avez voté <strong>NON — PAS UNE ERREUR</strong>. Pourquoi?'
+    );
+  }else{
+    hint.innerHTML=smText(
+      'Vote first, then tell us why.',
+      'Votez d’abord, puis dites-nous pourquoi.'
+    );
+  }
+}
+
+async function submitQuickDebate(){
+  const msg=document.getElementById("quickDebateMessage");
+  const text=(document.getElementById("quickDebateText")?.value||"").trim();
+  const name=(document.getElementById("quickDebateName")?.value||"").trim()||"Anonymous fan";
+  const vote=getSavedVote();
+
+  if(!vote){
+    msg.innerText=smText("Please vote YES or NO first.","Veuillez d’abord voter OUI ou NON.");
+    goToVote();
+    return;
   }
 
-  setTimeout(()=>{
-    const compose=document.querySelector(".court-compose");
-    if(compose){
-      compose.open=true;
-      const box=document.getElementById("courtArgument");
-      if(box) box.focus({preventScroll:true});
-    }
-  },250);
+  if(text.length<20){
+    msg.innerText=smText(
+      "Please write at least a short sentence.",
+      "Veuillez écrire au moins une courte phrase."
+    );
+    return;
+  }
+
+  if(text.length>800){
+    msg.innerText=smText(
+      "Please keep your comment under 800 characters.",
+      "Veuillez limiter votre commentaire à 800 caractères."
+    );
+    return;
+  }
+
+  if(containsUnsafeText(text+" "+name)){
+    msg.innerText=smText(
+      "Please keep the comment focused on the sports decision, play, call or context.",
+      "Veuillez garder le commentaire centré sur la décision, le jeu, l’appel ou le contexte sportif."
+    );
+    return;
+  }
+
+  msg.innerText=smText("Posting...","Publication...");
+  const side=vote==="yes"?"prosecution":"defense";
+
+  const {error}=await client.from("sports_court_arguments").insert({
+    mistake_id:id,
+    side,
+    argument_text:text,
+    author_name:name,
+    status:"approved",
+    upvotes:0
+  });
+
+  if(error){
+    console.error(error);
+    msg.innerText=smText("Could not post your comment. Please try again.","Impossible de publier votre commentaire. Veuillez réessayer.");
+    return;
+  }
+
+  document.getElementById("quickDebateText").value="";
+  document.getElementById("quickDebateName").value="";
+  msg.innerText=smText("Your take was added.","Votre avis a été ajouté.");
+  await loadCourtArguments();
+}
+
+function openFullSportsCourt(){
+  const panel=document.getElementById("detailTab-court");
+  if(panel){
+    document.querySelectorAll(".detail-tab-panel").forEach(p=>p.classList.remove("active"));
+    panel.classList.remove("full-court-hidden");
+    panel.classList.add("active");
+    const shell=document.querySelector(".detail-tabs-shell");
+    if(shell) shell.scrollIntoView({behavior:"smooth",block:"start"});
+  }
 }
 
 function openDetailTab(name,button){
   document.querySelectorAll(".detail-tab-panel").forEach(panel=>panel.classList.remove("active"));
   document.querySelectorAll(".detail-tab").forEach(tab=>tab.classList.remove("active"));
 
-  const info=document.querySelector(".one-page-info");
-  if(info){
-    if(name==="court") info.classList.add("court-focus");
-    else info.classList.remove("court-focus");
-  }
+  const fullCourt=document.getElementById("detailTab-court");
+  if(fullCourt) fullCourt.classList.add("full-court-hidden");
 
   const panel=document.getElementById("detailTab-"+name);
   if(panel) panel.classList.add("active");
@@ -3049,6 +3332,7 @@ async function submitVote(vote){
   if(error){alert("Vote failed. Please try again.");console.error(error);return}
   localStorage.setItem(voteKey,vote);
   await loadVotes();
+  updateDebateVoteHint();
 }
 
 
@@ -3260,13 +3544,60 @@ function containsUnsafeText(text){
 }
 
 async function loadCourtArguments(){
-  const p=document.getElementById("prosecutionArguments"),d=document.getElementById("defenseArguments");
-  if(!p||!d||!id)return;
-  const{data,error}=await client.from("sports_court_arguments").select("*").eq("mistake_id",id).eq("status","approved").order("upvotes",{ascending:false}).order("created_at",{ascending:false});
-  if(error){console.error(error);p.innerHTML="Could not load arguments. Did you run the Sports Court SQL?";d.innerHTML="Could not load arguments.";return}
+  const p=document.getElementById("prosecutionArguments");
+  const d=document.getElementById("defenseArguments");
+  if(!id)return;
+
+  const{data,error}=await client
+    .from("sports_court_arguments")
+    .select("*")
+    .eq("mistake_id",id)
+    .eq("status","approved")
+    .order("upvotes",{ascending:false})
+    .order("created_at",{ascending:false});
+
+  if(error){
+    console.error(error);
+    if(p) p.innerHTML="Could not load arguments.";
+    if(d) d.innerHTML="Could not load arguments.";
+    const qy=document.getElementById("quickYesComments");
+    const qn=document.getElementById("quickNoComments");
+    if(qy) qy.innerHTML=smText("Could not load comments.","Impossible de charger les commentaires.");
+    if(qn) qn.innerHTML=smText("Could not load comments.","Impossible de charger les commentaires.");
+    return;
+  }
+
   const list=data||[];
-  p.innerHTML=renderArguments(list.filter(a=>a.side==="prosecution"),"prosecution");
-  d.innerHTML=renderArguments(list.filter(a=>a.side==="defense"),"defense");
+  const yesList=list.filter(a=>a.side==="prosecution");
+  const noList=list.filter(a=>a.side==="defense");
+
+  if(p) p.innerHTML=renderArguments(yesList,"prosecution");
+  if(d) d.innerHTML=renderArguments(noList,"defense");
+
+  const qy=document.getElementById("quickYesComments");
+  const qn=document.getElementById("quickNoComments");
+
+  if(qy) qy.innerHTML=renderQuickComments(yesList,"yes");
+  if(qn) qn.innerHTML=renderQuickComments(noList,"no");
+
+  updateDebateVoteHint();
+}
+
+function renderQuickComments(list,side){
+  if(!list||list.length===0){
+    return `<div class="simple-comment-empty">${
+      side==="yes"
+        ? smText("No YES comments yet. Be the first.","Aucun commentaire OUI pour le moment. Soyez le premier.")
+        : smText("No NO comments yet. Be the first.","Aucun commentaire NON pour le moment. Soyez le premier.")
+    }</div>`;
+  }
+
+  return list.slice(0,2).map(arg=>`
+    <div class="simple-comment">
+      <div class="simple-comment-text">${escapeHtml(arg.argument_text||"")}</div>
+      <div class="simple-comment-meta">${escapeHtml(arg.author_name||"Anonymous fan")}${arg.upvotes?` • 👍 ${arg.upvotes}`:""}</div>
+    </div>
+  `).join("");
 }
 
 function renderArguments(list,side){
