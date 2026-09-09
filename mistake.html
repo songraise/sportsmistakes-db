@@ -2156,6 +2156,179 @@ body{
   }
 }
 
+
+/* =========================================================
+   ENGAGEMENT CLARITY UPGRADE — SEP 8 2026
+   Make the three participation actions impossible to miss.
+   ========================================================= */
+.engage-now{
+  margin:4px 0 10px;
+  padding:10px;
+  border:1px solid rgba(255,255,255,.13);
+  border-radius:12px;
+  background:linear-gradient(180deg,rgba(15,31,45,.95),rgba(8,18,27,.95));
+}
+.engage-now-title{
+  margin:0 0 8px;
+  color:#fff;
+  font-size:12px;
+  font-weight:1000;
+  letter-spacing:.8px;
+  text-transform:uppercase;
+}
+.engage-now-steps{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:8px;
+}
+.engage-step{
+  appearance:none;
+  border:1px solid rgba(255,255,255,.13);
+  border-radius:9px;
+  background:rgba(255,255,255,.035);
+  color:#fff;
+  padding:9px 10px;
+  text-align:left;
+  cursor:pointer;
+  transition:.16s ease;
+}
+.engage-step:hover{
+  transform:translateY(-1px);
+  border-color:rgba(226,36,36,.58);
+  background:rgba(226,36,36,.08);
+}
+.engage-step-num{
+  display:block;
+  margin-bottom:3px;
+  color:#ff5a5f;
+  font-size:11px;
+  font-weight:1000;
+}
+.engage-step strong{
+  display:block;
+  font-size:12px;
+  line-height:1.15;
+}
+.engage-step small{
+  display:block;
+  margin-top:3px;
+  color:#aebbc8;
+  font-size:10px;
+  line-height:1.25;
+}
+
+.verdict-vote,
+.verdict-learn{
+  scroll-margin-top:110px;
+}
+.detail-tabs-shell{
+  scroll-margin-top:110px;
+}
+
+.action-kicker{
+  margin:0 0 5px;
+  color:#ff5a5f;
+  font-size:10px;
+  font-weight:1000;
+  letter-spacing:.8px;
+  text-transform:uppercase;
+}
+
+.vote-buttons button{
+  position:relative;
+}
+.vote-buttons button::after{
+  content:"TAP TO VOTE";
+  display:block;
+  margin-top:3px;
+  font-size:8px;
+  letter-spacing:.7px;
+  opacity:.8;
+}
+.lesson-dropdown-toggle{
+  border-width:2px !important;
+  box-shadow:0 0 0 1px rgba(226,36,36,.08);
+}
+
+.sports-court-cta{
+  width:100%;
+  margin-top:11px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  padding:11px 13px;
+  border:1px solid rgba(215,176,98,.36);
+  border-radius:10px;
+  background:linear-gradient(135deg,rgba(215,176,98,.12),rgba(226,36,36,.10));
+  color:#fff;
+  cursor:pointer;
+  text-align:left;
+}
+.sports-court-cta:hover{
+  border-color:rgba(215,176,98,.68);
+  background:linear-gradient(135deg,rgba(215,176,98,.17),rgba(226,36,36,.14));
+}
+.sports-court-cta-copy strong{
+  display:block;
+  font-size:13px;
+  line-height:1.15;
+}
+.sports-court-cta-copy small{
+  display:block;
+  margin-top:3px;
+  color:#c8d2dc;
+  font-size:10px;
+}
+.sports-court-cta-arrow{
+  flex:0 0 auto;
+  color:#e4c477;
+  font-size:18px;
+  font-weight:1000;
+}
+
+.detail-tab[data-tab="court"]{
+  color:#fff !important;
+  background:rgba(215,176,98,.08);
+}
+.detail-tab[data-tab="court"]::before{
+  content:"⚖️ ";
+}
+.court-compose{
+  margin-top:12px;
+  border:1px solid rgba(226,36,36,.36);
+  border-radius:10px;
+  overflow:hidden;
+}
+.court-compose summary{
+  padding:12px 14px;
+  cursor:pointer;
+  background:rgba(226,36,36,.10);
+  color:#fff;
+  font-weight:1000;
+}
+.court-compose[open] summary{
+  border-bottom:1px solid rgba(255,255,255,.10);
+}
+
+@media(max-width:760px){
+  .engage-now{
+    margin-top:6px;
+  }
+  .engage-now-steps{
+    display:flex;
+    overflow-x:auto;
+    gap:8px;
+    scrollbar-width:none;
+    -webkit-overflow-scrolling:touch;
+  }
+  .engage-now-steps::-webkit-scrollbar{display:none}
+  .engage-step{
+    flex:0 0 74%;
+    min-width:210px;
+  }
+}
+
 </style>
   <link rel="stylesheet" href="styles.css" />
 <script>
@@ -2439,10 +2612,32 @@ async function loadMistake(){
           <div id="shareMessage" class="share-message"></div>
         </div>
 
+        <div class="engage-now">
+          <div class="engage-now-title">${smText("YOUR TURN — 3 EASY WAYS TO JOIN IN","À VOUS — 3 FAÇONS SIMPLES DE PARTICIPER")}</div>
+          <div class="engage-now-steps">
+            <button class="engage-step" type="button" onclick="goToVote()">
+              <span class="engage-step-num">${smText("STEP 1","ÉTAPE 1")}</span>
+              <strong>${smText("JUDGE IT","JUGEZ-LE")}</strong>
+              <small>${smText("One tap: YES or NO.","Un clic : OUI ou NON.")}</small>
+            </button>
+            <button class="engage-step" type="button" onclick="goToReasons()">
+              <span class="engage-step-num">${smText("STEP 2","ÉTAPE 2")}</span>
+              <strong>${smText("PICK UP TO 3 REASONS","CHOISISSEZ JUSQU’À 3 RAISONS")}</strong>
+              <small>${smText("Tell us why it was a mistake.","Dites-nous pourquoi c’était une erreur.")}</small>
+            </button>
+            <button class="engage-step" type="button" onclick="openSportsCourtAndCompose()">
+              <span class="engage-step-num">${smText("STEP 3","ÉTAPE 3")}</span>
+              <strong>${smText("JOIN SPORTS COURT","PARTICIPEZ AU TRIBUNAL SPORTIF")}</strong>
+              <small>${smText("Make the case — or defend it.","Plaidez la cause — ou défendez-la.")}</small>
+            </button>
+          </div>
+        </div>
+
         <div class="vote-box verdict-combined one-page-verdict">
           <div class="verdict-vote">
             <div class="vote-head">
               <div>
+                <div class="action-kicker">${smText("STEP 1 — MAKE YOUR CALL","ÉTAPE 1 — RENDEZ VOTRE VERDICT")}</div>
                 <h2>${smText("Fan Verdict","Verdict des partisans")}</h2>
                 <p>${smText("Was this actually a mistake?","Était-ce vraiment une erreur?")}</p>
               </div>
@@ -2460,6 +2655,7 @@ async function loadMistake(){
           <div class="verdict-learn">
             <div class="verdict-learn-head">
               <div>
+                <div class="action-kicker">${smText("STEP 2 — ADD YOUR REASONS","ÉTAPE 2 — AJOUTEZ VOS RAISONS")}</div>
                 <h2>${smText("Why Was It a Mistake? LET\'S LEARN.","Pourquoi était-ce une erreur? APPRENONS.")}</h2>
                 <p>${smText("Choose up to 3 reasons.","Choisissez jusqu’à 3 raisons.")}</p>
               </div>
@@ -2500,6 +2696,15 @@ async function loadMistake(){
                 )
               )}</div>
             </div>
+
+            <button class="sports-court-cta" type="button" onclick="openSportsCourtAndCompose()">
+              <span class="sports-court-cta-copy">
+                <span class="action-kicker">${smText("STEP 3 — HAVE A TAKE?","ÉTAPE 3 — VOUS AVEZ UNE OPINION?")}</span>
+                <strong>${smText("ADD IT TO SPORTS COURT","AJOUTEZ-LA AU TRIBUNAL SPORTIF")}</strong>
+                <small>${smText("Argue that it WAS a mistake — or defend the other side.","Soutenez que C’ÉTAIT une erreur — ou défendez l’autre camp.")}</small>
+              </span>
+              <span class="sports-court-cta-arrow">→</span>
+            </button>
           </div>
         </div>
 
@@ -2507,7 +2712,7 @@ async function loadMistake(){
           <div class="detail-tab-bar" role="tablist">
             <button class="detail-tab active" data-tab="story" onclick="openDetailTab('story',this)">${smText("Story","Histoire")}</button>
             <button class="detail-tab" data-tab="why" onclick="openDetailTab('why',this)">${smText("Why It Matters","Pourquoi ça compte")}</button>
-            <button class="detail-tab" data-tab="court" onclick="openDetailTab('court',this)">${smText("Sports Court","Tribunal sportif")}</button>
+            <button class="detail-tab" data-tab="court" onclick="openDetailTab('court',this)">${smText("Join Sports Court","Participer au Tribunal")}</button>
             <button class="detail-tab" data-tab="sources" onclick="openDetailTab('sources',this)">${smText("Sources","Sources")}</button>
             <button class="detail-tab" data-tab="related" onclick="openDetailTab('related',this)">${smText("Related","Connexes")}</button>
           </div>
@@ -2615,6 +2820,38 @@ async function loadMistake(){
     .then(({error:viewError})=>{
       if(viewError) console.error("View count update failed:",viewError);
     });
+}
+
+
+function goToVote(){
+  const target=document.querySelector(".verdict-vote");
+  if(target) target.scrollIntoView({behavior:"smooth",block:"center"});
+}
+
+function goToReasons(){
+  const target=document.querySelector(".verdict-learn");
+  if(target) target.scrollIntoView({behavior:"smooth",block:"center"});
+  setTimeout(()=>{
+    const panel=document.getElementById("lessonDropdownPanel");
+    if(panel && !panel.classList.contains("open")) toggleLessonDropdown();
+  },350);
+}
+
+function openSportsCourtAndCompose(){
+  const courtTab=document.querySelector('.detail-tab[data-tab="court"]');
+  if(courtTab) openDetailTab("court",courtTab);
+
+  const shell=document.querySelector(".detail-tabs-shell");
+  if(shell) shell.scrollIntoView({behavior:"smooth",block:"start"});
+
+  setTimeout(()=>{
+    const compose=document.querySelector(".court-compose");
+    if(compose){
+      compose.open=true;
+      const box=document.getElementById("courtArgument");
+      if(box) box.focus({preventScroll:true});
+    }
+  },400);
 }
 
 function openDetailTab(name,button){
