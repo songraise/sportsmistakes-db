@@ -2967,6 +2967,103 @@ body{
   }
 }
 
+
+/* =========================================================
+   LARGE 1-2-3 PARTICIPATION HIERARCHY — SEP 10 2026
+   ========================================================= */
+.your-turn-static{
+  width:100%;
+  margin:16px 0;
+  padding:18px 20px;
+  border:2px solid rgba(226,36,36,.48);
+  border-radius:14px;
+  background:linear-gradient(135deg,rgba(226,36,36,.12),rgba(9,15,22,.96));
+  box-shadow:0 14px 30px rgba(0,0,0,.25);
+}
+.your-turn-static-label{
+  color:#fff;
+  font-size:15px;
+  font-weight:1000;
+  letter-spacing:1.25px;
+  text-align:center;
+  text-transform:uppercase;
+  margin-bottom:12px;
+}
+.your-turn-static-flow{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:16px;
+  flex-wrap:wrap;
+  color:#fff;
+}
+.your-turn-static-flow>div{
+  display:flex;
+  align-items:center;
+  gap:9px;
+  font-size:15px;
+  font-weight:1000;
+  text-transform:uppercase;
+  letter-spacing:.35px;
+}
+.your-turn-static-flow span{
+  width:34px;
+  height:34px;
+  border-radius:50%;
+  display:inline-grid;
+  place-items:center;
+  background:#e22424;
+  color:#fff;
+  font-size:18px;
+  box-shadow:0 7px 16px rgba(226,36,36,.25);
+}
+.your-turn-static-flow b{
+  color:#ff6464;
+  font-size:22px;
+}
+
+/* The step itself should be one of the most obvious labels in each section. */
+.action-kicker{
+  display:block !important;
+  margin-bottom:7px !important;
+  color:#ff4b4b !important;
+  font-size:20px !important;
+  line-height:1.05 !important;
+  font-weight:1000 !important;
+  letter-spacing:.25px !important;
+  text-transform:uppercase !important;
+}
+.verdict-vote .action-kicker,
+.verdict-learn .action-kicker,
+.simple-debate .action-kicker{
+  font-size:20px !important;
+}
+@media(min-width:1100px){
+  .action-kicker,
+  .verdict-vote .action-kicker,
+  .verdict-learn .action-kicker,
+  .simple-debate .action-kicker{
+    font-size:22px !important;
+  }
+}
+@media(max-width:760px){
+  .your-turn-static{padding:15px 12px}
+  .your-turn-static-flow{
+    display:grid;
+    grid-template-columns:1fr;
+    gap:8px;
+    justify-items:start;
+  }
+  .your-turn-static-flow b{display:none}
+  .your-turn-static-flow>div{font-size:14px}
+  .action-kicker,
+  .verdict-vote .action-kicker,
+  .verdict-learn .action-kicker,
+  .simple-debate .action-kicker{
+    font-size:18px !important;
+  }
+}
+
 </style>
   <link rel="stylesheet" href="styles.css" />
 <script>
@@ -3338,24 +3435,15 @@ async function loadMistake(){
             </div>
           </div>
         </section>
-        <div class="engage-now simple-engage-now">
-          <div class="engage-now-title">${smText("YOUR TURN","À VOUS")}</div>
-          <div class="engage-now-steps">
-            <button class="engage-step" type="button" onclick="goToVote()">
-              <span class="engage-step-num">${smText("1","1")}</span>
-              <strong>${smText("VOTE","VOTER")}</strong>
-              <small>${smText("YES or NO.","OUI ou NON.")}</small>
-            </button>
-            <button class="engage-step" type="button" onclick="goToReasons()">
-              <span class="engage-step-num">${smText("2","2")}</span>
-              <strong>${smText("PICK 3 REASONS","CHOISIR 3 RAISONS")}</strong>
-              <small>${smText("Why was it a mistake?","Pourquoi était-ce une erreur?")}</small>
-            </button>
-            <button class="engage-step" type="button" onclick="goToDebate()">
-              <span class="engage-step-num">${smText("3","3")}</span>
-              <strong>${smText("ADD YOUR TAKE","AJOUTER VOTRE AVIS")}</strong>
-              <small>${smText("Say why you agree or disagree.","Dites pourquoi vous êtes d’accord ou non.")}</small>
-            </button>
+
+        <div class="your-turn-static" aria-label="${smText("Your Turn: 1 Vote, 2 Add Reasons, 3 Comment to Teach","À VOUS : 1 Voter, 2 Ajouter des raisons, 3 Commenter pour enseigner")}">
+          <div class="your-turn-static-label">${smText("YOUR TURN","À VOUS")}</div>
+          <div class="your-turn-static-flow">
+            <div><span>1</span>${smText("VOTE","VOTER")}</div>
+            <b>→</b>
+            <div><span>2</span>${smText("ADD REASONS","AJOUTER DES RAISONS")}</div>
+            <b>→</b>
+            <div><span>3</span>${smText("COMMENT TO TEACH","COMMENTER POUR ENSEIGNER")}</div>
           </div>
         </div>
 
@@ -3363,7 +3451,7 @@ async function loadMistake(){
           <div class="verdict-vote" id="voteStep">
             <div class="vote-head">
               <div>
-                <div class="action-kicker">${smText("STEP 1 — MAKE YOUR CALL","ÉTAPE 1 — RENDEZ VOTRE VERDICT")}</div>
+                <div class="action-kicker">${smText("STEP 1: VOTE","ÉTAPE 1 : VOTER")}</div>
                 <h2>${smText("Fan Verdict","Verdict des partisans")}</h2>
                 <p>${smText("Was this actually a mistake?","Était-ce vraiment une erreur?")}</p>
               </div>
@@ -3381,7 +3469,7 @@ async function loadMistake(){
           <div class="verdict-learn" id="reasonStep">
             <div class="verdict-learn-head">
               <div>
-                <div class="action-kicker">${smText("STEP 2 — ADD YOUR REASONS","ÉTAPE 2 — AJOUTEZ VOS RAISONS")}</div>
+                <div class="action-kicker">${smText("STEP 2: ADD REASONS","ÉTAPE 2 : AJOUTER DES RAISONS")}</div>
                 <h2>${smText("Why Was It a Mistake? LET\'S LEARN.","Pourquoi était-ce une erreur? APPRENONS.")}</h2>
                 <p>${smText("Choose up to 3 reasons.","Choisissez jusqu’à 3 raisons.")}</p>
               </div>
@@ -3422,7 +3510,7 @@ async function loadMistake(){
             <section class="simple-debate" id="debateStep">
               <div class="simple-debate-head">
                 <div>
-                  <div class="action-kicker">${smText("3 — ADD YOUR TAKE","3 — AJOUTEZ VOTRE AVIS")}</div>
+                  <div class="action-kicker">${smText("STEP 3: COMMENT TO TEACH","ÉTAPE 3 : COMMENTER POUR ENSEIGNER")}</div>
                   <h3>${smText("What do you think?","Qu’en pensez-vous?")}</h3>
                   <p id="debateVoteHint">${smText("Vote first, then tell us why.","Votez d’abord, puis dites-nous pourquoi.")}</p>
                 </div>
