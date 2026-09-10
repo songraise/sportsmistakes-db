@@ -2442,120 +2442,87 @@ body{
 }
 
 /* =========================================================
-   SPORTS COURT PROMINENT PREVIEW — SEP 10 2026
-   Lives directly below Fan Verdict. Top arguments are visible
-   immediately and can be upvoted without opening another tab.
+   STREAMLINED SPORTS COURT — SEP 10 2026
+   One top argument per side, after Learn. Full-width and calm.
    ========================================================= */
-.court-prominent{
-  margin:16px 0 18px;
-  padding:16px;
-  border:1px solid rgba(255,255,255,.14);
-  border-radius:13px;
-  background:linear-gradient(180deg,rgba(12,24,36,.97),rgba(6,14,22,.97));
-  box-shadow:0 12px 26px rgba(0,0,0,.24);
+.streamlined-court{
+  margin-top:14px;
+  padding:14px;
+  border:1px solid rgba(255,255,255,.13);
+  border-radius:12px;
+  background:linear-gradient(180deg,rgba(11,24,36,.96),rgba(7,16,24,.96));
 }
-.court-prominent-head{
+.streamlined-court-head{
   display:flex;
   align-items:flex-start;
   justify-content:space-between;
-  gap:14px;
-  margin-bottom:12px;
+  gap:12px;
+  margin-bottom:10px;
 }
-.court-prominent-kicker{
+.streamlined-court-kicker{
   color:#e22424;
   font-size:10px;
   font-weight:1000;
-  letter-spacing:.85px;
+  letter-spacing:.75px;
   text-transform:uppercase;
-  margin-bottom:4px;
 }
-.court-prominent h3{
-  margin:0;
+.streamlined-court-head h3{
+  margin:3px 0 0;
   color:#fff;
-  font-size:20px;
+  font-size:18px;
 }
-.court-prominent-sub{
-  margin:5px 0 0;
-  color:#b9c5d1;
-  font-size:12px;
-  line-height:1.4;
+.streamlined-court-head p{
+  margin:4px 0 0;
+  color:#aebbc8;
+  font-size:11px;
 }
-.court-prominent-badge{
-  flex:0 0 auto;
-  padding:6px 9px;
-  border-radius:999px;
-  border:1px solid rgba(215,176,98,.35);
-  color:#e4c477;
-  font-size:9px;
-  font-weight:1000;
-  letter-spacing:.55px;
-  text-transform:uppercase;
-}
-.court-prominent-grid{
+.streamlined-court-grid{
   display:grid;
   grid-template-columns:1fr 1fr;
-  gap:12px;
+  gap:10px;
 }
-.court-prominent-side{
+.streamlined-court-side{
   min-width:0;
+  padding:10px;
   border:1px solid rgba(255,255,255,.11);
-  border-radius:10px;
-  padding:11px;
+  border-radius:9px;
   background:rgba(255,255,255,.025);
 }
-.court-prominent-side.yes-side{
-  border-color:rgba(226,36,36,.36);
-}
-.court-prominent-side.no-side{
-  border-color:rgba(148,163,184,.25);
-}
-.court-prominent-title{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:8px;
-  margin-bottom:8px;
+.streamlined-court-side.yes-side{border-color:rgba(226,36,36,.34)}
+.streamlined-court-side.no-side{border-color:rgba(148,163,184,.24)}
+.streamlined-court-side-title{
+  margin-bottom:7px;
   color:#fff;
-  font-size:11px;
+  font-size:10px;
   font-weight:1000;
   letter-spacing:.55px;
-  text-transform:uppercase;
 }
-.court-prominent-title span:last-child{
-  color:#8fa0b1;
-  font-size:9px;
+.streamlined-court .simple-comment{
+  padding:0;
+  border:0;
 }
-.court-prominent .simple-comment{
-  padding:9px 0;
-}
-.court-prominent .simple-comment:first-child{
-  padding-top:0;
-}
-.court-prominent .simple-comment-top{
+.streamlined-court .simple-comment-top{
   display:flex;
   align-items:flex-start;
   justify-content:space-between;
   gap:10px;
 }
-.court-prominent .simple-comment-text{
-  flex:1 1 auto;
+.streamlined-court .simple-comment-text{
+  flex:1;
+  color:#eef3f7;
   font-size:12px;
-  line-height:1.45;
+  line-height:1.42;
 }
-.court-prominent .argument-rank{
-  display:inline-block;
-  margin-bottom:5px;
-  color:#e4c477;
-  font-size:9px;
-  font-weight:1000;
-  letter-spacing:.55px;
-  text-transform:uppercase;
+.streamlined-court .simple-comment-meta{
+  margin-top:5px;
+  color:#9eacb9;
+  font-size:10px;
 }
-.court-prominent .upvote-btn{
+.streamlined-court .upvote-btn{
   flex:0 0 auto;
+  min-width:50px;
   margin:0;
-  min-width:54px;
-  padding:7px 8px;
+  padding:6px 8px;
   border:1px solid rgba(255,255,255,.14);
   border-radius:8px;
   background:#243140;
@@ -2564,21 +2531,13 @@ body{
   font-weight:1000;
   cursor:pointer;
 }
-.court-prominent .upvote-btn:hover{
-  background:#e22424;
-}
-.court-prominent .upvote-btn.already-voted{
-  opacity:.6;
-  cursor:default;
-}
-.court-prominent-footer{
+.streamlined-court .upvote-btn:hover{background:#e22424}
+.streamlined-court-actions{
   display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:12px;
+  justify-content:flex-end;
   margin-top:10px;
 }
-.court-prominent-footer button{
+.streamlined-court-actions button{
   border:0;
   background:transparent;
   color:#ff6464;
@@ -2587,16 +2546,9 @@ body{
   font-weight:1000;
   cursor:pointer;
 }
-.court-prominent-footer span{
-  color:#8fa0b1;
-  font-size:10px;
-}
 @media(max-width:760px){
-  .court-prominent{padding:13px}
-  .court-prominent-head{display:block}
-  .court-prominent-badge{display:inline-flex;margin-top:8px}
-  .court-prominent-grid{grid-template-columns:1fr}
-  .court-prominent .simple-comment-text{font-size:12px}
+  .streamlined-court-grid{grid-template-columns:1fr}
+  .streamlined-court-head{display:block}
 }
 
 .simple-debate{
@@ -3503,26 +3455,6 @@ async function loadMistake(){
             </div>
           </div>
         </section>
-        <div class="engage-now simple-engage-now">
-          <div class="engage-now-title">${smText("YOUR TURN","À VOUS")}</div>
-          <div class="engage-now-steps">
-            <button class="engage-step" type="button" onclick="goToVote()">
-              <span class="engage-step-num">${smText("1","1")}</span>
-              <strong>${smText("VOTE","VOTER")}</strong>
-              <small>${smText("YES or NO.","OUI ou NON.")}</small>
-            </button>
-            <button class="engage-step" type="button" onclick="goToReasons()">
-              <span class="engage-step-num">${smText("2","2")}</span>
-              <strong>${smText("PICK 3 REASONS","CHOISIR 3 RAISONS")}</strong>
-              <small>${smText("Why was it a mistake?","Pourquoi était-ce une erreur?")}</small>
-            </button>
-            <button class="engage-step" type="button" onclick="goToDebate()">
-              <span class="engage-step-num">${smText("3","3")}</span>
-              <strong>${smText("ADD YOUR TAKE","AJOUTER VOTRE AVIS")}</strong>
-              <small>${smText("Say why you agree or disagree.","Dites pourquoi vous êtes d’accord ou non.")}</small>
-            </button>
-          </div>
-        </div>
 
         <div class="vote-box verdict-combined one-page-verdict">
           <div class="verdict-vote" id="voteStep">
@@ -3542,43 +3474,6 @@ async function loadMistake(){
               <div id="voteResults">${smText("Loading votes...","Chargement des votes...")}</div>
             </div>
           </div>
-
-          <section class="court-prominent" id="courtPreviewStep">
-            <div class="court-prominent-head">
-              <div>
-                <div class="court-prominent-kicker">${smText("SPORTS COURT — TOP ARGUMENTS","TRIBUNAL SPORTIF — MEILLEURS ARGUMENTS")}</div>
-                <h3>${smText("What are fans arguing?","Que disent les partisans?")}</h3>
-                <p class="court-prominent-sub">${smText(
-                  "Read the strongest arguments on both sides. Upvote the ones that make the best case.",
-                  "Lisez les meilleurs arguments des deux camps. Votez pour ceux qui présentent le meilleur raisonnement."
-                )}</p>
-              </div>
-              <span class="court-prominent-badge">${smText("LIVE DEBATE","DÉBAT EN COURS")}</span>
-            </div>
-
-            <div class="court-prominent-grid">
-              <div class="court-prominent-side yes-side">
-                <div class="court-prominent-title">
-                  <span>🔨 ${smText("WHY FANS SAY YES","POURQUOI LES PARTISANS DISENT OUI")}</span>
-                  <span>${smText("It was a mistake","C’était une erreur")}</span>
-                </div>
-                <div id="courtPreviewYes" class="simple-comment-list">${smText("Loading arguments...","Chargement des arguments...")}</div>
-              </div>
-
-              <div class="court-prominent-side no-side">
-                <div class="court-prominent-title">
-                  <span>🛡️ ${smText("WHY FANS SAY NO","POURQUOI LES PARTISANS DISENT NON")}</span>
-                  <span>${smText("Not a mistake / overblown","Pas une erreur / exagéré")}</span>
-                </div>
-                <div id="courtPreviewNo" class="simple-comment-list">${smText("Loading arguments...","Chargement des arguments...")}</div>
-              </div>
-            </div>
-
-            <div class="court-prominent-footer">
-              <span>${smText("Upvote only. One upvote per argument on this device.","Vote positif seulement. Un vote par argument sur cet appareil.")}</span>
-              <button type="button" onclick="goToDebate()">${smText("ADD YOUR TAKE →","AJOUTER VOTRE AVIS →")}</button>
-            </div>
-          </section>
 
           <div class="verdict-learn" id="reasonStep">
             <div class="verdict-learn-head">
@@ -3625,6 +3520,31 @@ async function loadMistake(){
               )}</div>
             </div>
 
+            <section class="streamlined-court" id="sportsCourtPreview">
+              <div class="streamlined-court-head">
+                <div>
+                  <div class="streamlined-court-kicker">${smText("SPORTS COURT","TRIBUNAL SPORTIF")}</div>
+                  <h3>${smText("The strongest arguments","Les meilleurs arguments")}</h3>
+                  <p>${smText("Upvote the argument that makes the best case.","Votez pour l’argument qui présente le meilleur raisonnement.")}</p>
+                </div>
+              </div>
+
+              <div class="streamlined-court-grid">
+                <div class="streamlined-court-side yes-side">
+                  <div class="streamlined-court-side-title">🔨 ${smText("TOP YES ARGUMENT","MEILLEUR ARGUMENT OUI")}</div>
+                  <div id="courtPreviewYes">${smText("Loading argument...","Chargement de l’argument...")}</div>
+                </div>
+                <div class="streamlined-court-side no-side">
+                  <div class="streamlined-court-side-title">🛡️ ${smText("TOP NO ARGUMENT","MEILLEUR ARGUMENT NON")}</div>
+                  <div id="courtPreviewNo">${smText("Loading argument...","Chargement de l’argument...")}</div>
+                </div>
+              </div>
+
+              <div class="streamlined-court-actions">
+                <button type="button" onclick="openFullSportsCourt()">${smText("VIEW FULL DEBATE →","VOIR TOUT LE DÉBAT →")}</button>
+              </div>
+            </section>
+
             <div id="debateHome"></div>
             <section class="simple-debate" id="debateStep">
               <div class="simple-debate-head">
@@ -3642,8 +3562,6 @@ async function loadMistake(){
                 <button type="button" onclick="submitQuickDebate()">${smText("POST YOUR TAKE","PUBLIER VOTRE AVIS")}</button>
               </div>
               <div id="quickDebateMessage" class="simple-debate-message"></div>
-
-              <button class="view-all-debate" type="button" onclick="openFullSportsCourt()">${smText("VIEW FULL DEBATE →","VOIR TOUT LE DÉBAT →")}</button>
             </section>
           </div>
         </div>
@@ -4120,12 +4038,12 @@ async function loadCourtArguments(){
     if(d) d.innerHTML="Could not load arguments.";
     const qy=document.getElementById("quickYesComments");
     const qn=document.getElementById("quickNoComments");
-    const py=document.getElementById("courtPreviewYes");
-    const pn=document.getElementById("courtPreviewNo");
     if(qy) qy.innerHTML=smText("Could not load comments.","Impossible de charger les commentaires.");
     if(qn) qn.innerHTML=smText("Could not load comments.","Impossible de charger les commentaires.");
-    if(py) py.innerHTML=smText("Could not load arguments.","Impossible de charger les arguments.");
-    if(pn) pn.innerHTML=smText("Could not load arguments.","Impossible de charger les arguments.");
+    const previewYes=document.getElementById("courtPreviewYes");
+    const previewNo=document.getElementById("courtPreviewNo");
+    if(previewYes) previewYes.innerHTML=smText("Could not load argument.","Impossible de charger l’argument.");
+    if(previewNo) previewNo.innerHTML=smText("Could not load argument.","Impossible de charger l’argument.");
     return;
   }
 
@@ -4138,53 +4056,65 @@ async function loadCourtArguments(){
 
   const qy=document.getElementById("quickYesComments");
   const qn=document.getElementById("quickNoComments");
-  const py=document.getElementById("courtPreviewYes");
-  const pn=document.getElementById("courtPreviewNo");
 
   if(qy) qy.innerHTML=renderQuickComments(yesList,"yes");
   if(qn) qn.innerHTML=renderQuickComments(noList,"no");
-  if(py) py.innerHTML=renderQuickComments(yesList,"yes",3,true);
-  if(pn) pn.innerHTML=renderQuickComments(noList,"no",3,true);
+
+  const previewYes=document.getElementById("courtPreviewYes");
+  const previewNo=document.getElementById("courtPreviewNo");
+  if(previewYes) previewYes.innerHTML=renderTopCourtArgument(yesList,"yes");
+  if(previewNo) previewNo.innerHTML=renderTopCourtArgument(noList,"no");
 
   updateDebateVoteHint();
 }
 
-function renderQuickComments(list,side,limit=2,showRank=false){
+
+function renderTopCourtArgument(list,side){
   if(!list||list.length===0){
     return `<div class="simple-comment-empty">${
       side==="yes"
-        ? smText("No YES arguments yet. Be the first to make the case.","Aucun argument OUI pour le moment. Soyez le premier à présenter votre point de vue.")
-        : smText("No NO arguments yet. Be the first to make the case.","Aucun argument NON pour le moment. Soyez le premier à présenter votre point de vue.")
+        ? smText("No YES arguments yet.","Aucun argument OUI pour le moment.")
+        : smText("No NO arguments yet.","Aucun argument NON pour le moment.")
     }</div>`;
   }
 
-  return list.slice(0,limit).map((arg,index)=>{
-    const key="sports_court_upvote_"+arg.id;
-    const alreadyVoted=localStorage.getItem(key)==="true";
-    const rankLabel=
-      showRank && index===0
-        ? `<div class="argument-rank">${smText("TOP ARGUMENT","MEILLEUR ARGUMENT")}</div>`
-        : "";
+  const arg=list[0];
+  const key="sports_court_upvote_"+arg.id;
+  const alreadyVoted=localStorage.getItem(key)==="true";
 
-    return `
-      <div class="simple-comment">
-        ${rankLabel}
-        <div class="simple-comment-top">
-          <div>
-            <div class="simple-comment-text">${escapeHtml(arg.argument_text||"")}</div>
-            <div class="simple-comment-meta">${escapeHtml(arg.author_name||smText("Anonymous fan","Partisan anonyme"))}</div>
-          </div>
-          <button
-            type="button"
-            class="upvote-btn${alreadyVoted?" already-voted":""}"
-            onclick="upvoteArgument('${arg.id}')"
-            aria-label="${smText("Upvote this argument","Voter pour cet argument")}"
-            title="${alreadyVoted?smText("You already upvoted this argument.","Vous avez déjà voté pour cet argument."):smText("Upvote this argument","Voter pour cet argument")}"
-          >▲ ${Number(arg.upvotes||0)}</button>
+  return `
+    <div class="simple-comment">
+      <div class="simple-comment-top">
+        <div>
+          <div class="simple-comment-text">${escapeHtml(arg.argument_text||"")}</div>
+          <div class="simple-comment-meta">${escapeHtml(arg.author_name||smText("Anonymous fan","Partisan anonyme"))}</div>
         </div>
+        <button
+          type="button"
+          class="upvote-btn${alreadyVoted?" already-voted":""}"
+          onclick="upvoteArgument('${arg.id}')"
+          title="${alreadyVoted?smText("You already upvoted this argument.","Vous avez déjà voté pour cet argument."):smText("Upvote this argument","Voter pour cet argument")}"
+        >▲ ${Number(arg.upvotes||0)}</button>
       </div>
-    `;
-  }).join("");
+    </div>
+  `;
+}
+
+function renderQuickComments(list,side){
+  if(!list||list.length===0){
+    return `<div class="simple-comment-empty">${
+      side==="yes"
+        ? smText("No YES comments yet. Be the first.","Aucun commentaire OUI pour le moment. Soyez le premier.")
+        : smText("No NO comments yet. Be the first.","Aucun commentaire NON pour le moment. Soyez le premier.")
+    }</div>`;
+  }
+
+  return list.slice(0,2).map(arg=>`
+    <div class="simple-comment">
+      <div class="simple-comment-text">${escapeHtml(arg.argument_text||"")}</div>
+      <div class="simple-comment-meta">${escapeHtml(arg.author_name||"Anonymous fan")}${arg.upvotes?` • 👍 ${arg.upvotes}`:""}</div>
+    </div>
+  `).join("");
 }
 
 function renderArguments(list,side){
@@ -4208,35 +4138,11 @@ async function submitCourtArgument(){
 
 async function upvoteArgument(argumentId){
   const key="sports_court_upvote_"+argumentId;
-
-  if(localStorage.getItem(key)){
-    alert(smText("You already upvoted this argument.","Vous avez déjà voté pour cet argument."));
-    return;
-  }
-
-  const{data,error}=await client
-    .from("sports_court_arguments")
-    .select("upvotes")
-    .eq("id",argumentId)
-    .single();
-
-  if(error||!data){
-    console.error(error);
-    alert(smText("Could not upvote this argument.","Impossible de voter pour cet argument."));
-    return;
-  }
-
-  const{error:updateError}=await client
-    .from("sports_court_arguments")
-    .update({upvotes:(data.upvotes||0)+1})
-    .eq("id",argumentId);
-
-  if(updateError){
-    console.error(updateError);
-    alert(smText("Could not upvote this argument.","Impossible de voter pour cet argument."));
-    return;
-  }
-
+  if(localStorage.getItem(key)){alert("You already upvoted this argument.");return}
+  const{data,error}=await client.from("sports_court_arguments").select("upvotes").eq("id",argumentId).single();
+  if(error||!data){console.error(error);alert("Could not upvote.");return}
+  const{error:updateError}=await client.from("sports_court_arguments").update({upvotes:(data.upvotes||0)+1}).eq("id",argumentId);
+  if(updateError){console.error(updateError);alert("Could not upvote.");return}
   localStorage.setItem(key,"true");
   await loadCourtArguments();
 }
