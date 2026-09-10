@@ -3064,6 +3064,171 @@ body{
   }
 }
 
+
+/* =========================================================
+   GUIDED 3-STEP PARTICIPATION FLOW — SEP 10 2026
+   Only one participation section is visible at a time.
+   ========================================================= */
+.your-turn-guide{
+  width:100%;
+  margin:16px 0;
+  padding:18px;
+  border:2px solid rgba(226,36,36,.42);
+  border-radius:15px;
+  background:linear-gradient(135deg,rgba(226,36,36,.10),rgba(9,15,22,.97));
+  box-shadow:0 16px 34px rgba(0,0,0,.28);
+}
+.your-turn-guide-label{
+  text-align:center;
+  color:#fff;
+  font-size:17px;
+  font-weight:1000;
+  letter-spacing:1.4px;
+  text-transform:uppercase;
+  margin-bottom:13px;
+}
+.your-turn-guide-buttons{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:10px;
+}
+.guide-step{
+  position:relative;
+  min-height:68px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:9px;
+  padding:12px 14px;
+  border:1px solid rgba(255,255,255,.14);
+  border-radius:11px;
+  background:#111b27;
+  color:#dce4ec;
+  cursor:pointer;
+  font-weight:1000;
+  text-transform:uppercase;
+  transition:.18s ease;
+}
+.guide-step:hover{
+  border-color:rgba(226,36,36,.60);
+  transform:translateY(-1px);
+}
+.guide-step.active{
+  background:linear-gradient(135deg,#e22424,#b91313);
+  color:#fff;
+  border-color:#ff6464;
+  box-shadow:0 9px 22px rgba(226,36,36,.24);
+}
+.guide-step.completed:not(.active){
+  border-color:rgba(68,200,120,.38);
+}
+.guide-step-num{
+  width:30px;
+  height:30px;
+  border-radius:50%;
+  display:grid;
+  place-items:center;
+  background:rgba(255,255,255,.10);
+  font-size:16px;
+}
+.guide-step.active .guide-step-num{
+  background:rgba(255,255,255,.18);
+}
+.guide-step-check{
+  position:absolute;
+  top:6px;
+  right:8px;
+  color:#62d48f;
+  font-size:14px;
+  font-weight:1000;
+}
+.guide-step.completed .guide-step-check::before{
+  content:"✓";
+}
+
+.participation-panel{
+  display:none !important;
+  animation:smStepIn .18s ease;
+}
+.participation-panel.active{
+  display:block !important;
+}
+
+@keyframes smStepIn{
+  from{opacity:0;transform:translateY(6px)}
+  to{opacity:1;transform:translateY(0)}
+}
+
+.participation-nav{
+  margin-top:16px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+}
+.participation-back,
+.participation-next{
+  border:0;
+  border-radius:9px;
+  padding:11px 15px;
+  font-weight:1000;
+  cursor:pointer;
+}
+.participation-back{
+  background:#283241;
+  color:#fff;
+}
+.participation-next{
+  background:linear-gradient(135deg,#e22424,#c81010);
+  color:#fff;
+}
+.participation-done-note{
+  color:#98a7b6;
+  font-size:11px;
+}
+
+/* Give the open step a single large-card feel. */
+.verdict-combined{
+  max-width:100% !important;
+}
+.verdict-vote.participation-panel.active,
+.verdict-learn.participation-panel.active,
+#commentTeachStep.participation-panel.active{
+  padding:22px !important;
+  border:1px solid rgba(255,255,255,.14);
+  border-radius:14px;
+  background:linear-gradient(180deg,rgba(14,27,40,.98),rgba(8,17,26,.98));
+  box-shadow:0 15px 30px rgba(0,0,0,.24);
+}
+#commentTeachStep .streamlined-court,
+#commentTeachStep .simple-debate{
+  margin-top:0;
+}
+#commentTeachStep .simple-debate{
+  margin-top:12px;
+}
+
+@media(max-width:760px){
+  .your-turn-guide-buttons{
+    grid-template-columns:1fr;
+  }
+  .guide-step{
+    min-height:56px;
+    justify-content:flex-start;
+  }
+  .participation-nav{
+    flex-direction:column;
+    align-items:stretch;
+  }
+  .participation-back,
+  .participation-next{
+    width:100%;
+  }
+  .participation-done-note{
+    text-align:center;
+  }
+}
+
 </style>
   <link rel="stylesheet" href="styles.css" />
 <script>
@@ -3436,19 +3601,30 @@ async function loadMistake(){
           </div>
         </section>
 
-        <div class="your-turn-static" aria-label="${smText("Your Turn: 1 Vote, 2 Add Reasons, 3 Comment to Teach","À VOUS : 1 Voter, 2 Ajouter des raisons, 3 Commenter pour enseigner")}">
-          <div class="your-turn-static-label">${smText("YOUR TURN","À VOUS")}</div>
-          <div class="your-turn-static-flow">
-            <div><span>1</span>${smText("VOTE","VOTER")}</div>
-            <b>→</b>
-            <div><span>2</span>${smText("ADD REASONS","AJOUTER DES RAISONS")}</div>
-            <b>→</b>
-            <div><span>3</span>${smText("COMMENT TO TEACH","COMMENTER POUR ENSEIGNER")}</div>
+        <div class="your-turn-guide" id="yourTurnGuide">
+          <div class="your-turn-guide-label">${smText("YOUR TURN","À VOUS")}</div>
+          <div class="your-turn-guide-buttons">
+            <button type="button" class="guide-step active" id="guideStep1" onclick="openParticipationStep(1)">
+              <span class="guide-step-check" id="guideCheck1"></span>
+              <span class="guide-step-num">1</span>
+              <strong>${smText("VOTE","VOTER")}</strong>
+            </button>
+            <button type="button" class="guide-step" id="guideStep2" onclick="openParticipationStep(2)">
+              <span class="guide-step-check" id="guideCheck2"></span>
+              <span class="guide-step-num">2</span>
+              <strong>${smText("ADD REASONS","AJOUTER DES RAISONS")}</strong>
+            </button>
+            <button type="button" class="guide-step" id="guideStep3" onclick="openParticipationStep(3)">
+              <span class="guide-step-check" id="guideCheck3"></span>
+              <span class="guide-step-num">3</span>
+              <strong>${smText("COMMENT TO TEACH","COMMENTER POUR ENSEIGNER")}</strong>
+            </button>
           </div>
+        </div>
         </div>
 
         <div class="vote-box verdict-combined one-page-verdict">
-          <div class="verdict-vote" id="voteStep">
+          <div class="verdict-vote participation-panel active" id="voteStep" data-participation-step="1">
             <div class="vote-head">
               <div>
                 <div class="action-kicker">${smText("STEP 1: VOTE","ÉTAPE 1 : VOTER")}</div>
@@ -3464,9 +3640,15 @@ async function loadMistake(){
               <div id="votePie" class="vote-pie" aria-label="${smText("Fan verdict pie chart","Diagramme du verdict des partisans")}"></div>
               <div id="voteResults">${smText("Loading votes...","Chargement des votes...")}</div>
             </div>
+            <div class="participation-nav">
+              <span></span>
+              <button type="button" class="participation-next" onclick="openParticipationStep(2)">
+                ${smText("NEXT: ADD REASONS →","SUIVANT : AJOUTER DES RAISONS →")}
+              </button>
+            </div>
           </div>
 
-          <div class="verdict-learn" id="reasonStep">
+          <div class="verdict-learn participation-panel" id="reasonStep" data-participation-step="2">
             <div class="verdict-learn-head">
               <div>
                 <div class="action-kicker">${smText("STEP 2: ADD REASONS","ÉTAPE 2 : AJOUTER DES RAISONS")}</div>
@@ -3506,6 +3688,17 @@ async function loadMistake(){
             </div>
             ` : ""}
 
+            <div class="participation-nav">
+              <button type="button" class="participation-back" onclick="openParticipationStep(1)">
+                ${smText("← BACK","← RETOUR")}
+              </button>
+              <button type="button" class="participation-next" onclick="openParticipationStep(3)">
+                ${smText("NEXT: COMMENT TO TEACH →","SUIVANT : COMMENTER POUR ENSEIGNER →")}
+              </button>
+            </div>
+          </div>
+
+          <div class="participation-panel" id="commentTeachStep" data-participation-step="3">
             <div id="debateHome"></div>
             <section class="simple-debate" id="debateStep">
               <div class="simple-debate-head">
@@ -3537,6 +3730,13 @@ async function loadMistake(){
 
               <button class="view-all-debate" type="button" onclick="openFullSportsCourt()">${smText("VIEW FULL DEBATE →","VOIR TOUT LE DÉBAT →")}</button>
             </section>
+            <div class="participation-nav participation-nav-final">
+              <button type="button" class="participation-back" onclick="openParticipationStep(2)">
+                ${smText("← BACK","← RETOUR")}
+              </button>
+              <span class="participation-done-note">${smText("You can revisit any step above.","Vous pouvez revenir à n’importe quelle étape ci-dessus.")}</span>
+            </div>
+          </div>
           </div>
         </div>
 
@@ -3553,6 +3753,8 @@ async function loadMistake(){
     loadCourtArguments(),
     loadRelatedMistakes()
   ]);
+  openParticipationStep(1);
+  updateParticipationProgress();
 
   client
     .from("mistakes")
@@ -3564,32 +3766,77 @@ async function loadMistake(){
 }
 
 
+
+function openParticipationStep(step){
+  const target = Number(step) || 1;
+
+  document.querySelectorAll(".participation-panel").forEach(panel=>{
+    panel.classList.toggle(
+      "active",
+      Number(panel.dataset.participationStep) === target
+    );
+  });
+
+  document.querySelectorAll(".guide-step").forEach(btn=>{
+    btn.classList.remove("active");
+  });
+
+  const activeBtn=document.getElementById("guideStep"+target);
+  if(activeBtn) activeBtn.classList.add("active");
+
+  updateParticipationProgress();
+
+  const panel=document.querySelector(`.participation-panel[data-participation-step="${target}"]`);
+  if(panel){
+    panel.scrollIntoView({behavior:"smooth",block:"start"});
+  }
+}
+
+function updateParticipationProgress(){
+  const voteDone = Boolean(getSavedVote());
+
+  let reasonsDone = false;
+  try{
+    const saved = localStorage.getItem("sportsmistakes_lesson_votes_"+id);
+    reasonsDone = Boolean(saved);
+  }catch(e){}
+
+  let commentDone = false;
+  try{
+    commentDone = localStorage.getItem("sportsmistakes_comment_done_"+id)==="true";
+  }catch(e){}
+
+  const states = {
+    1: voteDone,
+    2: reasonsDone,
+    3: commentDone
+  };
+
+  Object.entries(states).forEach(([step,done])=>{
+    const btn=document.getElementById("guideStep"+step);
+    if(btn) btn.classList.toggle("completed",Boolean(done));
+  });
+}
+
 function goToVote(){
-  const target=document.getElementById("voteStep");
-  if(target) target.scrollIntoView({behavior:"smooth",block:"center"});
+  openParticipationStep(1);
 }
 
 function goToReasons(){
-  const target=document.getElementById("reasonStep");
-  if(target) target.scrollIntoView({behavior:"smooth",block:"center"});
+  openParticipationStep(2);
   setTimeout(()=>{
     const panel=document.getElementById("lessonDropdownPanel");
     if(panel && !panel.classList.contains("open")) toggleLessonDropdown();
-  },350);
+  },250);
 }
 
 function goToDebate(){
-  const target=document.getElementById("debateStep");
-  if(target) target.scrollIntoView({behavior:"smooth",block:"start"});
-
-  // On phones, focusing the box is convenient.
-  // On desktop, don't auto-focus: Safari/Chrome can keep the viewport
-  // anchored around the textarea and make upward scrolling feel trapped.
+  openParticipationStep(3);
   if(window.innerWidth<=900){
     setTimeout(()=>{
       const box=document.getElementById("quickDebateText");
       if(box) box.focus({preventScroll:true});
-    },350);
+    },250);
   }
 }
 
@@ -3676,6 +3923,8 @@ async function submitQuickDebate(){
   document.getElementById("quickDebateText").value="";
   document.getElementById("quickDebateName").value="";
   msg.innerText=smText("Your take was added.","Votre avis a été ajouté.");
+  try{ localStorage.setItem("sportsmistakes_comment_done_"+id,"true"); }catch(e){}
+  updateParticipationProgress();
   await loadCourtArguments();
 }
 
