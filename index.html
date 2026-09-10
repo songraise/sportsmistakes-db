@@ -3989,6 +3989,78 @@
       return record?.[field] ?? "";
     }
 
+    // ============================================================
+    // PUBLIC MISTAKE URL
+    // Homepage/search/cards now open the clean static record page first.
+    // The static page's JUDGE AND LEARN button then opens mistake.html
+    // for voting, reasons and debate.
+    // This slug/path logic intentionally matches generate-seo-pages.mjs.
+    // ============================================================
+    function staticMistakeSlug(value = "") {
+      return (
+        String(value)
+          .normalize("NFKD")
+          .replace(/[\u0300-\u036f]/g, "")
+          .toLowerCase()
+          .replace(/&/g, " and ")
+          .replace(/[^a-z0-9]+/g, "-")
+          .replace(/^-+|-+$/g, "")
+          .slice(0, 88) || "sports-mistake"
+      );
+    }
+
+    function staticMistakeShortId(id = "") {
+      return String(id)
+        .replace(/[^a-zA-Z0-9]/g, "")
+        .slice(0, 10);
+    }
+
+    function hasStaticFrenchPage(record) {
+      if (!record) return false;
+
+      return Boolean(
+        String(record.title_fr || "").trim() &&
+        (
+          String(record.summary_fr || "").trim() ||
+          String(record.why_it_matters_fr || "").trim() ||
+          String(record.lessons_learned_fr || "").trim()
+        )
+      );
+    }
+
+    function staticMistakeUrl(recordOrId) {
+      let record =
+        (recordOrId && typeof recordOrId === "object")
+          ? recordOrId
+          : mistakes.find(
+              m => String(m.id) === String(recordOrId || "")
+            );
+
+      if (!record || !record.id || !record.title) {
+        const fallbackId =
+          (record && record.id) ||
+          (typeof recordOrId === "string" ? recordOrId : "");
+
+        return `mistake.html?id=${encodeURIComponent(fallbackId)}`;
+      }
+
+      const currentLanguage =
+        (window.SMLanguage && typeof window.SMLanguage.get === "function")
+          ? window.SMLanguage.get()
+          : "en";
+
+      const useFrench =
+        currentLanguage === "fr" &&
+        hasStaticFrenchPage(record);
+
+      const pageTitle =
+        useFrench
+          ? (record.title_fr || record.title)
+          : record.title;
+
+      return `mistakes/${useFrench ? "fr" : "en"}/${staticMistakeSlug(pageTitle)}-${staticMistakeShortId(record.id)}.html`;
+    }
+
     function smUI(text) {
       return window.SMLanguage ? window.SMLanguage.ui(text) : text;
     }
@@ -4263,7 +4335,7 @@
             <span class="score-big">${escapeHtml(featured.controversy_score || 0)}%</span>
             <span style="color:#ef4444;font-size:26px;">★ ★ ★ ★ ☆</span>
           </div>
-          <a class="read-btn" href="mistake.html?id=${featured.id}">Read the Story ›</a>
+          <a class="read-btn" href="${staticMistakeUrl(featured)}">Read the Story ›</a>
         </div>
       `;
     }
@@ -4310,7 +4382,7 @@
       }
 
       box.innerHTML = items.map(m => `
-        <a class="list-row gallery-shelf-item" href="mistake.html?id=${encodeURIComponent(m.id)}">
+        <a class="list-row gallery-shelf-item" href="${staticMistakeUrl(m)}">
           <div class="thumb">${renderArt(m, "card")}</div>
           <div class="gallery-shelf-copy">
             <div class="row-title">${escapeHtml(smField(m, "title") || "Untitled Mistake")}</div>
@@ -4563,7 +4635,7 @@
         const meta = smMeta([m.year, m.sport, m.category]);
 
         return `
-          <a class="search-result-card" href="mistake.html?id=${encodeURIComponent(m.id)}">
+          <a class="search-result-card" href="${staticMistakeUrl(m)}">
             <div class="search-result-art">${renderArt(m, "search")}</div>
             <div>
               <div class="search-result-title">${escapeHtml(smField(m, "title") || "Untitled Mistake")}</div>
@@ -4599,7 +4671,7 @@
       }
 
       grid.innerHTML = visible.map(m => `
-        <a class="card" href="mistake.html?id=${encodeURIComponent(m.id)}">
+        <a class="card" href="${staticMistakeUrl(m)}">
           <div class="card-image">${renderArt(m, "card")}</div>
           <div class="card-body">
             <span class="badge">${escapeHtml(smLabel(m.sport || "Sport"))}</span>
@@ -4841,7 +4913,7 @@ function formatNumber(n) {
           </div>
           <div class="judge-actions">
             <button class="next-btn" onclick="nextQuickMistake()">Next Mistake →</button>
-            <a class="story-btn" href="mistake.html?id=${encodeURIComponent(m.id)}">Read the Story</a>
+            <a class="story-btn" href="${staticMistakeUrl(m)}">Read the Story</a>
           </div>
         </div>`;
     }
@@ -4927,7 +4999,7 @@ function formatNumber(n) {
     function renderTodaysFive(){
       const grid=document.getElementById("todaysFiveGrid"); if(!grid) return;
       const five=getQuickPlayPool().slice(0,5);
-      grid.innerHTML=five.map((m)=>`<a class="today-card" href="mistake.html?id=${encodeURIComponent(m.id)}">
+      grid.innerHTML=five.map((m)=>`<a class="today-card" href="${staticMistakeUrl(m)}">
         <div class="today-art">${renderArt(m,"card")}</div><div class="today-body"><div class="today-title">${escapeHtml(smField(m, "title")||"Untitled Mistake")}</div><div class="today-meta">${escapeHtml(smMeta([m.year,m.sport]))}</div><div class="today-meta-line"><span>👁 ${formatNumber(m.views||0)}</span>${renderMiniCommunity(m.id,true)}</div></div></a>`).join("");
       if (window.SMLanguage) window.SMLanguage.translate(grid);
     }
@@ -5061,7 +5133,7 @@ function formatNumber(n) {
               <div class="nomination-match-meta">${escapeHtml(smMeta([m.year,m.sport,m.category]))}</div>
             </div>
             <a class="nomination-match-action"
-               href="mistake.html?id=${encodeURIComponent(m.id)}"
+               href="${staticMistakeUrl(m)}"
                onclick="event.stopPropagation()">That's it →</a>
           </div>
         `).join("")}
@@ -5194,7 +5266,7 @@ function formatNumber(n) {
           result.innerHTML=`
             <strong>${escapeHtml(data.title||"Sports mistake")}</strong>
             <p>${Number(data.nomination_count||1).toLocaleString()} fan nomination${Number(data.nomination_count||1)===1?"":"s"} recorded for this moment.</p>
-            <a href="mistake.html?id=${encodeURIComponent(data.mistake_id)}">Judge this mistake →</a>`;
+            <a href="${staticMistakeUrl(data.mistake_id)}">View the record →</a>`;
           input.value="";
           selectedNominationMistake=null;
           pendingAiSuggestion="";
@@ -5310,7 +5382,7 @@ function formatNumber(n) {
             onerror="this.onerror=null;if(this.dataset.original&&this.src!==this.dataset.original)this.src=this.dataset.original;"
           >
         `;
-          navBuckner.onclick=()=>location.href=`mistake.html?id=${encodeURIComponent(buckner.id)}`;
+          navBuckner.onclick=()=>location.href=staticMistakeUrl(buckner);
           navBuckner.style.cursor="pointer";
           navBuckner.title=buckner.title||"Bill Buckner";
         }
@@ -5330,7 +5402,7 @@ function formatNumber(n) {
         dailyBox.innerHTML=url
           ? `<img src="${escapeHtml(optimizedDailyUrl)}" data-original="${escapeHtml(url)}" onerror="this.onerror=null;if(this.dataset.original&&this.src!==this.dataset.original)this.src=this.dataset.original;" alt="${escapeHtml(smField(daily, "title")||"SportsMistakes artwork")}" fetchpriority="high" decoding="async">`
           : `<div class="daily-art-placeholder">SportsMistakes</div>`;
-        dailyBox.onclick=()=>location.href=`mistake.html?id=${encodeURIComponent(daily.id)}`;
+        dailyBox.onclick=()=>location.href=staticMistakeUrl(daily);
         dailyBox.style.cursor="pointer";
         if(dailyCaption){
           dailyCaption.innerHTML=`${escapeHtml(smField(daily, "title")||"Today's Sports Mistake")}<br><span style="color:#9ca3af;font-weight:700">${escapeHtml(smMeta([daily.year,daily.sport]))}</span>`;
@@ -5363,7 +5435,7 @@ function formatNumber(n) {
             ? `${votes} vote${votes===1?"":"s"}`
             : `${Number(m.controversy_score||0)}/100`;
           return `
-          <a class="museum-rank-row gallery-rank-card" href="mistake.html?id=${encodeURIComponent(m.id)}">
+          <a class="museum-rank-row gallery-rank-card" href="${staticMistakeUrl(m)}">
             <div class="rank-num">${i+1}</div>
             <div class="rank-thumb">${renderArt(m,"card")}</div>
             <div class="gallery-rank-copy">
@@ -5426,7 +5498,7 @@ function formatNumber(n) {
                 : escapeHtml(smMeta([m.year,m.sport]," • ")));
 
           return `
-          <a class="hall-card gallery-featured-exhibit" href="mistake.html?id=${encodeURIComponent(m.id)}">
+          <a class="hall-card gallery-featured-exhibit" href="${staticMistakeUrl(m)}">
             ${index===1 ? `<div class="gallery-ribbon">HALL OF FAME</div>` : ""}
             <div class="hall-art">${renderArt(m,"featured")}</div>
             <div class="hall-copy">
