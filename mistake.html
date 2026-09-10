@@ -3229,6 +3229,51 @@ body{
   }
 }
 
+
+/* =========================================================
+   MOBILE PORTRAIT FLOW FIX — SEP 10 2026
+   Keep the 1-2-3 guide and active step below the artwork/title.
+   ========================================================= */
+@media(max-width:760px) and (orientation:portrait){
+  .museum-hero{
+    display:block !important;
+  }
+
+  .gallery-side,
+  .hero-info,
+  .one-page-info{
+    position:static !important;
+    width:100% !important;
+    max-width:none !important;
+  }
+
+  .gallery-side{
+    margin-bottom:14px !important;
+  }
+
+  .your-turn-guide{
+    position:static !important;
+    clear:both !important;
+    width:100% !important;
+    margin:16px 0 !important;
+    transform:none !important;
+    inset:auto !important;
+    z-index:auto !important;
+  }
+
+  .vote-box,
+  .verdict-combined,
+  .participation-panel,
+  #commentTeachStep{
+    position:static !important;
+    width:100% !important;
+    max-width:none !important;
+    transform:none !important;
+    inset:auto !important;
+    z-index:auto !important;
+  }
+}
+
 </style>
   <link rel="stylesheet" href="styles.css" />
 <script>
@@ -3704,10 +3749,10 @@ async function loadMistake(){
               <div class="simple-debate-head">
                 <div>
                   <div class="action-kicker">${smText("STEP 3: COMMENT TO TEACH","ÉTAPE 3 : COMMENTER POUR ENSEIGNER")}</div>
-                  <h3>${smText("What do you think?","Qu’en pensez-vous?")}</h3>
+                  <h3>${smText("Add your perspective","Ajoutez votre point de vue")}</h3>
                   <p id="debateVoteHint">${smText("Vote first, then tell us why.","Votez d’abord, puis dites-nous pourquoi.")}</p>
                 </div>
-                <span class="simple-debate-badge">${smText("SPORTS COURT","TRIBUNAL SPORTIF")}</span>
+                
               </div>
 
               <textarea id="quickDebateText" maxlength="800" placeholder="Why was this a mistake — or why wasn't it?"></textarea>
@@ -3727,8 +3772,6 @@ async function loadMistake(){
                   <div id="quickNoComments" class="simple-comment-list">${smText("Loading comments...","Chargement des commentaires...")}</div>
                 </div>
               </div>
-
-              <button class="view-all-debate" type="button" onclick="openFullSportsCourt()">${smText("VIEW FULL DEBATE →","VOIR TOUT LE DÉBAT →")}</button>
             </section>
             <div class="participation-nav participation-nav-final">
               <button type="button" class="participation-back" onclick="openParticipationStep(2)">
@@ -3878,10 +3921,10 @@ async function submitQuickDebate(){
     return;
   }
 
-  if(text.length<20){
+  if(text.length<8){
     msg.innerText=smText(
-      "Please write at least a short sentence.",
-      "Veuillez écrire au moins une courte phrase."
+      "Please add a little more detail.",
+      "Veuillez ajouter un peu plus de détails."
     );
     return;
   }
