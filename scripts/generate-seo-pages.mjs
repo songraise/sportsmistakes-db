@@ -283,7 +283,7 @@ function buildPage(m, lang = "en") {
           "ÉQUIPES / PERSONNES",
 
         judge:
-          "JUGEZ CETTE ERREUR",
+          "JUGEZ ET APPRENEZ",
 
         cta:
           "VOTER • CHOISIR 3 RAISONS • AJOUTER VOTRE AVIS",
@@ -320,7 +320,7 @@ function buildPage(m, lang = "en") {
           "TEAMS / PEOPLE",
 
         judge:
-          "JUDGE THIS MISTAKE",
+          "JUDGE AND LEARN",
 
         cta:
           "VOTE • PICK 3 REASONS • ADD YOUR TAKE",
