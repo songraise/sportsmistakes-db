@@ -2858,6 +2858,115 @@ body{
   }
 }
 
+
+/* =========================================================
+   DESKTOP SCROLL FIX — SEP 10 2026
+   The old one-screen desktop layout locked html/body and the
+   page container to the viewport. Restore normal document scrolling.
+   Mobile behavior is unchanged.
+   ========================================================= */
+@media(min-width:901px){
+  html,
+  body{
+    height:auto !important;
+    min-height:100% !important;
+    overflow-x:hidden !important;
+    overflow-y:auto !important;
+  }
+
+  body{
+    position:static !important;
+  }
+
+  .container{
+    height:auto !important;
+    min-height:calc(100vh - 68px) !important;
+    max-height:none !important;
+    margin:0 auto 70px !important;
+    padding:6px 18px 28px !important;
+    overflow:visible !important;
+  }
+
+  .detail-shell{
+    height:auto !important;
+    min-height:0 !important;
+    max-height:none !important;
+    display:block !important;
+    overflow:visible !important;
+  }
+
+  .back-link{
+    display:block !important;
+    margin:0 0 6px !important;
+  }
+
+  .one-page-mistake{
+    height:auto !important;
+    min-height:0 !important;
+    max-height:none !important;
+    align-items:start !important;
+    overflow:visible !important;
+  }
+
+  .one-page-mistake .gallery-side{
+    height:auto !important;
+    min-height:0 !important;
+    align-self:start !important;
+    overflow:visible !important;
+  }
+
+  .one-page-mistake .frame-wrap{
+    height:auto !important;
+    min-height:0 !important;
+  }
+
+  .one-page-mistake .art-frame{
+    height:auto !important;
+    min-height:0 !important;
+  }
+
+  .one-page-mistake .art-inner{
+    height:auto !important;
+    min-height:0 !important;
+  }
+
+  .one-page-mistake .main-artwork{
+    height:auto !important;
+    max-height:none !important;
+    object-fit:contain !important;
+  }
+
+  .one-page-info{
+    height:auto !important;
+    min-height:0 !important;
+    max-height:none !important;
+    overflow:visible !important;
+  }
+
+  .one-page-info > .detail-tabs-shell,
+  .detail-tabs-shell{
+    height:auto !important;
+    min-height:0 !important;
+    max-height:none !important;
+    overflow:visible !important;
+  }
+
+  .detail-tab-panels,
+  .detail-tab-panel{
+    height:auto !important;
+    min-height:0 !important;
+    max-height:none !important;
+  }
+
+  /* Keep smooth jump buttons useful, but never trap the page there. */
+  #voteStep,
+  #reasonStep,
+  #debateStep,
+  .detail-tabs-shell{
+    scroll-margin-top:86px !important;
+  }
+}
+
 </style>
   <link rel="stylesheet" href="styles.css" />
 <script>
@@ -3394,11 +3503,17 @@ function goToReasons(){
 
 function goToDebate(){
   const target=document.getElementById("debateStep");
-  if(target) target.scrollIntoView({behavior:"smooth",block:"center"});
-  setTimeout(()=>{
-    const box=document.getElementById("quickDebateText");
-    if(box) box.focus({preventScroll:true});
-  },350);
+  if(target) target.scrollIntoView({behavior:"smooth",block:"start"});
+
+  // On phones, focusing the box is convenient.
+  // On desktop, don't auto-focus: Safari/Chrome can keep the viewport
+  // anchored around the textarea and make upward scrolling feel trapped.
+  if(window.innerWidth<=900){
+    setTimeout(()=>{
+      const box=document.getElementById("quickDebateText");
+      if(box) box.focus({preventScroll:true});
+    },350);
+  }
 }
 
 function getSavedVote(){
