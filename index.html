@@ -2829,6 +2829,7 @@
 
 
 .container{display:none !important;}
+    .container.view-all-open{display:block !important;}
 
     /* FINAL DESKTOP RANKINGS REFINEMENT */
     .gallery-rankings-wrap .museum-ranking-list{
@@ -4733,6 +4734,11 @@
       currentSortMode = mode;
       visibleCardLimit = Math.max(mistakes.length, INITIAL_CARD_LIMIT);
 
+      const resultsContainer = document.querySelector(".container");
+      if (resultsContainer) {
+        resultsContainer.classList.add("view-all-open");
+      }
+
       const heading = document.getElementById("allMistakesHeading");
       const labels = {
         votes: "Trending Now — View All",
@@ -4744,9 +4750,8 @@
 
       renderMistakes();
 
-      const container = document.querySelector(".container");
-      if (container) {
-        container.scrollIntoView({behavior:"smooth", block:"start"});
+      if (resultsContainer) {
+        resultsContainer.scrollIntoView({behavior:"smooth", block:"start"});
       }
     }
 
