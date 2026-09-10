@@ -2440,117 +2440,6 @@ body{
 .simple-engage-now .engage-step strong{
   font-size:13px !important;
 }
-
-/* =========================================================
-   STREAMLINED SPORTS COURT — SEP 10 2026
-   One top argument per side, after Learn. Full-width and calm.
-   ========================================================= */
-.streamlined-court{
-  margin-top:14px;
-  padding:14px;
-  border:1px solid rgba(255,255,255,.13);
-  border-radius:12px;
-  background:linear-gradient(180deg,rgba(11,24,36,.96),rgba(7,16,24,.96));
-}
-.streamlined-court-head{
-  display:flex;
-  align-items:flex-start;
-  justify-content:space-between;
-  gap:12px;
-  margin-bottom:10px;
-}
-.streamlined-court-kicker{
-  color:#e22424;
-  font-size:10px;
-  font-weight:1000;
-  letter-spacing:.75px;
-  text-transform:uppercase;
-}
-.streamlined-court-head h3{
-  margin:3px 0 0;
-  color:#fff;
-  font-size:18px;
-}
-.streamlined-court-head p{
-  margin:4px 0 0;
-  color:#aebbc8;
-  font-size:11px;
-}
-.streamlined-court-grid{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:10px;
-}
-.streamlined-court-side{
-  min-width:0;
-  padding:10px;
-  border:1px solid rgba(255,255,255,.11);
-  border-radius:9px;
-  background:rgba(255,255,255,.025);
-}
-.streamlined-court-side.yes-side{border-color:rgba(226,36,36,.34)}
-.streamlined-court-side.no-side{border-color:rgba(148,163,184,.24)}
-.streamlined-court-side-title{
-  margin-bottom:7px;
-  color:#fff;
-  font-size:10px;
-  font-weight:1000;
-  letter-spacing:.55px;
-}
-.streamlined-court .simple-comment{
-  padding:0;
-  border:0;
-}
-.streamlined-court .simple-comment-top{
-  display:flex;
-  align-items:flex-start;
-  justify-content:space-between;
-  gap:10px;
-}
-.streamlined-court .simple-comment-text{
-  flex:1;
-  color:#eef3f7;
-  font-size:12px;
-  line-height:1.42;
-}
-.streamlined-court .simple-comment-meta{
-  margin-top:5px;
-  color:#9eacb9;
-  font-size:10px;
-}
-.streamlined-court .upvote-btn{
-  flex:0 0 auto;
-  min-width:50px;
-  margin:0;
-  padding:6px 8px;
-  border:1px solid rgba(255,255,255,.14);
-  border-radius:8px;
-  background:#243140;
-  color:#fff;
-  font-size:10px;
-  font-weight:1000;
-  cursor:pointer;
-}
-.streamlined-court .upvote-btn:hover{background:#e22424}
-.streamlined-court-actions{
-  display:flex;
-  justify-content:flex-end;
-  margin-top:10px;
-}
-.streamlined-court-actions button{
-  border:0;
-  background:transparent;
-  color:#ff6464;
-  padding:0;
-  font-size:10px;
-  font-weight:1000;
-  cursor:pointer;
-}
-@media(max-width:760px){
-  .streamlined-court-grid{grid-template-columns:1fr}
-  .streamlined-court-head{display:block}
-}
-
 .simple-debate{
   margin-top:12px;
   padding:14px;
@@ -3366,8 +3255,7 @@ async function loadMistake(){
         <section class="detail-tabs-shell">
           <div class="detail-tab-bar" role="tablist">
             <button class="detail-tab active" data-tab="story" onclick="openDetailTab('story',this)">${smText("Story","Histoire")}</button>
-            <button class="detail-tab" data-tab="why" onclick="openDetailTab('why',this)">${smText("Why It Matters","Pourquoi ça compte")}</button>
-  
+
             <button class="detail-tab" data-tab="sources" onclick="openDetailTab('sources',this)">${smText("Sources","Sources")}</button>
             <button class="detail-tab" data-tab="related" onclick="openDetailTab('related',this)">${smText("Related","Connexes")}</button>
           </div>
@@ -3377,12 +3265,7 @@ async function loadMistake(){
               ${data.teams_people?`<div class="tab-team-line"><strong>${smText("Teams / People","Équipes / Personnes")}:</strong> <span class="team-pill">${escapeHtml(data.teams_people)}</span></div>`:""}
               <p class="tab-story-text">${escapeHtml(smField(data,"summary")||"No summary added yet.")}</p>
             </div>
-
-            <div id="detailTab-why" class="detail-tab-panel">
-              <p class="tab-story-text">${escapeHtml(smField(data,"why_it_matters")||smText("No additional context has been added yet.","Aucun contexte supplémentaire n’a encore été ajouté."))}</p>
-            </div>
-
-            <div id="detailTab-court" class="detail-tab-panel full-court-hidden">
+<div id="detailTab-court" class="detail-tab-panel full-court-hidden">
               <div class="court-compact-head">
                 <div>
                   <h2>⚖️ ${smText("Sports Court","Tribunal sportif")}</h2>
@@ -3455,6 +3338,26 @@ async function loadMistake(){
             </div>
           </div>
         </section>
+        <div class="engage-now simple-engage-now">
+          <div class="engage-now-title">${smText("YOUR TURN","À VOUS")}</div>
+          <div class="engage-now-steps">
+            <button class="engage-step" type="button" onclick="goToVote()">
+              <span class="engage-step-num">${smText("1","1")}</span>
+              <strong>${smText("VOTE","VOTER")}</strong>
+              <small>${smText("YES or NO.","OUI ou NON.")}</small>
+            </button>
+            <button class="engage-step" type="button" onclick="goToReasons()">
+              <span class="engage-step-num">${smText("2","2")}</span>
+              <strong>${smText("PICK 3 REASONS","CHOISIR 3 RAISONS")}</strong>
+              <small>${smText("Why was it a mistake?","Pourquoi était-ce une erreur?")}</small>
+            </button>
+            <button class="engage-step" type="button" onclick="goToDebate()">
+              <span class="engage-step-num">${smText("3","3")}</span>
+              <strong>${smText("ADD YOUR TAKE","AJOUTER VOTRE AVIS")}</strong>
+              <small>${smText("Say why you agree or disagree.","Dites pourquoi vous êtes d’accord ou non.")}</small>
+            </button>
+          </div>
+        </div>
 
         <div class="vote-box verdict-combined one-page-verdict">
           <div class="verdict-vote" id="voteStep">
@@ -3508,42 +3411,12 @@ async function loadMistake(){
               </div>
             </div>
 
+            ${shouldShowLearningCard(data) ? `
             <div class="editorial-learn-card">
               <div class="editorial-learn-kicker">💡 ${smText("WHAT CAN WE LEARN?","QUE POUVONS-NOUS APPRENDRE?")}</div>
-              <div class="editorial-learn-text">${escapeHtml(
-                smField(data,"lessons_learned") ||
-                smField(data,"why_it_matters") ||
-                smText(
-                  "Even famous mistakes are worth revisiting because they reveal how decisions, preparation, pressure and communication shape outcomes.",
-                  "Même les erreurs célèbres méritent d’être revisitées, car elles montrent comment les décisions, la préparation, la pression et la communication influencent les résultats."
-                )
-              )}</div>
+              <div class="editorial-learn-text">${escapeHtml(smField(data,"lessons_learned"))}</div>
             </div>
-
-            <section class="streamlined-court" id="sportsCourtPreview">
-              <div class="streamlined-court-head">
-                <div>
-                  <div class="streamlined-court-kicker">${smText("SPORTS COURT","TRIBUNAL SPORTIF")}</div>
-                  <h3>${smText("The strongest arguments","Les meilleurs arguments")}</h3>
-                  <p>${smText("Upvote the argument that makes the best case.","Votez pour l’argument qui présente le meilleur raisonnement.")}</p>
-                </div>
-              </div>
-
-              <div class="streamlined-court-grid">
-                <div class="streamlined-court-side yes-side">
-                  <div class="streamlined-court-side-title">🔨 ${smText("TOP YES ARGUMENT","MEILLEUR ARGUMENT OUI")}</div>
-                  <div id="courtPreviewYes">${smText("Loading argument...","Chargement de l’argument...")}</div>
-                </div>
-                <div class="streamlined-court-side no-side">
-                  <div class="streamlined-court-side-title">🛡️ ${smText("TOP NO ARGUMENT","MEILLEUR ARGUMENT NON")}</div>
-                  <div id="courtPreviewNo">${smText("Loading argument...","Chargement de l’argument...")}</div>
-                </div>
-              </div>
-
-              <div class="streamlined-court-actions">
-                <button type="button" onclick="openFullSportsCourt()">${smText("VIEW FULL DEBATE →","VOIR TOUT LE DÉBAT →")}</button>
-              </div>
-            </section>
+            ` : ""}
 
             <div id="debateHome"></div>
             <section class="simple-debate" id="debateStep">
@@ -3562,6 +3435,19 @@ async function loadMistake(){
                 <button type="button" onclick="submitQuickDebate()">${smText("POST YOUR TAKE","PUBLIER VOTRE AVIS")}</button>
               </div>
               <div id="quickDebateMessage" class="simple-debate-message"></div>
+
+              <div class="simple-debate-columns">
+                <div class="simple-debate-side yes-side">
+                  <div class="simple-debate-side-title">${smText("WHY FANS SAY YES","POURQUOI LES PARTISANS DISENT OUI")}</div>
+                  <div id="quickYesComments" class="simple-comment-list">${smText("Loading comments...","Chargement des commentaires...")}</div>
+                </div>
+                <div class="simple-debate-side no-side">
+                  <div class="simple-debate-side-title">${smText("WHY FANS SAY NO","POURQUOI LES PARTISANS DISENT NON")}</div>
+                  <div id="quickNoComments" class="simple-comment-list">${smText("Loading comments...","Chargement des commentaires...")}</div>
+                </div>
+              </div>
+
+              <button class="view-all-debate" type="button" onclick="openFullSportsCourt()">${smText("VIEW FULL DEBATE →","VOIR TOUT LE DÉBAT →")}</button>
             </section>
           </div>
         </div>
@@ -3728,6 +3614,34 @@ function openDetailTab(name,button){
   const panel=document.getElementById("detailTab-"+name);
   if(panel) panel.classList.add("active");
   if(button) button.classList.add("active");
+}
+
+
+function normalizeComparableText(value){
+  return String(value || "")
+    .toLowerCase()
+    .replace(/[^a-z0-9\u00c0-\u024f]+/g," ")
+    .replace(/\s+/g," ")
+    .trim();
+}
+
+function shouldShowLearningCard(record){
+  const lesson = smField(record,"lessons_learned");
+  if(!lesson || !String(lesson).trim()) return false;
+
+  const why = smField(record,"why_it_matters");
+  if(!why || !String(why).trim()) return true;
+
+  const lessonNorm = normalizeComparableText(lesson);
+  const whyNorm = normalizeComparableText(why);
+
+  if(!lessonNorm) return false;
+  if(lessonNorm === whyNorm) return false;
+
+  // Hide near-duplicates too, not just exact copies.
+  if(lessonNorm.includes(whyNorm) || whyNorm.includes(lessonNorm)) return false;
+
+  return true;
 }
 
 function getShortDeck(m){
@@ -4040,10 +3954,6 @@ async function loadCourtArguments(){
     const qn=document.getElementById("quickNoComments");
     if(qy) qy.innerHTML=smText("Could not load comments.","Impossible de charger les commentaires.");
     if(qn) qn.innerHTML=smText("Could not load comments.","Impossible de charger les commentaires.");
-    const previewYes=document.getElementById("courtPreviewYes");
-    const previewNo=document.getElementById("courtPreviewNo");
-    if(previewYes) previewYes.innerHTML=smText("Could not load argument.","Impossible de charger l’argument.");
-    if(previewNo) previewNo.innerHTML=smText("Could not load argument.","Impossible de charger l’argument.");
     return;
   }
 
@@ -4060,44 +3970,7 @@ async function loadCourtArguments(){
   if(qy) qy.innerHTML=renderQuickComments(yesList,"yes");
   if(qn) qn.innerHTML=renderQuickComments(noList,"no");
 
-  const previewYes=document.getElementById("courtPreviewYes");
-  const previewNo=document.getElementById("courtPreviewNo");
-  if(previewYes) previewYes.innerHTML=renderTopCourtArgument(yesList,"yes");
-  if(previewNo) previewNo.innerHTML=renderTopCourtArgument(noList,"no");
-
   updateDebateVoteHint();
-}
-
-
-function renderTopCourtArgument(list,side){
-  if(!list||list.length===0){
-    return `<div class="simple-comment-empty">${
-      side==="yes"
-        ? smText("No YES arguments yet.","Aucun argument OUI pour le moment.")
-        : smText("No NO arguments yet.","Aucun argument NON pour le moment.")
-    }</div>`;
-  }
-
-  const arg=list[0];
-  const key="sports_court_upvote_"+arg.id;
-  const alreadyVoted=localStorage.getItem(key)==="true";
-
-  return `
-    <div class="simple-comment">
-      <div class="simple-comment-top">
-        <div>
-          <div class="simple-comment-text">${escapeHtml(arg.argument_text||"")}</div>
-          <div class="simple-comment-meta">${escapeHtml(arg.author_name||smText("Anonymous fan","Partisan anonyme"))}</div>
-        </div>
-        <button
-          type="button"
-          class="upvote-btn${alreadyVoted?" already-voted":""}"
-          onclick="upvoteArgument('${arg.id}')"
-          title="${alreadyVoted?smText("You already upvoted this argument.","Vous avez déjà voté pour cet argument."):smText("Upvote this argument","Voter pour cet argument")}"
-        >▲ ${Number(arg.upvotes||0)}</button>
-      </div>
-    </div>
-  `;
 }
 
 function renderQuickComments(list,side){
@@ -4119,7 +3992,7 @@ function renderQuickComments(list,side){
 
 function renderArguments(list,side){
   if(!list||list.length===0)return`<div class="court-note">No ${side} arguments yet. Be the first to make the case.</div>`;
-  return list.map(arg=>`<div class="argument"><div class="argument-text">${escapeHtml(arg.argument_text||"")}</div><div class="argument-meta">${escapeHtml(arg.author_name||"Anonymous fan")}${arg.created_at?" • "+new Date(arg.created_at).toLocaleDateString():""}</div><button class="upvote-btn" onclick="upvoteArgument('${arg.id}')">▲ ${arg.upvotes||0}</button></div>`).join("");
+  return list.map(arg=>`<div class="argument"><div class="argument-text">${escapeHtml(arg.argument_text||"")}</div><div class="argument-meta">${escapeHtml(arg.author_name||"Anonymous fan")}${arg.created_at?" • "+new Date(arg.created_at).toLocaleDateString():""}</div><button class="upvote-btn" onclick="upvoteArgument('${arg.id}')">👍 ${arg.upvotes||0}</button></div>`).join("");
 }
 
 async function submitCourtArgument(){
