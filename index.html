@@ -698,6 +698,11 @@
       text-transform:none;
       font-weight:900;
       cursor:pointer;
+      border:0;
+      padding:0;
+      margin:0;
+      background:transparent;
+      font-family:inherit;
     }
 
     .list-row {
@@ -3869,29 +3874,29 @@
 
     <section class="dashboard-four">
       <div class="dash-panel">
-        <div class="panel-head"><span>🔥 Trending Now</span><span class="view-link" onclick="sortByVotes()">View all →</span></div>
+        <div class="panel-head"><span>🔥 Trending Now</span><button type="button" class="view-link" onclick="showAllSection('votes')">View all →</button></div>
         <div id="trendingList"></div>
       </div>
 
       <div class="dash-panel">
-        <div class="panel-head"><span>💀 Most Controversial</span><span class="view-link" onclick="sortByControversy()">View all →</span></div>
+        <div class="panel-head"><span>💀 Most Controversial</span><button type="button" class="view-link" onclick="showAllSection('controversy')">View all →</button></div>
         <div id="controversialList"></div>
       </div>
 
       <div class="dash-panel">
-        <div class="panel-head"><span>👁 Most Viewed</span><span class="view-link" onclick="sortByViews()">View all →</span></div>
+        <div class="panel-head"><span>👁 Most Viewed</span><button type="button" class="view-link" onclick="showAllSection('views')">View all →</button></div>
         <div id="mostViewedList"></div>
       </div>
 
       <div class="dash-panel">
-        <div class="panel-head"><span>🕘 Recently Added</span><span class="view-link" onclick="sortByRecent()">View all →</span></div>
+        <div class="panel-head"><span>🕘 Recently Added</span><button type="button" class="view-link" onclick="showAllSection('recent')">View all →</button></div>
         <div id="recentList"></div>
       </div>
     </section>
 
     <section class="container">
       <div class="results-head">
-        <h2>All Mistakes</h2>
+        <h2 id="allMistakesHeading">All Mistakes</h2>
         <div id="stats">Loading mistakes...</div>
       </div>
       <div class="grid" id="mistakesGrid"></div>
@@ -4703,6 +4708,46 @@
 
     function getVoteTotal(id) {
       return voteStatsByMistake[id]?.total || 0;
+    }
+
+    async function showAllSection(mode) {
+      // Clear any active search/filter so "View all" truly means the full section.
+      const searchInput = document.getElementById("searchInput");
+      if (searchInput) searchInput.value = "";
+
+      ["sportFilter","leagueFilter","teamFilter","yearFilter","categoryFilter"].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.value = "";
+      });
+
+      const searchWrap = document.getElementById("searchResultsWrap");
+      if (searchWrap) searchWrap.classList.remove("active");
+
+      // Make sure the complete database is loaded before expanding the section.
+      try {
+        await loadFullDatabaseInBackground();
+      } catch (error) {
+        console.error("Could not finish loading the full database:", error);
+      }
+
+      currentSortMode = mode;
+      visibleCardLimit = Math.max(mistakes.length, INITIAL_CARD_LIMIT);
+
+      const heading = document.getElementById("allMistakesHeading");
+      const labels = {
+        votes: "Trending Now — View All",
+        controversy: "Most Controversial — View All",
+        views: "Most Viewed — View All",
+        recent: "Recently Added — View All"
+      };
+      if (heading) heading.textContent = labels[mode] || "All Mistakes";
+
+      renderMistakes();
+
+      const container = document.querySelector(".container");
+      if (container) {
+        container.scrollIntoView({behavior:"smooth", block:"start"});
+      }
     }
 
     function sortByViews() {
