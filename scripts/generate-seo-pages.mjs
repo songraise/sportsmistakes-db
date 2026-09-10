@@ -9,6 +9,7 @@ const SUPABASE_URL = "https://scwjlljurircxuufhqih.supabase.co";
 
 const SUPABASE_ANON_KEY =
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNjd2psbGp1cmlyY3h1dWZocWloIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyNjUyMjcsImV4cCI6MjA5Njg0MTIyN30.WF0HRRb9mAkuOySjabTd8CZXVZRqF0MhMl0N2mafnns";
+
 const SITE = "https://sportsmistakes.com";
 const OUT = path.resolve("mistakes");
 const PAGE_SIZE = 1000;
@@ -137,45 +138,27 @@ async function fetchAllMistakes() {
   let offset = 0;
 
   while (true) {
-    const select = [
-      "id",
-      "title",
-      "title_fr",
-      "sport",
-      "year",
-      "league",
-      "category",
-      "subcategory",
-      "teams_people",
-      "key_people",
-      "summary",
-      "summary_fr",
-      "why_it_matters",
-      "why_it_matters_fr",
-      "lessons_learned",
-      "lessons_learned_fr",
-      "artwork_url",
-      "ai_artwork_url",
-      "controversy_score",
-      "source_1",
-      "source_2",
-      "created_at",
-      "updated_at"
-    ].join(",");
+
+    // Pull all available columns so the generator does not fail
+    // if the database schema changes or a guessed column name is wrong.
+    const select = "*";
 
     const url = new URL(
       `${SUPABASE_URL}/rest/v1/mistakes`
     );
 
     url.searchParams.set("select", select);
+
     url.searchParams.set(
       "order",
       "controversy_score.desc"
     );
+
     url.searchParams.set(
       "offset",
       String(offset)
     );
+
     url.searchParams.set(
       "limit",
       String(PAGE_SIZE)
@@ -262,9 +245,7 @@ function buildPage(m, lang = "en") {
     `${SITE}/mistake.html?id=${encodeURIComponent(m.id)}`;
 
   const artwork =
-    m.artwork_url ||
-    m.ai_artwork_url ||
-    "";
+    m.artwork_url || "";
 
   const meta = [
     m.year,
