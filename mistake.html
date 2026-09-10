@@ -2783,6 +2783,81 @@ body{
   }
 }
 
+
+/* =========================================================
+   STORY-FIRST DETAIL FLOW — SEP 10 2026
+   Read first. Then participate: Vote -> Reasons -> Add Your Take.
+   ========================================================= */
+.story-first-label{
+  margin:8px 0 7px;
+  color:#d7b062;
+  font-size:10px;
+  font-weight:1000;
+  letter-spacing:1px;
+  text-transform:uppercase;
+}
+
+@media(min-width:901px){
+  .one-page-mistake{
+    align-items:start !important;
+  }
+
+  .one-page-info{
+    display:block !important;
+    height:auto !important;
+    min-height:0 !important;
+    overflow:visible !important;
+  }
+
+  .one-page-info > .detail-tabs-shell{
+    width:100% !important;
+    height:auto !important;
+    min-height:0 !important;
+    margin:0 0 12px !important;
+    overflow:hidden !important;
+  }
+
+  .one-page-info > .detail-tabs-shell .detail-tab-panels{
+    height:auto !important;
+    min-height:0 !important;
+    overflow:visible !important;
+  }
+
+  .one-page-info > .detail-tabs-shell .detail-tab-panel{
+    height:auto !important;
+    max-height:none !important;
+    min-height:0 !important;
+    overflow:visible !important;
+  }
+
+  .one-page-info > .detail-tabs-shell #detailTab-story{
+    padding:14px !important;
+  }
+
+  .one-page-info > .detail-tabs-shell .tab-story-text{
+    font-size:14px !important;
+    line-height:1.55 !important;
+  }
+
+  .engage-now{
+    margin-top:12px !important;
+  }
+
+  /* The obsolete lower desktop grid is no longer used. */
+  .desktop-below-art{
+    display:none !important;
+  }
+}
+
+@media(max-width:900px){
+  .story-first-label{
+    margin-top:12px;
+  }
+  .detail-tabs-shell{
+    margin-bottom:12px !important;
+  }
+}
+
 </style>
   <link rel="stylesheet" href="styles.css" />
 <script>
@@ -3066,6 +3141,100 @@ async function loadMistake(){
           <div id="shareMessage" class="share-message"></div>
         </div>
 
+        <div class="story-first-label">${smText("FIRST — KNOW THE STORY","D’ABORD — CONNAÎTRE L’HISTOIRE")}</div>
+        <div id="tabsHome"></div>
+        <section class="detail-tabs-shell">
+          <div class="detail-tab-bar" role="tablist">
+            <button class="detail-tab active" data-tab="story" onclick="openDetailTab('story',this)">${smText("Story","Histoire")}</button>
+            <button class="detail-tab" data-tab="why" onclick="openDetailTab('why',this)">${smText("Why It Matters","Pourquoi ça compte")}</button>
+  
+            <button class="detail-tab" data-tab="sources" onclick="openDetailTab('sources',this)">${smText("Sources","Sources")}</button>
+            <button class="detail-tab" data-tab="related" onclick="openDetailTab('related',this)">${smText("Related","Connexes")}</button>
+          </div>
+
+          <div class="detail-tab-panels">
+            <div id="detailTab-story" class="detail-tab-panel active">
+              ${data.teams_people?`<div class="tab-team-line"><strong>${smText("Teams / People","Équipes / Personnes")}:</strong> <span class="team-pill">${escapeHtml(data.teams_people)}</span></div>`:""}
+              <p class="tab-story-text">${escapeHtml(smField(data,"summary")||"No summary added yet.")}</p>
+            </div>
+
+            <div id="detailTab-why" class="detail-tab-panel">
+              <p class="tab-story-text">${escapeHtml(smField(data,"why_it_matters")||smText("No additional context has been added yet.","Aucun contexte supplémentaire n’a encore été ajouté."))}</p>
+            </div>
+
+            <div id="detailTab-court" class="detail-tab-panel full-court-hidden">
+              <div class="court-compact-head">
+                <div>
+                  <h2>⚖️ ${smText("Sports Court","Tribunal sportif")}</h2>
+                  <p class="court-intro">${smText("Make the case for or against calling this a mistake.","Présentez les arguments pour ou contre le fait de qualifier ce moment d’erreur.")}</p>
+                </div>
+              </div>
+              <div class="court-grid compact-court-grid">
+                <div class="court-side prosecution">
+                  <h3>🔨 ${smText("The Prosecution","L’accusation")}</h3>
+                  <div id="prosecutionArguments">${smText("Loading arguments...","Chargement des arguments...")}</div>
+                </div>
+                <div class="court-side defense">
+                  <h3>🛡️ ${smText("The Defense","La défense")}</h3>
+                  <div id="defenseArguments">${smText("Loading arguments...","Chargement des arguments...")}</div>
+                </div>
+              </div>
+              <details class="court-compose">
+                <summary>${smText("Join the Debate","Participer au débat")}</summary>
+                <div class="court-form compact-court-form">
+                  <div class="court-form-row">
+                    <label>${smText("Side","Camp")}
+                      <select id="courtSide">
+                        <option value="prosecution">Prosecution — It was a mistake</option>
+                        <option value="defense">Defense — Not a mistake / overblown</option>
+                      </select>
+                    </label>
+                    <label>${smText("Name or nickname optional","Nom ou surnom (facultatif)")}
+                      <input id="courtName" placeholder="Anonymous fan" />
+                    </label>
+                  </div>
+                  <label>${smText("Your argument","Votre argument")}
+                    <textarea id="courtArgument" placeholder="Focus on the play, decision, referee call, strategy, or historical context."></textarea>
+                  </label>
+                  <button onclick="submitCourtArgument()">${smText("Submit Argument","Soumettre l’argument")}</button>
+                  <div id="courtMessage" class="court-message"></div>
+                </div>
+              </details>
+            </div>
+
+            <div id="detailTab-sources" class="detail-tab-panel sources compact-sources">
+              <div class="source-links-row">
+                ${data.source_1?`<a href="${escapeHtml(data.source_1)}" target="_blank">${smText("Source 1","Source 1")}</a>`:""}
+                ${data.source_2?`<a href="${escapeHtml(data.source_2)}" target="_blank">${smText("Source 2","Source 2")}</a>`:""}
+                <button class="report-btn" onclick="toggleReportBox()">⚠️ ${smText("Report an Issue","Signaler un problème")}</button>
+              </div>
+              <div id="reportBox" class="report-box compact-report-box">
+                <div class="court-form-row">
+                  <label>${smText("What is the issue?","Quel est le problème?")}
+                    <select id="reportType">
+                      <option value="Incorrect information">Incorrect information</option>
+                      <option value="Duplicate entry">Duplicate entry</option>
+                      <option value="Broken source link">Broken source link</option>
+                      <option value="Wrong sport/category">Wrong sport/category</option>
+                      <option value="Offensive or unsafe content">Offensive or unsafe content</option>
+                      <option value="Typo or formatting issue">Typo or formatting issue</option>
+                      <option value="Other">Other</option>
+                    </select>
+                  </label>
+                  <label>${smText("Details","Détails")}
+                    <textarea id="reportDetails" placeholder="Briefly explain what should be fixed."></textarea>
+                  </label>
+                </div>
+                <button class="report-submit" onclick="submitIssueReport()">${smText("Submit Report","Envoyer le signalement")}</button>
+                <div id="reportMessage" class="report-message"></div>
+              </div>
+            </div>
+
+            <div id="detailTab-related" class="detail-tab-panel">
+              <div id="relatedMistakes">${smText("Loading related mistakes...","Chargement des erreurs connexes...")}</div>
+            </div>
+          </div>
+        </section>
         <div class="engage-now simple-engage-now">
           <div class="engage-now-title">${smText("YOUR TURN","À VOUS")}</div>
           <div class="engage-now-steps">
@@ -3185,105 +3354,12 @@ async function loadMistake(){
           </div>
         </div>
 
-        <div id="tabsHome"></div>
-        <section class="detail-tabs-shell">
-          <div class="detail-tab-bar" role="tablist">
-            <button class="detail-tab active" data-tab="story" onclick="openDetailTab('story',this)">${smText("Story","Histoire")}</button>
-            <button class="detail-tab" data-tab="why" onclick="openDetailTab('why',this)">${smText("Why It Matters","Pourquoi ça compte")}</button>
-  
-            <button class="detail-tab" data-tab="sources" onclick="openDetailTab('sources',this)">${smText("Sources","Sources")}</button>
-            <button class="detail-tab" data-tab="related" onclick="openDetailTab('related',this)">${smText("Related","Connexes")}</button>
-          </div>
 
-          <div class="detail-tab-panels">
-            <div id="detailTab-story" class="detail-tab-panel active">
-              ${data.teams_people?`<div class="tab-team-line"><strong>${smText("Teams / People","Équipes / Personnes")}:</strong> <span class="team-pill">${escapeHtml(data.teams_people)}</span></div>`:""}
-              <p class="tab-story-text">${escapeHtml(smField(data,"summary")||"No summary added yet.")}</p>
-            </div>
-
-            <div id="detailTab-why" class="detail-tab-panel">
-              <p class="tab-story-text">${escapeHtml(smField(data,"why_it_matters")||smText("No additional context has been added yet.","Aucun contexte supplémentaire n’a encore été ajouté."))}</p>
-            </div>
-
-            <div id="detailTab-court" class="detail-tab-panel full-court-hidden">
-              <div class="court-compact-head">
-                <div>
-                  <h2>⚖️ ${smText("Sports Court","Tribunal sportif")}</h2>
-                  <p class="court-intro">${smText("Make the case for or against calling this a mistake.","Présentez les arguments pour ou contre le fait de qualifier ce moment d’erreur.")}</p>
-                </div>
-              </div>
-              <div class="court-grid compact-court-grid">
-                <div class="court-side prosecution">
-                  <h3>🔨 ${smText("The Prosecution","L’accusation")}</h3>
-                  <div id="prosecutionArguments">${smText("Loading arguments...","Chargement des arguments...")}</div>
-                </div>
-                <div class="court-side defense">
-                  <h3>🛡️ ${smText("The Defense","La défense")}</h3>
-                  <div id="defenseArguments">${smText("Loading arguments...","Chargement des arguments...")}</div>
-                </div>
-              </div>
-              <details class="court-compose">
-                <summary>${smText("Join the Debate","Participer au débat")}</summary>
-                <div class="court-form compact-court-form">
-                  <div class="court-form-row">
-                    <label>${smText("Side","Camp")}
-                      <select id="courtSide">
-                        <option value="prosecution">Prosecution — It was a mistake</option>
-                        <option value="defense">Defense — Not a mistake / overblown</option>
-                      </select>
-                    </label>
-                    <label>${smText("Name or nickname optional","Nom ou surnom (facultatif)")}
-                      <input id="courtName" placeholder="Anonymous fan" />
-                    </label>
-                  </div>
-                  <label>${smText("Your argument","Votre argument")}
-                    <textarea id="courtArgument" placeholder="Focus on the play, decision, referee call, strategy, or historical context."></textarea>
-                  </label>
-                  <button onclick="submitCourtArgument()">${smText("Submit Argument","Soumettre l’argument")}</button>
-                  <div id="courtMessage" class="court-message"></div>
-                </div>
-              </details>
-            </div>
-
-            <div id="detailTab-sources" class="detail-tab-panel sources compact-sources">
-              <div class="source-links-row">
-                ${data.source_1?`<a href="${escapeHtml(data.source_1)}" target="_blank">${smText("Source 1","Source 1")}</a>`:""}
-                ${data.source_2?`<a href="${escapeHtml(data.source_2)}" target="_blank">${smText("Source 2","Source 2")}</a>`:""}
-                <button class="report-btn" onclick="toggleReportBox()">⚠️ ${smText("Report an Issue","Signaler un problème")}</button>
-              </div>
-              <div id="reportBox" class="report-box compact-report-box">
-                <div class="court-form-row">
-                  <label>${smText("What is the issue?","Quel est le problème?")}
-                    <select id="reportType">
-                      <option value="Incorrect information">Incorrect information</option>
-                      <option value="Duplicate entry">Duplicate entry</option>
-                      <option value="Broken source link">Broken source link</option>
-                      <option value="Wrong sport/category">Wrong sport/category</option>
-                      <option value="Offensive or unsafe content">Offensive or unsafe content</option>
-                      <option value="Typo or formatting issue">Typo or formatting issue</option>
-                      <option value="Other">Other</option>
-                    </select>
-                  </label>
-                  <label>${smText("Details","Détails")}
-                    <textarea id="reportDetails" placeholder="Briefly explain what should be fixed."></textarea>
-                  </label>
-                </div>
-                <button class="report-submit" onclick="submitIssueReport()">${smText("Submit Report","Envoyer le signalement")}</button>
-                <div id="reportMessage" class="report-message"></div>
-              </div>
-            </div>
-
-            <div id="detailTab-related" class="detail-tab-panel">
-              <div id="relatedMistakes">${smText("Loading related mistakes...","Chargement des erreurs connexes...")}</div>
-            </div>
-          </div>
-        </section>
       </div>
     </section>
   `;
 
   if(window.SMLanguage) window.SMLanguage.translate();
-  arrangeMistakePageLayout();
 
   await Promise.allSettled([
     loadVotes(),
@@ -3423,41 +3499,6 @@ function openFullSportsCourt(){
 }
 
 
-function arrangeMistakePageLayout(){
-  const museum=document.querySelector(".one-page-mistake");
-  const debate=document.getElementById("debateStep");
-  const tabs=document.querySelector(".detail-tabs-shell");
-  const debateHome=document.getElementById("debateHome");
-  const tabsHome=document.getElementById("tabsHome");
-  if(!museum||!debate||!tabs||!debateHome||!tabsHome) return;
-
-  if(window.innerWidth>=901){
-    let lower=document.getElementById("desktopBelowArt");
-    if(!lower){
-      lower=document.createElement("div");
-      lower.id="desktopBelowArt";
-      lower.className="desktop-below-art";
-      museum.insertAdjacentElement("afterend",lower);
-    }
-    lower.appendChild(tabs);
-    lower.appendChild(debate);
-  }else{
-    if(debateHome.parentNode){
-      debateHome.insertAdjacentElement("afterend",debate);
-    }
-    if(tabsHome.parentNode){
-      tabsHome.insertAdjacentElement("afterend",tabs);
-    }
-    const lower=document.getElementById("desktopBelowArt");
-    if(lower) lower.remove();
-  }
-}
-
-let smLayoutResizeTimer=null;
-window.addEventListener("resize",()=>{
-  clearTimeout(smLayoutResizeTimer);
-  smLayoutResizeTimer=setTimeout(arrangeMistakePageLayout,120);
-});
 
 function openDetailTab(name,button){
   document.querySelectorAll(".detail-tab-panel").forEach(panel=>panel.classList.remove("active"));
