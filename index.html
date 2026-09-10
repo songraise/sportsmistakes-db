@@ -19,7 +19,7 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-  <style>
+  <style class="search-database-red">
     :root {
       --bg:#05080c;
       --panel:#0b1118;
@@ -3092,9 +3092,22 @@
   color:#fff !important;
 }
 
+
+/* Search the Database primary CTA buttons */
+.search-database-red{
+  background:linear-gradient(135deg,#e22424,#b91313) !important;
+  background-color:#e22424 !important;
+  color:#fff !important;
+  border-color:rgba(255,255,255,.18) !important;
+}
+.search-database-red:hover{
+  background:linear-gradient(135deg,#f03333,#c81010) !important;
+  background-color:#e22424 !important;
+  color:#fff !important;
+}
 </style>
 
-<script>
+<script class="search-database-red">
 /* SportsMistakes self-contained EN/FR runtime
    No geolocation. No IP lookup. No cookie.
    Manual choice stores only "en" or "fr" in localStorage. */
