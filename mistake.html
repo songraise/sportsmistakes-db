@@ -2606,6 +2606,183 @@ body{
   }
 }
 
+
+/* =========================================================
+   CLEAN DESKTOP DETAIL LAYOUT — SEP 10 2026
+   Desktop only. Mobile portrait + landscape remain unchanged.
+   Top: artwork left / title + Vote + Reasons right.
+   Bottom: Story/details left / Add Your Take right.
+   Removes fixed-height collisions and fills the empty area below art.
+   ========================================================= */
+@media(min-width:901px){
+  .detail-shell{
+    display:block !important;
+    height:auto !important;
+    min-height:0 !important;
+    overflow:visible !important;
+  }
+
+  .one-page-mistake{
+    height:auto !important;
+    min-height:0 !important;
+    display:grid !important;
+    grid-template-columns:minmax(0,1.04fr) minmax(500px,.96fr) !important;
+    gap:20px !important;
+    align-items:start !important;
+    overflow:visible !important;
+    padding-bottom:16px !important;
+  }
+
+  .one-page-mistake .gallery-side{
+    height:auto !important;
+    min-height:0 !important;
+    padding:0 !important;
+    align-self:start !important;
+    overflow:visible !important;
+  }
+
+  .one-page-mistake .frame-wrap{
+    height:auto !important;
+    min-height:0 !important;
+  }
+
+  .one-page-mistake .art-frame{
+    height:auto !important;
+    min-height:0 !important;
+    display:block !important;
+  }
+
+  .one-page-mistake .art-inner{
+    height:auto !important;
+    min-height:0 !important;
+    display:block !important;
+  }
+
+  .one-page-mistake .main-artwork{
+    width:100% !important;
+    height:auto !important;
+    max-height:none !important;
+    object-fit:contain !important;
+  }
+
+  .one-page-info{
+    height:auto !important;
+    min-height:0 !important;
+    display:block !important;
+    overflow:visible !important;
+  }
+
+  .hero-copy-compact{
+    margin-bottom:12px !important;
+  }
+
+  .engage-now{
+    margin:10px 0 12px !important;
+  }
+
+  .one-page-verdict{
+    height:auto !important;
+    min-height:0 !important;
+    overflow:visible !important;
+    display:grid !important;
+    grid-template-columns:minmax(0,.92fr) minmax(0,1.08fr) !important;
+    gap:0 !important;
+    padding:14px !important;
+  }
+
+  .verdict-vote{
+    min-width:0 !important;
+    padding:0 15px 0 0 !important;
+    margin:0 !important;
+    border-right:1px solid rgba(255,255,255,.13) !important;
+    border-bottom:0 !important;
+    overflow:visible !important;
+  }
+
+  .verdict-learn{
+    min-width:0 !important;
+    padding:0 0 0 15px !important;
+    margin:0 !important;
+    border-top:0 !important;
+    overflow:visible !important;
+  }
+
+  .verdict-results-wrap{
+    position:static !important;
+    display:flex !important;
+    align-items:center !important;
+    gap:12px !important;
+    margin-top:12px !important;
+    min-height:76px !important;
+    overflow:visible !important;
+  }
+
+  .vote-pie{
+    position:relative !important;
+    inset:auto !important;
+    transform:none !important;
+    width:72px !important;
+    height:72px !important;
+    flex:0 0 72px !important;
+    margin:0 !important;
+    z-index:1 !important;
+  }
+
+  .vote-pie::after{
+    inset:20px !important;
+  }
+
+  #voteResults{
+    position:static !important;
+    min-width:0 !important;
+    margin:0 !important;
+  }
+
+  .editorial-learn-card{
+    margin-top:10px !important;
+  }
+
+  /* Lower desktop band uses the full page width, eliminating dead space. */
+  .desktop-below-art{
+    display:grid !important;
+    grid-template-columns:minmax(0,1.55fr) minmax(340px,.72fr) !important;
+    gap:18px !important;
+    align-items:start !important;
+    margin-top:2px !important;
+  }
+
+  .desktop-below-art .detail-tabs-shell{
+    width:100% !important;
+    height:auto !important;
+    min-height:320px !important;
+    margin:0 !important;
+    overflow:hidden !important;
+  }
+
+  .desktop-below-art .detail-tab-panels{
+    height:auto !important;
+    min-height:255px !important;
+    overflow:visible !important;
+  }
+
+  .desktop-below-art .detail-tab-panel{
+    height:auto !important;
+    max-height:none !important;
+    overflow:visible !important;
+  }
+
+  .desktop-below-art .simple-debate{
+    width:100% !important;
+    margin:0 !important;
+    position:static !important;
+    align-self:start !important;
+  }
+
+  .simple-debate-columns{
+    grid-template-columns:1fr 1fr !important;
+  }
+}
+
 </style>
   <link rel="stylesheet" href="styles.css" />
 <script>
@@ -2974,6 +3151,7 @@ async function loadMistake(){
               )}</div>
             </div>
 
+            <div id="debateHome"></div>
             <section class="simple-debate" id="debateStep">
               <div class="simple-debate-head">
                 <div>
@@ -3007,6 +3185,7 @@ async function loadMistake(){
           </div>
         </div>
 
+        <div id="tabsHome"></div>
         <section class="detail-tabs-shell">
           <div class="detail-tab-bar" role="tablist">
             <button class="detail-tab active" data-tab="story" onclick="openDetailTab('story',this)">${smText("Story","Histoire")}</button>
@@ -3104,6 +3283,7 @@ async function loadMistake(){
   `;
 
   if(window.SMLanguage) window.SMLanguage.translate();
+  arrangeMistakePageLayout();
 
   await Promise.allSettled([
     loadVotes(),
@@ -3241,6 +3421,43 @@ function openFullSportsCourt(){
     if(shell) shell.scrollIntoView({behavior:"smooth",block:"start"});
   }
 }
+
+
+function arrangeMistakePageLayout(){
+  const museum=document.querySelector(".one-page-mistake");
+  const debate=document.getElementById("debateStep");
+  const tabs=document.querySelector(".detail-tabs-shell");
+  const debateHome=document.getElementById("debateHome");
+  const tabsHome=document.getElementById("tabsHome");
+  if(!museum||!debate||!tabs||!debateHome||!tabsHome) return;
+
+  if(window.innerWidth>=901){
+    let lower=document.getElementById("desktopBelowArt");
+    if(!lower){
+      lower=document.createElement("div");
+      lower.id="desktopBelowArt";
+      lower.className="desktop-below-art";
+      museum.insertAdjacentElement("afterend",lower);
+    }
+    lower.appendChild(tabs);
+    lower.appendChild(debate);
+  }else{
+    if(debateHome.parentNode){
+      debateHome.insertAdjacentElement("afterend",debate);
+    }
+    if(tabsHome.parentNode){
+      tabsHome.insertAdjacentElement("afterend",tabs);
+    }
+    const lower=document.getElementById("desktopBelowArt");
+    if(lower) lower.remove();
+  }
+}
+
+let smLayoutResizeTimer=null;
+window.addEventListener("resize",()=>{
+  clearTimeout(smLayoutResizeTimer);
+  smLayoutResizeTimer=setTimeout(arrangeMistakePageLayout,120);
+});
 
 function openDetailTab(name,button){
   document.querySelectorAll(".detail-tab-panel").forEach(panel=>panel.classList.remove("active"));
