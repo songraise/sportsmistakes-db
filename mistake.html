@@ -3274,6 +3274,25 @@ body{
   }
 }
 
+
+.persistent-community-results{display:grid;grid-template-columns:.8fr 1.2fr;gap:14px;margin:0 0 16px}
+.persistent-result-card{border:1px solid rgba(255,255,255,.14);border-radius:14px;background:linear-gradient(180deg,rgba(14,27,40,.97),rgba(8,17,26,.98));padding:18px;box-shadow:0 12px 28px rgba(0,0,0,.22)}
+.persistent-result-kicker{color:#ff4b4b;font-weight:1000;font-size:12px;letter-spacing:.9px;text-transform:uppercase;margin-bottom:5px}
+.persistent-result-title{color:#fff;font-weight:1000;font-size:21px;line-height:1.1;margin-bottom:14px}
+.persistent-verdict-body{display:flex;align-items:center;gap:16px;min-height:116px}
+.persistent-vote-pie{width:104px;height:104px;flex:0 0 104px;border-radius:50%;background:conic-gradient(#e22424 0deg 0deg,#3d536a 0deg 360deg);position:relative}
+.persistent-vote-pie:after{content:"";position:absolute;inset:24px;border-radius:50%;background:#0c1722}
+.persistent-result-big{color:#fff;font-size:27px;font-weight:1000;line-height:1}
+.persistent-result-sub{color:#9fb0c0;font-size:12px;margin-top:7px}
+.persistent-community-reasons{display:flex;flex-direction:column;gap:10px;min-height:116px}
+.persistent-reason-row{display:grid;grid-template-columns:minmax(110px,1fr) minmax(120px,2fr) auto;gap:10px;align-items:center}
+.persistent-reason-label{color:#dfe8f0;font-weight:800;font-size:12px}
+.persistent-reason-track{height:10px;border-radius:999px;background:#1b2a39;overflow:hidden}
+.persistent-reason-fill{height:100%;border-radius:999px;background:linear-gradient(90deg,#e22424,#ff5a5a)}
+.persistent-reason-pct{color:#fff;font-size:12px;font-weight:1000;min-width:38px;text-align:right}
+.persistent-empty{color:#8ea0b2;font-size:12px;line-height:1.45}
+.persistent-result-action{margin-top:14px;border:0;padding:9px 0 0;background:transparent;color:#ff5a5a;font-size:11px;font-weight:1000;letter-spacing:.35px;cursor:pointer;text-transform:uppercase}
+@media(max-width:760px){.persistent-community-results{grid-template-columns:1fr}.persistent-result-title{font-size:19px}.persistent-reason-row{grid-template-columns:1fr;gap:5px}.persistent-reason-pct{text-align:left}}
 </style>
   <link rel="stylesheet" href="styles.css" />
 <script>
@@ -3668,6 +3687,34 @@ async function loadMistake(){
         </div>
         </div>
 
+        <div class="persistent-community-results" id="persistentCommunityResults">
+          <section class="persistent-result-card">
+            <div class="persistent-result-kicker">${smText("FAN VERDICT","VERDICT DES FANS")}</div>
+            <div class="persistent-result-title">${smText("Was this a mistake?","Était-ce une erreur?")}</div>
+            <div class="persistent-verdict-body">
+              <div id="persistentVotePie" class="persistent-vote-pie"></div>
+              <div>
+                <div id="persistentVoteHeadline" class="persistent-result-big">—</div>
+                <div id="persistentVoteSub" class="persistent-result-sub">${smText("Community vote","Vote de la communauté")}</div>
+              </div>
+            </div>
+            <button type="button" class="persistent-result-action" onclick="openParticipationStep(1)">
+              ${smText("CAST OR CHANGE YOUR VOTE →","VOTER OU MODIFIER VOTRE VOTE →")}
+            </button>
+          </section>
+
+          <section class="persistent-result-card">
+            <div class="persistent-result-kicker">${smText("WHY THE CROWD SAYS IT WAS A MISTAKE","POURQUOI LA FOULE DIT QUE C’ÉTAIT UNE ERREUR")}</div>
+            <div class="persistent-result-title">${smText("Community Reasons","Raisons de la communauté")}</div>
+            <div id="persistentCommunityReasons" class="persistent-community-reasons">
+              <div class="persistent-empty">${smText("Community reasons will appear here as fans vote.","Les raisons de la communauté apparaîtront ici au fur et à mesure des votes.")}</div>
+            </div>
+            <button type="button" class="persistent-result-action" onclick="openParticipationStep(2)">
+              ${smText("ADD YOUR REASONS →","AJOUTER VOS RAISONS →")}
+            </button>
+          </section>
+        </div>
+
         <div class="vote-box verdict-combined one-page-verdict">
           <div class="verdict-vote participation-panel active" id="voteStep" data-participation-step="1">
             <div class="vote-head">
@@ -3798,6 +3845,10 @@ async function loadMistake(){
   ]);
   openParticipationStep(1);
   updateParticipationProgress();
+  setTimeout(()=>{
+    syncPersistentFanVerdictFromPage();
+    syncPersistentReasonsFromPage();
+  },150);
 
   client
     .from("mistakes")
@@ -3809,6 +3860,39 @@ async function loadMistake(){
 }
 
 
+
+
+function updatePersistentFanVerdict(yesCount,noCount){
+  const yes=Number(yesCount)||0,no=Number(noCount)||0,total=yes+no;
+  const yesPct=total?Math.round((yes/total)*100):0,noPct=total?100-yesPct:0;
+  const pie=document.getElementById("persistentVotePie");
+  if(pie){const deg=yesPct*3.6;pie.style.background=`conic-gradient(#e22424 0deg ${deg}deg,#3d536a ${deg}deg 360deg)`;}
+  const h=document.getElementById("persistentVoteHeadline"),s=document.getElementById("persistentVoteSub");
+  if(h)h.textContent=total?`${yesPct}% ${smText("YES","OUI")} · ${noPct}% ${smText("NO","NON")}`:smText("NO VOTES YET","AUCUN VOTE");
+  if(s)s.textContent=total?`${total.toLocaleString()} ${smText(total===1?"community vote":"community votes",total===1?"vote de la communauté":"votes de la communauté")}`:smText("Be the first to vote.","Soyez le premier à voter.");
+}
+
+function syncPersistentFanVerdictFromPage(){
+  const txt=document.body.innerText;
+  const m=txt.match(/YES\\s*(\\d+)%.*?NO\\s*(\\d+)%/is);
+  if(m){
+    const y=Number(m[1]),n=Number(m[2]);
+    updatePersistentFanVerdict(y,n);
+  }
+}
+
+function syncPersistentReasonsFromPage(){
+  const host=document.getElementById("persistentCommunityReasons");
+  if(!host)return;
+  const rows=[];
+  document.querySelectorAll(".lesson-bar-row,.lesson-result-row,.reason-result-row,.community-reason-row").forEach(el=>{
+    const label=(el.querySelector(".lesson-label,.reason-label,.label")?.textContent||"").trim();
+    const pctText=(el.querySelector(".lesson-percent,.reason-percent,.percent")?.textContent||el.textContent||"").match(/(\\d+)%/);
+    if(label&&pctText)rows.push({label,pct:Number(pctText[1])});
+  });
+  if(!rows.length)return;
+  host.innerHTML=rows.slice(0,5).map(r=>`<div class="persistent-reason-row"><div class="persistent-reason-label">${escapeHtml(r.label)}</div><div class="persistent-reason-track"><div class="persistent-reason-fill" style="width:${r.pct}%"></div></div><div class="persistent-reason-pct">${r.pct}%</div></div>`).join("");
+}
 
 function openParticipationStep(step){
   const target = Number(step) || 1;
@@ -4306,6 +4390,7 @@ async function submitLessonVotes(){
   const panel=document.getElementById("lessonDropdownPanel");
   if(panel) panel.classList.remove("open");
   await loadLessonCategoriesAndVotes();
+  setTimeout(syncPersistentReasonsFromPage,50);
 }
 
 function containsUnsafeText(text){
