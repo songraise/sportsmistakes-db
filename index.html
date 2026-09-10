@@ -3796,7 +3796,7 @@
                 <option value="Fan Interference">Fan Interference</option>
               </select>
 
-              <button onclick="renderMistakes(); renderLiveSearchResults();">Search</button>
+              <button onclick="handleDropdownSearch()">Search</button>
             </div>
 
             <div class="popular">
@@ -4212,8 +4212,10 @@
           });
       });
 
-      fillSelect("leagueFilter", Array.from(leagueSet).sort(), "All Leagues");
-      fillSelect("teamFilter", Array.from(teamSet).sort().slice(0,300), "All Teams");
+      fillSelect("leagueFilter", Array.from(leagueSet).sort((a,b)=>a.localeCompare(b)), "All Leagues");
+      // Do NOT truncate this list. The old .slice(0,300) was why the
+      // Teams / People dropdown stopped alphabetically around "Gael Monfils".
+      fillSelect("teamFilter", Array.from(teamSet).sort((a,b)=>a.localeCompare(b)), "All Teams");
       fillSelect("yearFilter", Array.from(yearSet).sort((a,b) => Number(b)-Number(a)), "All Years");
       if (window.SMLanguage) window.SMLanguage.translate();
     }
@@ -4508,9 +4510,17 @@
 
     function getSearchMatches() {
       const query = normalize(document.getElementById("searchInput").value).trim();
-      if (!query) return [];
+      const filtered = getFilteredMistakes();
 
-      return getFilteredMistakes().sort((a,b) => {
+      // Dropdown-only searches are valid searches too.
+      // If there is no typed query, simply return the filtered database results.
+      if (!query) {
+        return filtered.sort((a,b) =>
+          Number(b.controversy_score || 0) - Number(a.controversy_score || 0)
+        );
+      }
+
+      return filtered.sort((a,b) => {
         const at = normalize(a.title);
         const bt = normalize(b.title);
 
@@ -4528,7 +4538,9 @@
       const count = document.getElementById("searchResultsCount");
       const query = document.getElementById("searchInput").value.trim();
 
-      if (!query) {
+      // Previously this panel only appeared when text was typed.
+      // Now any active dropdown filter also displays matching mistake cards.
+      if (!filtersAreActive()) {
         wrap.classList.remove("active");
         list.innerHTML = "";
         count.textContent = "";
@@ -4540,7 +4552,10 @@
       count.textContent = `${matches.length} result${matches.length === 1 ? "" : "s"}`;
 
       if (!matches.length) {
-        list.innerHTML = `<div class="search-no-results">No sports mistakes found for “${escapeHtml(query)}”.</div>`;
+        const description = query
+          ? `“${escapeHtml(query)}”`
+          : "the selected filters";
+        list.innerHTML = `<div class="search-no-results">No sports mistakes found for ${description}.</div>`;
         return;
       }
 
@@ -4715,35 +4730,30 @@ function formatNumber(n) {
       renderLiveSearchResults();
     });
 
-    document.getElementById("sportFilter").addEventListener("change", () => {
+    async function handleDropdownSearch(){
       resetVisibleLimit();
-      renderMistakes();
-      renderLiveSearchResults();
-    });
 
-    document.getElementById("leagueFilter").addEventListener("change", () => {
-      resetVisibleLimit();
-      renderMistakes();
-      renderLiveSearchResults();
-    });
+      // The homepage intentionally starts with a lightweight first batch.
+      // A dropdown must search the ENTIRE Record, so finish loading the
+      // lightweight database before calculating its matches.
+      if (!fullDatabaseLoaded) {
+        await loadFullDatabaseInBackground();
+      }
 
-    document.getElementById("teamFilter").addEventListener("change", () => {
-      resetVisibleLimit();
       renderMistakes();
       renderLiveSearchResults();
-    });
 
-    document.getElementById("yearFilter").addEventListener("change", () => {
-      resetVisibleLimit();
-      renderMistakes();
-      renderLiveSearchResults();
-    });
+      const results=document.getElementById("searchResultsWrap");
+      if(results && filtersAreActive()){
+        results.scrollIntoView({behavior:"smooth",block:"nearest"});
+      }
+    }
 
-    document.getElementById("categoryFilter").addEventListener("change", () => {
-      resetVisibleLimit();
-      renderMistakes();
-      renderLiveSearchResults();
-    });
+    document.getElementById("sportFilter").addEventListener("change", handleDropdownSearch);
+    document.getElementById("leagueFilter").addEventListener("change", handleDropdownSearch);
+    document.getElementById("teamFilter").addEventListener("change", handleDropdownSearch);
+    document.getElementById("yearFilter").addEventListener("change", handleDropdownSearch);
+    document.getElementById("categoryFilter").addEventListener("change", handleDropdownSearch);
 
 
     let quickPlayIndex = 0;
