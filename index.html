@@ -4491,6 +4491,12 @@
           // but updating them does not rebuild all of the artwork sections.
           populateDropdowns();
           renderLiveSearchResults();
+
+          // IMPORTANT: Buckner may not be in the first 80 lightweight records.
+          // Re-render the logo artwork after the full database has loaded so
+          // the image beside the SportsMistakes logo cannot remain blank.
+          renderCompactArtwork();
+
           if (window.SMLanguage) window.SMLanguage.translate();
 
           // If the user has already filtered/sorted the All Mistakes area,
@@ -4613,6 +4619,12 @@
       if (quickPool.length) { quickPlayIndex = 0; renderQuickPlay(quickPool[0]); }
       renderTodaysFive();
       renderMuseumExtras();
+
+      // Render the logo artwork immediately if Buckner is already in the
+      // first lightweight batch. If not, the full-database callback above
+      // will render it as soon as the remaining records arrive.
+      renderCompactArtwork();
+
       if (window.SMLanguage) window.SMLanguage.translate();
 
       // Let the browser paint the page first.  Then fill the complete search /
