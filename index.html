@@ -8,13 +8,106 @@
   <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
   <link rel="preconnect" href="https://scwjlljurircxuufhqih.supabase.co" crossorigin>
 
-  <!-- Google tag (gtag.js) -->
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-NXE4H7MQKC"></script>
+  <!-- =========================================================
+       SPORTSMISTAKES PRIVACY + ANALYTICS CONSENT
+       Essential site functions always work.
+       Google Analytics and SportsMistakes first-party analytics
+       run only after the visitor chooses "Accept Analytics".
+       ========================================================= -->
   <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-    gtag('config', 'G-NXE4H7MQKC');
+  (function(){
+    "use strict";
+
+    const CONSENT_KEY = "sportsmistakes_privacy_choice";
+    const GA_ID = "G-NXE4H7MQKC";
+    const VALID = new Set(["analytics","essential"]);
+    const changeListeners = new Set();
+    let googleAnalyticsLoaded = false;
+
+    function getChoice(){
+      try{
+        const value = localStorage.getItem(CONSENT_KEY);
+        return VALID.has(value) ? value : null;
+      }catch(e){
+        return null;
+      }
+    }
+
+    function hasAnalyticsConsent(){
+      return getChoice() === "analytics";
+    }
+
+    function saveChoice(choice){
+      if(!VALID.has(choice)) return false;
+      try{
+        localStorage.setItem(CONSENT_KEY, choice);
+      }catch(e){}
+      return true;
+    }
+
+    function loadGoogleAnalytics(){
+      if(googleAnalyticsLoaded || !hasAnalyticsConsent()) return;
+
+      googleAnalyticsLoaded = true;
+      window["ga-disable-" + GA_ID] = false;
+      window.dataLayer = window.dataLayer || [];
+      window.gtag = window.gtag || function(){ window.dataLayer.push(arguments); };
+
+      window.gtag("js", new Date());
+      window.gtag("config", GA_ID, {
+        anonymize_ip: true
+      });
+
+      const script = document.createElement("script");
+      script.async = true;
+      script.src = "https://www.googletagmanager.com/gtag/js?id=" + encodeURIComponent(GA_ID);
+      script.id = "sportsmistakes-google-analytics";
+      document.head.appendChild(script);
+    }
+
+    function disableGoogleAnalytics(){
+      window["ga-disable-" + GA_ID] = true;
+    }
+
+    function setChoice(choice){
+      const previous = getChoice();
+      saveChoice(choice);
+
+      if(choice === "analytics"){
+        loadGoogleAnalytics();
+      }else{
+        disableGoogleAnalytics();
+      }
+
+      document.dispatchEvent(new CustomEvent("sm:privacy-choice", {
+        detail: { choice, previous }
+      }));
+
+      changeListeners.forEach(function(fn){
+        try{ fn(choice, previous); }catch(e){}
+      });
+    }
+
+    function onChange(fn){
+      if(typeof fn !== "function") return function(){};
+      changeListeners.add(fn);
+      return function(){ changeListeners.delete(fn); };
+    }
+
+    window.SMPrivacy = {
+      getChoice,
+      hasAnalyticsConsent,
+      setChoice,
+      onChange,
+      loadGoogleAnalytics
+    };
+
+    if(hasAnalyticsConsent()){
+      loadGoogleAnalytics();
+    }else{
+      disableGoogleAnalytics();
+    }
+  })();
   </script>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -3523,14 +3616,24 @@
 </script>
 
 <script>
-/* SportsMistakes first-party analytics. No cookie; session ID lasts for the browser tab/session. */
+/* SportsMistakes first-party analytics.
+   No analytics event or analytics session ID is created until the visitor
+   has explicitly chosen "Accept Analytics". */
 (function(){
   "use strict";
+
   const ANALYTICS_URL="https://scwjlljurircxuufhqih.supabase.co/rest/v1/analytics_events";
   const ANALYTICS_ANON_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNjd2psbGp1cmlyY3h1dWZocWloIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyNjUyMjcsImV4cCI6MjA5Njg0MTIyN30.WF0HRRb9mAkuOySjabTd8CZXVZRqF0MhMl0N2mafnns";
   const SESSION_KEY="sportsmistakes_analytics_session_id";
+  let pageViewTracked=false;
+
+  function analyticsAllowed(){
+    return !!(window.SMPrivacy && window.SMPrivacy.hasAnalyticsConsent());
+  }
 
   function getSessionId(){
+    if(!analyticsAllowed()) return null;
+
     try{
       let value=sessionStorage.getItem(SESSION_KEY);
       if(!value){
@@ -3546,6 +3649,8 @@
   }
 
   async function track(eventType,extra={}){
+    if(!analyticsAllowed()) return false;
+
     try{
       const payload={
         event_type:eventType,
@@ -3566,20 +3671,244 @@
         body:JSON.stringify(payload),
         keepalive:true
       });
+      return true;
     }catch(error){
       console.warn("SportsMistakes analytics event was not recorded:",error);
+      return false;
     }
+  }
+
+  function trackPageViewOnce(){
+    if(pageViewTracked || !analyticsAllowed()) return;
+    const isMistake=/\/mistake\.html$/i.test(location.pathname);
+    const mistakeId=isMistake ? new URLSearchParams(location.search).get("id") : null;
+    pageViewTracked=true;
+    track("page_view",{mistake_id:mistakeId});
   }
 
   window.SMAnalytics={track,getSessionId};
 
-  document.addEventListener("DOMContentLoaded",()=>{
-    const isMistake=/\/mistake\.html$/i.test(location.pathname);
-    const mistakeId=isMistake ? new URLSearchParams(location.search).get("id") : null;
-    track("page_view",{mistake_id:mistakeId});
-  },{once:true});
+  document.addEventListener("DOMContentLoaded",trackPageViewOnce,{once:true});
+
+  document.addEventListener("sm:privacy-choice",(event)=>{
+    if(event.detail && event.detail.choice==="analytics"){
+      trackPageViewOnce();
+    }else if(event.detail && event.detail.choice==="essential"){
+      try{ sessionStorage.removeItem(SESSION_KEY); }catch(e){}
+    }
+  });
 })();
 </script>
+
+<style id="sm-privacy-consent-style">
+  .sm-privacy-banner{
+    position:fixed;
+    left:18px;
+    right:18px;
+    bottom:18px;
+    z-index:10000;
+    max-width:1120px;
+    margin:0 auto;
+    padding:18px;
+    border:1px solid rgba(255,255,255,.20);
+    border-radius:12px;
+    background:rgba(8,13,19,.985);
+    color:#f8fafc;
+    box-shadow:0 18px 50px rgba(0,0,0,.52);
+    font-family:Arial,Helvetica,sans-serif;
+  }
+  .sm-privacy-banner[hidden]{display:none !important;}
+  .sm-privacy-inner{
+    display:grid;
+    grid-template-columns:1fr auto;
+    gap:22px;
+    align-items:center;
+  }
+  .sm-privacy-copy strong{
+    display:block;
+    margin-bottom:6px;
+    font-size:16px;
+    line-height:1.2;
+    color:#fff;
+  }
+  .sm-privacy-copy p{
+    margin:0;
+    max-width:760px;
+    color:#cbd5e1;
+    font-size:14px;
+    line-height:1.5;
+  }
+  .sm-privacy-copy a{
+    color:#fff;
+    text-decoration:underline;
+    text-decoration-color:#e22424;
+    text-underline-offset:3px;
+  }
+  .sm-privacy-actions{
+    display:flex;
+    gap:10px;
+    align-items:center;
+    flex-wrap:wrap;
+    justify-content:flex-end;
+  }
+  .sm-privacy-button{
+    min-height:44px;
+    padding:0 16px;
+    border-radius:8px;
+    border:1px solid rgba(255,255,255,.28);
+    color:#fff;
+    font-family:Arial,Helvetica,sans-serif;
+    font-size:13px;
+    font-weight:900;
+    letter-spacing:.25px;
+    cursor:pointer;
+  }
+  .sm-privacy-accept{
+    background:linear-gradient(135deg,#e22424,#b91313);
+  }
+  .sm-privacy-essential{
+    background:#18212c;
+  }
+  .sm-privacy-button:hover{
+    filter:brightness(1.08);
+  }
+  .sm-privacy-choice-link{
+    appearance:none;
+    border:0;
+    padding:0;
+    margin:0 22px 0 0;
+    background:transparent;
+    color:#cbd5e1;
+    font:inherit;
+    cursor:pointer;
+    text-decoration:none;
+  }
+  .sm-privacy-choice-link:hover{
+    color:#e22424;
+  }
+  @media(max-width:760px){
+    .sm-privacy-banner{
+      left:10px;
+      right:10px;
+      bottom:10px;
+      padding:16px;
+    }
+    .sm-privacy-inner{
+      grid-template-columns:1fr;
+      gap:14px;
+    }
+    .sm-privacy-actions{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      width:100%;
+    }
+    .sm-privacy-button{
+      width:100%;
+      padding:0 10px;
+      font-size:12px;
+    }
+  }
+</style>
+
+<script id="sm-privacy-consent-ui">
+(function(){
+  "use strict";
+
+  function getLang(){
+    try{
+      const saved=localStorage.getItem("sportsmistakes_language");
+      if(saved==="fr" || saved==="en") return saved;
+    }catch(e){}
+    const primary=String(
+      (Array.isArray(navigator.languages)&&navigator.languages[0]) ||
+      navigator.language || "en"
+    ).toLowerCase();
+    return primary.startsWith("fr") ? "fr" : "en";
+  }
+
+  const COPY={
+    en:{
+      title:"Your privacy matters",
+      text:"SportsMistakes uses essential technologies to operate the site. With your permission, we also use analytics to understand how people use SportsMistakes and improve the experience.",
+      accept:"Accept Analytics",
+      essential:"Essential Only",
+      legal:"Privacy & Cookies",
+      choices:"Privacy Choices"
+    },
+    fr:{
+      title:"Votre vie privée compte",
+      text:"SportsMistakes utilise des technologies essentielles au fonctionnement du site. Avec votre permission, nous utilisons aussi des outils d’analyse pour comprendre l’utilisation de SportsMistakes et améliorer l’expérience.",
+      accept:"Accepter l’analyse",
+      essential:"Essentiel seulement",
+      legal:"Confidentialité et témoins",
+      choices:"Choix de confidentialité"
+    }
+  };
+
+  function mountPrivacyControls(){
+    if(!window.SMPrivacy) return;
+
+    const lang=getLang();
+    const t=COPY[lang];
+
+    const banner=document.createElement("div");
+    banner.id="smPrivacyBanner";
+    banner.className="sm-privacy-banner";
+    banner.setAttribute("role","dialog");
+    banner.setAttribute("aria-live","polite");
+    banner.setAttribute("aria-label",t.title);
+    banner.innerHTML=`
+      <div class="sm-privacy-inner">
+        <div class="sm-privacy-copy">
+          <strong>${t.title}</strong>
+          <p>${t.text} <a href="privacy.html">${t.legal}</a></p>
+        </div>
+        <div class="sm-privacy-actions">
+          <button type="button" class="sm-privacy-button sm-privacy-accept" id="smPrivacyAccept">${t.accept}</button>
+          <button type="button" class="sm-privacy-button sm-privacy-essential" id="smPrivacyEssential">${t.essential}</button>
+        </div>
+      </div>
+    `;
+
+    document.body.appendChild(banner);
+
+    function showBanner(){
+      banner.hidden=false;
+    }
+
+    function hideBanner(){
+      banner.hidden=true;
+    }
+
+    document.getElementById("smPrivacyAccept").addEventListener("click",()=>{
+      window.SMPrivacy.setChoice("analytics");
+      hideBanner();
+    });
+
+    document.getElementById("smPrivacyEssential").addEventListener("click",()=>{
+      window.SMPrivacy.setChoice("essential");
+      hideBanner();
+    });
+
+    if(window.SMPrivacy.getChoice()){
+      hideBanner();
+    }else{
+      showBanner();
+    }
+
+    document.querySelectorAll("[data-sm-privacy-choices]").forEach((button)=>{
+      button.addEventListener("click",(event)=>{
+        event.preventDefault();
+        showBanner();
+        banner.scrollIntoView({behavior:"smooth",block:"nearest"});
+      });
+    });
+  }
+
+  document.addEventListener("DOMContentLoaded",mountPrivacyControls,{once:true});
+})();
+</script>
+
 </head>
 
 <body>
@@ -3951,6 +4280,7 @@
         <a href="contact.html">Contact</a>
         <a href="privacy.html">Privacy</a>
         <a href="terms.html">Terms</a>
+        <button type="button" class="sm-privacy-choice-link" data-sm-privacy-choices>Privacy Choices</button>
       </div>
       <div>SportsMistakes.com</div>
     </footer>
