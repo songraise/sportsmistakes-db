@@ -3915,7 +3915,9 @@
   <nav class="top-nav">
    <div class="brand-wrap" onclick="window.location.href='index.html'">
     <div class="nav-brand">Sports<br><span>Mistakes</span></div>
-      <div id="navBucknerArt" class="nav-buckner-art" aria-label="Bill Buckner artwork"></div>
+      <div id="navBucknerArt" class="nav-buckner-art" aria-label="SportsMistakes artwork">
+        <img src="sportsmistakes-mark.png" alt="SportsMistakes artwork" decoding="async">
+      </div>
 </div>
 
     <div class="nav-links">
@@ -4491,12 +4493,6 @@
           // but updating them does not rebuild all of the artwork sections.
           populateDropdowns();
           renderLiveSearchResults();
-
-          // IMPORTANT: Buckner may not be in the first 80 lightweight records.
-          // Re-render the logo artwork after the full database has loaded so
-          // the image beside the SportsMistakes logo cannot remain blank.
-          renderCompactArtwork();
-
           if (window.SMLanguage) window.SMLanguage.translate();
 
           // If the user has already filtered/sorted the All Mistakes area,
@@ -4619,12 +4615,6 @@
       if (quickPool.length) { quickPlayIndex = 0; renderQuickPlay(quickPool[0]); }
       renderTodaysFive();
       renderMuseumExtras();
-
-      // Render the logo artwork immediately if Buckner is already in the
-      // first lightweight batch. If not, the full-database callback above
-      // will render it as soon as the remaining records arrive.
-      renderCompactArtwork();
-
       if (window.SMLanguage) window.SMLanguage.translate();
 
       // Let the browser paint the page first.  Then fill the complete search /
@@ -5785,26 +5775,8 @@ function formatNumber(n) {
     }
 
     function renderCompactArtwork(){
-      const buckner=findBucknerMistake();
-      const navBuckner=document.getElementById("navBucknerArt");
-      if(navBuckner && buckner){
-        const url=buckner.artwork_url||buckner.ai_artwork_url||"";
-        if(url){
-          const optimizedUrl=optimizedArtworkUrl(url,"thumb");
-          navBuckner.innerHTML=`
-          <img
-            src="${escapeHtml(optimizedUrl)}"
-            data-original="${escapeHtml(url)}"
-            alt="Bill Buckner SportsMistakes artwork"
-            decoding="async"
-            onerror="this.onerror=null;if(this.dataset.original&&this.src!==this.dataset.original)this.src=this.dataset.original;"
-          >
-        `;
-          navBuckner.onclick=()=>location.href=staticMistakeUrl(buckner);
-          navBuckner.style.cursor="pointer";
-          navBuckner.title=buckner.title||"Bill Buckner";
-        }
-      }
+      // Header artwork is now a fixed local asset: sportsmistakes-mark.png.
+      // This keeps the SportsMistakes brand mark identical on every public page.
 
       const dailyBox=document.getElementById("dailyHeroArt");
       const dailyCaption=document.getElementById("dailyHeroCaption");
