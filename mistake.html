@@ -4228,11 +4228,11 @@ async function submitVote(vote){
     }
 
     const {data:updatedRows,error:updateError}=await client
-      .from("mistake_votes")
-      .update({vote:vote})
-      .eq("mistake_id",id)
-      .eq("voter_id",voterId)
-      .select("voter_id");
+      .rpc("change_mistake_vote",{
+        p_mistake_id:id,
+        p_voter_id:voterId,
+        p_vote:vote
+      });
 
     if(updateError){
       alert(smText("Vote change failed. Please try again.","La modification du vote a échoué. Veuillez réessayer."));
@@ -4273,10 +4273,11 @@ async function submitVote(vote){
     // cleared, recover that row by changing it rather than adding a duplicate.
     if(error.code==="23505") {
       const {error:updateError}=await client
-        .from("mistake_votes")
-        .update({vote:vote})
-        .eq("mistake_id",id)
-        .eq("voter_id",voterId);
+        .rpc("change_mistake_vote",{
+          p_mistake_id:id,
+          p_voter_id:voterId,
+          p_vote:vote
+        });
       if(updateError){
         alert(smText("Vote failed. Please try again.","Le vote a échoué. Veuillez réessayer."));
         console.error(updateError);
