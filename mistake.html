@@ -4178,6 +4178,9 @@ async function loadVotes(){
   const noPercent=total?100-yesPercent:0;
   const yesDegrees=Math.round((yesPercent/100)*360);
 
+  // Keep the permanent Fan Verdict card in sync with the same real vote data.
+  updatePersistentFanVerdict(yes,no);
+
   if(pie){
     pie.style.background=total
       ? `conic-gradient(#e22424 0deg ${yesDegrees}deg,#64748b ${yesDegrees}deg 360deg)`
@@ -4414,6 +4417,7 @@ async function loadLessonCategoriesAndVotes(){
 
 function renderLessonResults(votes){
   const box=document.getElementById("lessonResults");
+  const persistentBox=document.getElementById("persistentCommunityReasons");
   if(!box)return;
 
   const countsByCategory=new Map();
@@ -4434,10 +4438,14 @@ function renderLessonResults(votes){
   const totalSelections=ranked.reduce((sum,row)=>sum+row.count,0);
 
   if(!totalSelections){
-    box.innerHTML=`<div class="lesson-empty">${smText(
+    const emptyMessage=smText(
       "No community reasons yet. Be the first to choose what made this a mistake.",
       "Aucune raison communautaire pour le moment. Soyez le premier à indiquer ce qui en a fait une erreur."
-    )}</div>`;
+    );
+    box.innerHTML=`<div class="lesson-empty">${emptyMessage}</div>`;
+    if(persistentBox){
+      persistentBox.innerHTML=`<div class="persistent-empty">${emptyMessage}</div>`;
+    }
     return;
   }
 
@@ -4455,6 +4463,22 @@ function renderLessonResults(votes){
       </div>
     `;
   }).join("");
+
+  // Keep the large permanent Community Reasons card in sync with Step 2.
+  if(persistentBox){
+    persistentBox.innerHTML=ranked.slice(0,5).map(row=>{
+      const pct=Math.round((row.count/totalSelections)*100);
+      return `
+        <div class="persistent-reason-row">
+          <div class="persistent-reason-label">${escapeHtml(smLessonLabel(row.name))}</div>
+          <div class="persistent-reason-track">
+            <div class="persistent-reason-fill" style="width:${pct}%"></div>
+          </div>
+          <div class="persistent-reason-pct">${pct}% · ${row.count}</div>
+        </div>
+      `;
+    }).join("");
+  }
 }
 
 async function submitLessonVotes(){
