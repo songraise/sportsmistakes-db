@@ -4207,14 +4207,92 @@ async function loadVotes(){
 
 async function submitVote(vote){
   const voteKey="sportsmistakes_vote_"+id;
-  if(localStorage.getItem(voteKey)){alert("You already voted on this mistake.");return}
   let voterId=localStorage.getItem("sportsmistakes_voter_id");
-  if(!voterId){voterId=crypto.randomUUID();localStorage.setItem("sportsmistakes_voter_id",voterId)}
-  const{error}=await client.from("mistake_votes").insert({mistake_id:id,vote:vote,voter_id:voterId});
-  if(error){alert("Vote failed. Please try again.");console.error(error);return}
+  if(!voterId){
+    voterId=(globalThis.crypto&&crypto.randomUUID)
+      ? crypto.randomUUID()
+      : "sm-voter-"+Date.now()+"-"+Math.random().toString(36).slice(2);
+    localStorage.setItem("sportsmistakes_voter_id",voterId);
+  }
+
+  const savedVote=localStorage.getItem(voteKey)||"";
+
+  // If this browser has already voted on this mistake, CHANGE the existing
+  // database row instead of blocking the visitor or creating a second vote.
+  if(savedVote){
+    if(savedVote===vote){
+      await loadVotes();
+      updateDebateVoteHint();
+      updateParticipationProgress();
+      return;
+    }
+
+    const {data:updatedRows,error:updateError}=await client
+      .from("mistake_votes")
+      .update({vote:vote})
+      .eq("mistake_id",id)
+      .eq("voter_id",voterId)
+      .select("voter_id");
+
+    if(updateError){
+      alert(smText("Vote change failed. Please try again.","La modification du vote a échoué. Veuillez réessayer."));
+      console.error(updateError);
+      return;
+    }
+
+    // A local vote can survive after a database reset/cleanup. If no matching
+    // server row exists anymore, restore it as this visitor's single vote.
+    if(!updatedRows || updatedRows.length===0){
+      const {error:restoreError}=await client.from("mistake_votes").insert({
+        mistake_id:id,
+        vote:vote,
+        voter_id:voterId
+      });
+      if(restoreError){
+        alert(smText("Vote change failed. Please try again.","La modification du vote a échoué. Veuillez réessayer."));
+        console.error(restoreError);
+        return;
+      }
+    }
+
+    localStorage.setItem(voteKey,vote);
+    await loadVotes();
+    updateDebateVoteHint();
+    updateParticipationProgress();
+    return;
+  }
+
+  const {error}=await client.from("mistake_votes").insert({
+    mistake_id:id,
+    vote:vote,
+    voter_id:voterId
+  });
+
+  if(error){
+    // If the database already has this browser's vote but localStorage was
+    // cleared, recover that row by changing it rather than adding a duplicate.
+    if(error.code==="23505") {
+      const {error:updateError}=await client
+        .from("mistake_votes")
+        .update({vote:vote})
+        .eq("mistake_id",id)
+        .eq("voter_id",voterId);
+      if(updateError){
+        alert(smText("Vote failed. Please try again.","Le vote a échoué. Veuillez réessayer."));
+        console.error(updateError);
+        return;
+      }
+    } else {
+      alert(smText("Vote failed. Please try again.","Le vote a échoué. Veuillez réessayer."));
+      console.error(error);
+      return;
+    }
+  }
+
   localStorage.setItem(voteKey,vote);
   await loadVotes();
   updateDebateVoteHint();
+  updateParticipationProgress();
 }
 
 
