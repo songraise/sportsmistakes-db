@@ -3407,6 +3407,29 @@ body{
 }
 </style>
 
+
+<style id="sm-teach-comments-inline-fix">
+.teach-comments-inline{
+  display:block !important;
+  width:100% !important;
+  margin-top:10px !important;
+  padding:12px 14px !important;
+  border:1px solid rgba(226,36,36,.65) !important;
+  border-radius:8px !important;
+  background:linear-gradient(135deg,#e22424,#b91313) !important;
+  color:#fff !important;
+  font-size:12px !important;
+  font-weight:1000 !important;
+  letter-spacing:.25px !important;
+  text-align:center !important;
+  text-transform:uppercase !important;
+  cursor:pointer !important;
+  opacity:1 !important;
+  visibility:visible !important;
+}
+.teach-comments-inline:hover{filter:brightness(1.08)}
+</style>
+
 </head>
 
 <body>
@@ -3743,15 +3766,11 @@ async function loadMistake(){
             <button type="button" class="persistent-result-action" onclick="openParticipationStep(2)">
               ${smText("ADD YOUR REASONS →","AJOUTER VOS RAISONS →")}
             </button>
-          </section>
-        </div>
 
-        <div class="teach-learn-launch">
-          <button type="button" class="teach-learn-button" onclick="openTeachLearnComments()">
-            <span class="teach-learn-button-kicker">${smText("TEACH & LEARN","ENSEIGNER ET APPRENDRE")}</span>
-            <span class="teach-learn-button-title">${smText("READ TEACH & LEARN COMMENTS →","LIRE LES COMMENTAIRES ENSEIGNER ET APPRENDRE →")}</span>
-            <span class="teach-learn-button-sub">${smText("See what other fans think this moment teaches us.","Découvrez ce que les autres partisans pensent que ce moment peut nous apprendre.")}</span>
-          </button>
+            <button type="button" class="persistent-result-action teach-comments-inline" onclick="openTeachLearnComments()">
+              ${smText("READ TEACH & LEARN COMMENTS →","LIRE LES COMMENTAIRES ENSEIGNER ET APPRENDRE →")}
+            </button>
+          </section>
         </div>
 
         <div class="your-turn-guide" id="yourTurnGuide">
