@@ -3382,6 +3382,31 @@ body{
 }
 </style>
 
+
+<style id="sm-teach-learn-launch-style">
+.teach-learn-launch{margin:0 0 16px}
+.teach-learn-button{
+  width:100%;display:grid;grid-template-columns:auto 1fr;
+  grid-template-areas:"kicker title" "kicker sub";
+  column-gap:16px;row-gap:3px;align-items:center;text-align:left;
+  padding:16px 18px;border:1px solid rgba(226,36,36,.48);border-radius:13px;
+  background:linear-gradient(135deg,rgba(226,36,36,.14),rgba(12,23,34,.98));
+  color:#fff;cursor:pointer;box-shadow:0 12px 26px rgba(0,0,0,.20)
+}
+.teach-learn-button:hover{border-color:#ff5a5a;transform:translateY(-1px)}
+.teach-learn-button-kicker{
+  grid-area:kicker;color:#ff5151;font-size:11px;font-weight:1000;
+  letter-spacing:.8px;text-transform:uppercase;white-space:nowrap
+}
+.teach-learn-button-title{
+  grid-area:title;font-size:15px;line-height:1.15;font-weight:1000;text-transform:uppercase
+}
+.teach-learn-button-sub{grid-area:sub;color:#aebdca;font-size:12px;line-height:1.35}
+@media(max-width:760px){
+  .teach-learn-button{grid-template-columns:1fr;grid-template-areas:"kicker" "title" "sub";gap:5px}
+}
+</style>
+
 </head>
 
 <body>
@@ -3693,28 +3718,6 @@ async function loadMistake(){
           </div>
         </section>
 
-        <div class="your-turn-guide" id="yourTurnGuide">
-          <div class="your-turn-guide-label">${smText("YOUR TURN","À VOUS")}</div>
-          <div class="your-turn-guide-buttons">
-            <button type="button" class="guide-step active" id="guideStep1" onclick="openParticipationStep(1)">
-              <span class="guide-step-check" id="guideCheck1"></span>
-              <span class="guide-step-num">1</span>
-              <strong>${smText("VOTE","VOTER")}</strong>
-            </button>
-            <button type="button" class="guide-step" id="guideStep2" onclick="openParticipationStep(2)">
-              <span class="guide-step-check" id="guideCheck2"></span>
-              <span class="guide-step-num">2</span>
-              <strong>${smText("ADD REASONS","AJOUTER DES RAISONS")}</strong>
-            </button>
-            <button type="button" class="guide-step" id="guideStep3" onclick="openParticipationStep(3)">
-              <span class="guide-step-check" id="guideCheck3"></span>
-              <span class="guide-step-num">3</span>
-              <strong>${smText("COMMENT TO TEACH","COMMENTER POUR ENSEIGNER")}</strong>
-            </button>
-          </div>
-        </div>
-        </div>
-
         <div class="persistent-community-results" id="persistentCommunityResults">
           <section class="persistent-result-card">
             <div class="persistent-result-kicker">${smText("FAN VERDICT","VERDICT DES FANS")}</div>
@@ -3743,6 +3746,34 @@ async function loadMistake(){
           </section>
         </div>
 
+        <div class="teach-learn-launch">
+          <button type="button" class="teach-learn-button" onclick="openTeachLearnComments()">
+            <span class="teach-learn-button-kicker">${smText("TEACH & LEARN","ENSEIGNER ET APPRENDRE")}</span>
+            <span class="teach-learn-button-title">${smText("READ TEACH & LEARN COMMENTS →","LIRE LES COMMENTAIRES ENSEIGNER ET APPRENDRE →")}</span>
+            <span class="teach-learn-button-sub">${smText("See what other fans think this moment teaches us.","Découvrez ce que les autres partisans pensent que ce moment peut nous apprendre.")}</span>
+          </button>
+        </div>
+
+        <div class="your-turn-guide" id="yourTurnGuide">
+          <div class="your-turn-guide-label">${smText("YOUR TURN","À VOUS")}</div>
+          <div class="your-turn-guide-buttons">
+            <button type="button" class="guide-step active" id="guideStep1" onclick="openParticipationStep(1)">
+              <span class="guide-step-check" id="guideCheck1"></span>
+              <span class="guide-step-num">1</span>
+              <strong>${smText("VOTE","VOTER")}</strong>
+            </button>
+            <button type="button" class="guide-step" id="guideStep2" onclick="openParticipationStep(2)">
+              <span class="guide-step-check" id="guideCheck2"></span>
+              <span class="guide-step-num">2</span>
+              <strong>${smText("ADD REASONS","AJOUTER DES RAISONS")}</strong>
+            </button>
+            <button type="button" class="guide-step" id="guideStep3" onclick="openParticipationStep(3)">
+              <span class="guide-step-check" id="guideCheck3"></span>
+              <span class="guide-step-num">3</span>
+              <strong>${smText("COMMENT TO TEACH","COMMENTER POUR ENSEIGNER")}</strong>
+            </button>
+          </div>
+        </div>
         <div class="vote-box verdict-combined one-page-verdict">
           <div class="verdict-vote participation-panel active" id="voteStep" data-participation-step="1">
             <div class="vote-head">
@@ -3920,6 +3951,14 @@ function syncPersistentReasonsFromPage(){
   });
   if(!rows.length)return;
   host.innerHTML=rows.slice(0,5).map(r=>`<div class="persistent-reason-row"><div class="persistent-reason-label">${escapeHtml(r.label)}</div><div class="persistent-reason-track"><div class="persistent-reason-fill" style="width:${r.pct}%"></div></div><div class="persistent-reason-pct">${r.pct}%</div></div>`).join("");
+}
+
+function openTeachLearnComments(){
+  openParticipationStep(3);
+  setTimeout(()=>{
+    const comments=document.querySelector("#commentTeachStep .simple-debate-columns");
+    if(comments) comments.scrollIntoView({behavior:"smooth",block:"start"});
+  },220);
 }
 
 function openParticipationStep(step){
