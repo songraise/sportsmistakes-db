@@ -1530,6 +1530,22 @@
     @media(max-width:900px){.judge-hero{grid-template-columns:1fr}.judge-art{min-height:360px;height:52vw;max-height:500px}.judge-copy{padding:28px}.quick-actions{grid-template-columns:repeat(2,1fr)}.today-grid{grid-template-columns:repeat(2,1fr)}.today-card:last-child{grid-column:1/-1}.judge-copy h2{font-size:36px}}
     @media(max-width:600px){.fan-compare{grid-template-columns:96px 1fr;gap:12px}.fan-donut{width:92px;height:92px}.fan-donut::after{width:58px;height:58px}.fan-donut-center strong{font-size:20px}.page-shell{padding:12px 12px 50px}.engage-intro h1{font-size:20px}.judge-art{min-height:280px}.judge-copy{padding:22px 18px}.judge-copy h2{font-size:31px}.judge-summary{font-size:16px}.quick-actions{gap:10px}.quick-action{min-height:128px;padding:16px 10px}.quick-action strong{font-size:14px}.today-panel{padding:16px}.today-grid{grid-template-columns:1fr}.today-card:last-child{grid-column:auto}.today-card{display:grid;grid-template-columns:105px 1fr}.today-art{height:88px}.top-nav{position:relative !important}}
 
+    /* POST-VOTE PERSONAL VERDICT — SEP 17 2026
+       Intentionally compact: nothing extra appears before the user votes. */
+    .personal-verdict{margin:6px 0 14px;padding:12px 14px;border-radius:9px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.045)}
+    .personal-verdict-kicker{font-size:12px;font-weight:1000;letter-spacing:.7px;text-transform:uppercase;margin-bottom:5px}
+    .personal-verdict-headline{font-size:18px;font-weight:1000;line-height:1.18;color:#fff;margin-bottom:4px}
+    .personal-verdict-copy{font-size:13px;line-height:1.4;color:#cbd5e1}
+    .personal-verdict.majority{border-color:rgba(34,197,94,.35);background:rgba(34,197,94,.08)}
+    .personal-verdict.majority .personal-verdict-kicker{color:#86efac}
+    .personal-verdict.contrarian{border-color:rgba(245,185,66,.38);background:rgba(245,185,66,.08)}
+    .personal-verdict.contrarian .personal-verdict-kicker{color:#f5b942}
+    .personal-verdict.split{border-color:rgba(148,163,184,.32);background:rgba(148,163,184,.07)}
+    .personal-verdict.split .personal-verdict-kicker{color:#e2e8f0}
+    .personal-verdict.first-call{border-color:rgba(226,36,36,.30);background:rgba(226,36,36,.07)}
+    .personal-verdict.first-call .personal-verdict-kicker{color:#ff6b6b}
+    @media(max-width:600px){.personal-verdict{padding:10px 12px;margin-bottom:11px}.personal-verdict-headline{font-size:16px}.personal-verdict-copy{font-size:12px}}
+
 
     /* =========================================================
        MUSEUM-ART COMMUNITY HOMEPAGE — AUG 26 2026
@@ -5296,20 +5312,57 @@ function formatNumber(n) {
       const total=Number(stats?.total||0);
       const yes=Number(stats?.yes||0);
       const no=Number(stats?.no||0);
-      if(!total){
-        return `<span class="compare-label">2. Compare with fans</span><strong>${savedVote==="yes"?"You judged it a mistake.":savedVote==="no"?"You said not really.":"Vote recorded."}</strong><br>You are the first recorded fan judgment.`;
+
+      // Keep the fan verdict hidden until this browser has actually voted.
+      if(savedVote!=="yes" && savedVote!=="no"){
+        return `<span class="compare-label">2. Compare with fans</span><strong>Your vote is already recorded.</strong>`;
       }
+
+      if(!total){
+        return `
+          <span class="compare-label">2. Compare with fans</span>
+          <div class="personal-verdict first-call">
+            <div class="personal-verdict-kicker">FIRST CALL</div>
+            <div class="personal-verdict-headline">You're first to judge this one.</div>
+            <div class="personal-verdict-copy">Your call: <strong>${savedVote==="yes"?"YES — MISTAKE":"NO — NOT REALLY"}</strong></div>
+            <div class="fan-total">1 fan judgment</div>
+          </div>`;
+      }
+
       const yesPercent=Math.round((yes/total)*100);
       const noPercent=100-yesPercent;
-      const userLine=savedVote==="yes"?"You judged it a mistake.":savedVote==="no"?"You said not really.":"Your vote is already recorded.";
+      const userPercent=savedVote==="yes" ? yesPercent : noPercent;
+      const userChoice=savedVote==="yes" ? "YES — MISTAKE" : "NO — NOT REALLY";
+
+      let verdictClass="split";
+      let verdictKicker="⚖️ SPLIT DECISION";
+      let verdictHeadline="Fans are almost evenly divided.";
+      let verdictCopy=`You chose <strong>${userChoice}</strong>. You're with <strong>${userPercent}%</strong> of fans.`;
+
+      if(userPercent>=60){
+        verdictClass="majority";
+        verdictKicker="🙌 YOU'RE WITH THE MAJORITY";
+        verdictHeadline=`${userPercent}% of fans agree with you.`;
+        verdictCopy=`You chose <strong>${userChoice}</strong>. Most fans made the same call.`;
+      }else if(userPercent<40){
+        verdictClass="contrarian";
+        verdictKicker="🔥 CONTRARIAN CALL";
+        verdictHeadline=`Only ${userPercent}% of fans agree with you.`;
+        verdictCopy=`You chose <strong>${userChoice}</strong>. Most fans made the opposite call.`;
+      }
+
       return `
         <span class="compare-label">2. Compare with fans</span>
+        <div class="personal-verdict ${verdictClass}">
+          <div class="personal-verdict-kicker">${verdictKicker}</div>
+          <div class="personal-verdict-headline">${verdictHeadline}</div>
+          <div class="personal-verdict-copy">${verdictCopy}</div>
+        </div>
         <div class="fan-compare">
           <div class="fan-donut" style="background:conic-gradient(#e22424 0 ${yesPercent}%, #475569 ${yesPercent}% 100%)" role="img" aria-label="${yesPercent}% yes and ${noPercent}% no">
             <div class="fan-donut-center"><strong>${yesPercent}%</strong><span>YES</span></div>
           </div>
           <div>
-            <strong>${userLine}</strong>
             <div class="fan-legend"><span class="yes">YES ${yesPercent}%</span><span class="no">NO ${noPercent}%</span></div>
             <div class="fan-total">${total.toLocaleString()} fan judgment${total===1?"":"s"}</div>
           </div>
