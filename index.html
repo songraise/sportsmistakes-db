@@ -5547,17 +5547,17 @@ function formatNumber(n) {
     function renderTodaysFive(){
       const grid=document.getElementById("todaysFiveGrid"); if(!grid) return;
       const five=getQuickPlayPool().slice(0,5);
-      grid.innerHTML=five.map((m,index)=>`<button type="button" class="today-card today-judge-card" onclick="openTodaysFiveJudge(${index})" aria-label="Judge ${escapeHtml(smField(m, "title")||"this mistake")}">
+      grid.innerHTML=five.map((m)=>`<button type="button" class="today-card today-judge-card" onclick="openTodaysFiveJudgeById('${String(m.id).replace(/'/g,"\\'")}')" aria-label="Judge ${escapeHtml(smField(m, "title")||"this mistake")}">
         <div class="today-art">${renderArt(m,"card")}</div><div class="today-body"><div class="today-title">${escapeHtml(smField(m, "title")||"Untitled Mistake")}</div><div class="today-meta">${escapeHtml(smMeta([m.year,m.sport]))}</div><div class="today-meta-line"><span>👁 ${formatNumber(m.views||0)}</span>${renderMiniCommunity(m.id,true)}</div><div class="today-judge-cta">JUDGE →</div></div></button>`).join("");
       if (window.SMLanguage) window.SMLanguage.translate(grid);
     }
 
-    function openTodaysFiveJudge(index){
-      const five=getQuickPlayPool().slice(0,5);
-      const m=five[index];
-      if(!m) return;
+    function openTodaysFiveJudgeById(mistakeId){
       const fullPool=getQuickPlayPool();
-      const fullIndex=fullPool.findIndex(x=>String(x.id)===String(m.id));
+      const m=fullPool.find(x=>String(x.id)===String(mistakeId))
+        || mistakes.find(x=>String(x.id)===String(mistakeId));
+      if(!m) return;
+      const fullIndex=fullPool.findIndex(x=>String(x.id)===String(mistakeId));
       if(fullIndex>=0) quickPlayIndex=fullIndex;
       const wrap=document.getElementById("todaysFiveJudgeWrap");
       if(wrap) wrap.hidden=false;
