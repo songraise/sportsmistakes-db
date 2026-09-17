@@ -3962,7 +3962,35 @@
         height:40px !important;
       }
     }
-  </style>
+  
+    /* TODAY'S 5 INLINE VOTING — SEP 17 2026 */
+    .gallery-today-help{margin-top:9px;text-align:center;color:#aeb8c5;font-size:11px;font-weight:800}
+    .today-judge-card{width:100%;padding:0;color:inherit;font:inherit;text-align:inherit;cursor:pointer;appearance:none;-webkit-appearance:none}
+    .today-judge-cta{margin-top:7px;color:#f5b942;font-size:10px;font-weight:1000;letter-spacing:.55px}
+    .todays-five-judge-wrap[hidden]{display:none!important}
+    .todays-five-judge-wrap{margin:12px 0 20px;border:1px solid rgba(245,185,66,.34);border-radius:12px;overflow:hidden;background:#081019;box-shadow:0 14px 34px rgba(0,0,0,.28)}
+    .todays-five-judge-topline{min-height:42px;padding:9px 14px;display:flex;align-items:center;justify-content:space-between;gap:14px;background:rgba(245,185,66,.08);border-bottom:1px solid rgba(255,255,255,.10);color:#f5b942;font-size:12px;font-weight:1000;letter-spacing:.65px}
+    .todays-five-judge-topline button{border:0;background:transparent;color:#fff;font-size:25px;line-height:1;cursor:pointer;padding:0 4px}
+    #todaysFiveJudgeWrap .judge-hero{grid-template-columns:minmax(230px,.72fr) 1.28fr;min-height:0;border:0;border-radius:0;box-shadow:none}
+    #todaysFiveJudgeWrap .judge-art{min-height:350px}
+    #todaysFiveJudgeWrap .judge-copy{padding:24px 28px}
+    #todaysFiveJudgeWrap .judge-copy h2{font-size:31px}
+    #todaysFiveJudgeWrap .judge-summary{font-size:15px;line-height:1.4;margin-bottom:14px}
+    #todaysFiveJudgeWrap .judge-meta{margin-bottom:12px}
+    #todaysFiveJudgeWrap .judge-question{padding-top:13px}
+    #todaysFiveJudgeWrap .judge-btn{padding:13px 10px}
+    #todaysFiveJudgeWrap .learn-box.locked{display:none}
+    #todaysFiveJudgeWrap .judge-actions{margin-top:12px}
+    #todaysFiveJudgeWrap .next-btn{display:none}
+    @media(max-width:760px){
+      .gallery-today-help{font-size:10px}
+      #todaysFiveJudgeWrap .judge-hero{grid-template-columns:1fr!important}
+      #todaysFiveJudgeWrap .judge-art{height:220px!important;min-height:220px!important}
+      #todaysFiveJudgeWrap .judge-copy{padding:18px 16px!important}
+      #todaysFiveJudgeWrap .judge-copy h2{font-size:25px!important}
+    }
+
+</style>
 
 </head>
 
@@ -4010,6 +4038,16 @@
           <div class="gallery-today-sub">Make your call.</div>
         </div>
         <div class="today-grid museum-today-grid gallery-medallions" id="todaysFiveGrid"></div>
+        <div class="gallery-today-help">Choose a moment above to judge it here — without leaving the homepage.</div>
+      </section>
+
+      <!-- TODAY'S 5 INLINE JUDGE: opens only after a visitor chooses a moment -->
+      <section class="todays-five-judge-wrap" id="todaysFiveJudgeWrap" hidden>
+        <div class="todays-five-judge-topline">
+          <span>🔥 TODAY'S 5 · MAKE YOUR CALL</span>
+          <button type="button" onclick="closeTodaysFiveJudge()" aria-label="Close voting panel">×</button>
+        </div>
+        <div class="judge-hero" id="judgeHero"></div>
       </section>
 
       <!-- THE ART IS THE PRODUCT: large framed exhibits appear before forms/tools -->
@@ -5509,9 +5547,27 @@ function formatNumber(n) {
     function renderTodaysFive(){
       const grid=document.getElementById("todaysFiveGrid"); if(!grid) return;
       const five=getQuickPlayPool().slice(0,5);
-      grid.innerHTML=five.map((m)=>`<a class="today-card" href="${staticMistakeUrl(m)}">
-        <div class="today-art">${renderArt(m,"card")}</div><div class="today-body"><div class="today-title">${escapeHtml(smField(m, "title")||"Untitled Mistake")}</div><div class="today-meta">${escapeHtml(smMeta([m.year,m.sport]))}</div><div class="today-meta-line"><span>👁 ${formatNumber(m.views||0)}</span>${renderMiniCommunity(m.id,true)}</div></div></a>`).join("");
+      grid.innerHTML=five.map((m,index)=>`<button type="button" class="today-card today-judge-card" onclick="openTodaysFiveJudge(${index})" aria-label="Judge ${escapeHtml(smField(m, "title")||"this mistake")}">
+        <div class="today-art">${renderArt(m,"card")}</div><div class="today-body"><div class="today-title">${escapeHtml(smField(m, "title")||"Untitled Mistake")}</div><div class="today-meta">${escapeHtml(smMeta([m.year,m.sport]))}</div><div class="today-meta-line"><span>👁 ${formatNumber(m.views||0)}</span>${renderMiniCommunity(m.id,true)}</div><div class="today-judge-cta">JUDGE →</div></div></button>`).join("");
       if (window.SMLanguage) window.SMLanguage.translate(grid);
+    }
+
+    function openTodaysFiveJudge(index){
+      const five=getQuickPlayPool().slice(0,5);
+      const m=five[index];
+      if(!m) return;
+      const fullPool=getQuickPlayPool();
+      const fullIndex=fullPool.findIndex(x=>String(x.id)===String(m.id));
+      if(fullIndex>=0) quickPlayIndex=fullIndex;
+      const wrap=document.getElementById("todaysFiveJudgeWrap");
+      if(wrap) wrap.hidden=false;
+      renderQuickPlay(m);
+      window.setTimeout(()=>wrap?.scrollIntoView({behavior:"smooth",block:"start"}),40);
+    }
+
+    function closeTodaysFiveJudge(){
+      const wrap=document.getElementById("todaysFiveJudgeWrap");
+      if(wrap) wrap.hidden=true;
     }
 
     function startTodaysFive(){ document.getElementById("todaysFivePanel")?.scrollIntoView({behavior:"smooth",block:"start"}); }
@@ -6048,89 +6104,6 @@ function formatNumber(n) {
       }
     }, 450);
   }
-</script>
-
-
-<style id="sm-personal-reveal-final">
-/* FINAL PERSONAL VOTE REVEAL — SEP 17 2026 */
-#judgeResult .sm-personal-reveal{
-  margin:0 0 14px;padding:15px 16px;border-radius:10px;
-  border:1px solid rgba(255,255,255,.18);background:#101720;
-}
-#judgeResult .sm-personal-reveal.majority{border-color:rgba(34,197,94,.55);background:rgba(34,197,94,.10)}
-#judgeResult .sm-personal-reveal.contrarian{border-color:rgba(245,185,66,.62);background:rgba(245,185,66,.10)}
-#judgeResult .sm-personal-reveal.split{border-color:rgba(96,165,250,.58);background:rgba(96,165,250,.10)}
-#judgeResult .sm-personal-reveal .sm-pr-kicker{font-size:12px;font-weight:1000;letter-spacing:.85px;text-transform:uppercase;margin-bottom:5px}
-#judgeResult .sm-personal-reveal.majority .sm-pr-kicker{color:#86efac}
-#judgeResult .sm-personal-reveal.contrarian .sm-pr-kicker{color:#f5b942}
-#judgeResult .sm-personal-reveal.split .sm-pr-kicker{color:#93c5fd}
-#judgeResult .sm-personal-reveal .sm-pr-main{font-size:21px;font-weight:1000;line-height:1.15;color:#fff;margin-bottom:5px}
-#judgeResult .sm-personal-reveal .sm-pr-sub{font-size:13px;line-height:1.4;color:#d7dee8}
-@media(max-width:600px){#judgeResult .sm-personal-reveal .sm-pr-main{font-size:18px}}
-</style>
-<script id="sm-personal-reveal-final-script">
-(function(){
-  "use strict";
-  function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"})[c]})}
-  function choiceFromUI(){
-    var y=document.getElementById("judgeYes"), n=document.getElementById("judgeNo");
-    if(y && y.classList.contains("selected")) return "yes";
-    if(n && n.classList.contains("selected")) return "no";
-    return null;
-  }
-  function enhance(){
-    var box=document.getElementById("judgeResult");
-    if(!box || !box.classList.contains("active")) return;
-    var choice=choiceFromUI();
-    if(!choice) return; // don't invent an old browser vote we cannot identify
-
-    var txt=box.innerText || "";
-    var yesMatch=txt.match(/YES\s*[:\-]?\s*(\d{1,3})%/i);
-    var noMatch=txt.match(/NO\s*[:\-]?\s*(\d{1,3})%/i);
-    if(!yesMatch || !noMatch) return;
-    var yes=Number(yesMatch[1]), no=Number(noMatch[1]);
-    var mine=choice==="yes"?yes:no;
-    if(!Number.isFinite(mine)) return;
-
-    var kind, kicker, main, sub;
-    if(mine>=60){
-      kind="majority"; kicker="🙌 YOU'RE WITH THE MAJORITY";
-      main=mine+"% of fans agree with you.";
-      sub="You voted "+(choice==="yes"?"YES — MISTAKE":"NO — NOT REALLY")+". Most fans made the same call.";
-    }else if(mine<40){
-      kind="contrarian"; kicker="🔥 CONTRARIAN CALL";
-      main="Only "+mine+"% of fans agree with you.";
-      sub="You voted "+(choice==="yes"?"YES — MISTAKE":"NO — NOT REALLY")+". Most fans made the opposite call.";
-    }else{
-      kind="split"; kicker="⚖️ SPLIT DECISION";
-      main="Fans are almost evenly divided.";
-      sub="You voted "+(choice==="yes"?"YES — MISTAKE":"NO — NOT REALLY")+". You're with "+mine+"% of fans.";
-    }
-
-    var old=box.querySelector(".sm-personal-reveal");
-    if(old) old.remove();
-    var existing=box.querySelector(".personal-verdict");
-    if(existing) existing.style.display="none";
-
-    var el=document.createElement("div");
-    el.className="sm-personal-reveal "+kind;
-    el.innerHTML='<div class="sm-pr-kicker">'+esc(kicker)+'</div>'+
-                 '<div class="sm-pr-main">'+esc(main)+'</div>'+
-                 '<div class="sm-pr-sub">'+esc(sub)+'</div>';
-    box.insertBefore(el, box.firstChild);
-  }
-  document.addEventListener("click",function(e){
-    if(e.target && (e.target.id==="judgeYes" || e.target.id==="judgeNo")){
-      setTimeout(enhance,250); setTimeout(enhance,900);
-    }
-  });
-  var observer=new MutationObserver(function(){setTimeout(enhance,0)});
-  document.addEventListener("DOMContentLoaded",function(){
-    var box=document.getElementById("judgeResult");
-    if(box) observer.observe(box,{subtree:true,childList:true,attributes:true});
-    enhance();
-  });
-})();
 </script>
 
 </body>
