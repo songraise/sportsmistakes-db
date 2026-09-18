@@ -276,6 +276,21 @@ h2{
   padding:6px 9px;
 }
 
+.instagram-tools{
+  display:flex;
+  gap:8px;
+  align-items:center;
+  flex-wrap:wrap;
+}
+
+.btn.instagram{
+  background:#c13584;
+}
+
+.btn.instagram.published{
+  background:var(--green);
+}
+
 .badge{
   display:inline-block;
   padding:5px 8px;
@@ -1140,10 +1155,9 @@ function renderStudio(){
     }
 
     ${
-      area(
-        "instagram_caption",
-        "Instagram caption",
-        fields.instagram_caption
+      instagramArea(
+        fields.instagram_caption,
+        art
       )
     }
 
@@ -2153,6 +2167,132 @@ function area(
 
   </div>
   `;
+}
+
+function instagramArea(value, art){
+
+  const canPublish =
+    Boolean(art && String(value || "").trim());
+
+  return `
+  <div class="field">
+
+    <label>
+
+      Instagram caption
+
+      <span class="instagram-tools">
+
+        <span
+          class="counter"
+          id="count-instagram_caption"
+        ></span>
+
+        <button
+          class="btn copy"
+          onclick="copyField('instagram_caption')"
+        >
+          Copy
+        </button>
+
+        <button
+          class="btn instagram"
+          id="instagramPublishBtn"
+          onclick="publishInstagram()"
+          ${canPublish ? "" : "disabled"}
+        >
+          Publish to Instagram
+        </button>
+
+      </span>
+
+    </label>
+
+    <textarea
+      id="instagram_caption"
+      oninput="updateCount('instagram_caption')"
+    >${esc(value)}</textarea>
+
+  </div>
+  `;
+}
+
+async function publishInstagram(){
+
+  if(!current){
+    return;
+  }
+
+  const caption =
+    val("instagram_caption").trim();
+
+  const art =
+    artworkOf(current);
+
+  if(!art){
+    document.getElementById("status").textContent =
+      "Instagram publish stopped: this mistake has no artwork URL.";
+    return;
+  }
+
+  if(!caption){
+    document.getElementById("status").textContent =
+      "Instagram publish stopped: the Instagram caption is empty.";
+    return;
+  }
+
+  const b =
+    document.getElementById("instagramPublishBtn");
+
+  if(b){
+    b.disabled = true;
+    b.textContent = "Publishing…";
+  }
+
+  document.getElementById("status").textContent =
+    "Publishing this mistake to Instagram…";
+
+  try{
+
+    const {data,error} =
+      await client.functions.invoke(
+        "instagram-publish-test",
+        {
+          body:{
+            mistake_id: current.id,
+            caption
+          }
+        }
+      );
+
+    if(error || !data?.success){
+      throw new Error(
+        data?.instagram_error?.error?.message ||
+        data?.error ||
+        error?.message ||
+        "Instagram publish failed."
+      );
+    }
+
+    document.getElementById("status").textContent =
+      "Published to Instagram successfully. Media ID: " +
+      data.instagram_media_id;
+
+    if(b){
+      b.textContent = "✓ Published";
+      b.classList.add("published");
+    }
+
+  }catch(error){
+
+    document.getElementById("status").textContent =
+      "Instagram publish failed: " + error.message;
+
+    if(b){
+      b.disabled = false;
+      b.textContent = "Publish to Instagram";
+    }
+  }
 }
 
 function input(
