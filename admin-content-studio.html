@@ -2223,8 +2223,17 @@ async function publishInstagram(){
     return;
   }
 
-  const caption =
+  const baseCaption =
     val("instagram_caption").trim();
+
+  const instagramCTA =
+    "🏛️ This debate belongs in The Record.\n" +
+    "Judge it, see the verdict & join the debate at SportsMistakes.com — link in bio.";
+
+  const caption =
+    baseCaption.includes("SportsMistakes.com")
+      ? baseCaption
+      : baseCaption + "\n\n" + instagramCTA;
 
   const art =
     artworkOf(current);
