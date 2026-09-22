@@ -930,6 +930,9 @@ function renderStudio(){
     instagram_caption:
       a.instagram_caption || "",
 
+    facebook_caption:
+      a.facebook_caption || a.instagram_caption || "",
+
     x_post:
       a.x_post || "",
 
@@ -1157,6 +1160,13 @@ function renderStudio(){
     ${
       instagramArea(
         fields.instagram_caption,
+        art
+      )
+    }
+
+    ${
+      facebookArea(
+        fields.facebook_caption,
         art
       )
     }
@@ -2217,6 +2227,116 @@ function instagramArea(value, art){
   `;
 }
 
+function facebookArea(value, art){
+
+  const canPublish =
+    Boolean(art && String(value || "").trim());
+
+  return `
+  <div class="field">
+    <label>
+      Facebook caption
+      <span class="instagram-tools">
+        <span class="counter" id="count-facebook_caption"></span>
+        <button class="btn copy" onclick="copyField('facebook_caption')">Copy</button>
+        <button
+          class="btn"
+          id="facebookPublishBtn"
+          onclick="publishFacebook()"
+          ${canPublish ? "" : "disabled"}
+        >
+          Publish to Facebook
+        </button>
+      </span>
+    </label>
+    <textarea
+      id="facebook_caption"
+      oninput="updateCount('facebook_caption')"
+    >${esc(value)}</textarea>
+  </div>
+  `;
+}
+
+function mistakePublicUrl(m){
+  return `https://sportsmistakes.com/mistake.html?id=${encodeURIComponent(m.id)}`;
+}
+
+async function publishFacebook(){
+  if(!current) return;
+
+  const baseCaption = val("facebook_caption").trim();
+  const art = artworkOf(current);
+  const mistakeUrl = mistakePublicUrl(current);
+
+  if(!art){
+    document.getElementById("status").textContent =
+      "Facebook publish stopped: this mistake has no artwork URL.";
+    return;
+  }
+
+  if(!baseCaption){
+    document.getElementById("status").textContent =
+      "Facebook publish stopped: the Facebook caption is empty.";
+    return;
+  }
+
+  const facebookCTA =
+    "🏛️ This debate belongs in The Record.\n" +
+    "Judge it, see the verdict & join the debate: " + mistakeUrl;
+
+  const caption = baseCaption.includes(mistakeUrl)
+    ? baseCaption
+    : baseCaption + "\n\n" + facebookCTA;
+
+  const b = document.getElementById("facebookPublishBtn");
+  if(b){
+    b.disabled = true;
+    b.textContent = "Publishing…";
+  }
+
+  document.getElementById("status").textContent =
+    "Publishing this mistake to Facebook…";
+
+  try{
+    const {data,error} = await client.functions.invoke(
+      "facebook-publish",
+      {
+        body:{
+          mistake_id: current.id,
+          image_url: art,
+          caption,
+          mistake_url: mistakeUrl
+        }
+      }
+    );
+
+    if(error || !data?.success){
+      throw new Error(
+        data?.facebook_error?.error?.message ||
+        data?.error ||
+        error?.message ||
+        "Facebook publish failed."
+      );
+    }
+
+    document.getElementById("status").textContent =
+      "Published to Facebook successfully. Post ID: " +
+      (data.facebook_post_id || data.facebook_photo_id || "created");
+
+    if(b){
+      b.textContent = "✓ Published";
+      b.classList.add("green");
+    }
+  }catch(error){
+    document.getElementById("status").textContent =
+      "Facebook publish failed: " + error.message;
+    if(b){
+      b.disabled = false;
+      b.textContent = "Publish to Facebook";
+    }
+  }
+}
+
 async function publishInstagram(){
 
   if(!current){
@@ -2429,6 +2549,9 @@ function collect(){
 
     instagram_caption:
       val("instagram_caption"),
+
+    facebook_caption:
+      val("facebook_caption"),
 
     x_post:
       val("x_post"),
