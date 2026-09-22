@@ -1160,14 +1160,16 @@ function renderStudio(){
     ${
       instagramArea(
         fields.instagram_caption,
-        art
+        art,
+        a
       )
     }
 
     ${
       facebookArea(
         fields.facebook_caption,
-        art
+        art,
+        a
       )
     }
 
@@ -2179,73 +2181,67 @@ function area(
   `;
 }
 
-function instagramArea(value, art){
+function instagramArea(value, art, asset = {}){
 
+  const alreadyPublished = Boolean(asset.instagram_published_at);
   const canPublish =
-    Boolean(art && String(value || "").trim());
+    !alreadyPublished && Boolean(art && String(value || "").trim());
+
+  const publishedNote = alreadyPublished
+    ? `<span class="counter">Published ${esc(formatPublishedAt(asset.instagram_published_at))}${asset.instagram_media_id ? " · ID " + esc(asset.instagram_media_id) : ""}</span>`
+    : "";
 
   return `
   <div class="field">
-
     <label>
-
       Instagram caption
-
       <span class="instagram-tools">
-
-        <span
-          class="counter"
-          id="count-instagram_caption"
-        ></span>
-
+        ${publishedNote}
+        <span class="counter" id="count-instagram_caption"></span>
+        <button class="btn copy" onclick="copyField('instagram_caption')">Copy</button>
         <button
-          class="btn copy"
-          onclick="copyField('instagram_caption')"
-        >
-          Copy
-        </button>
-
-        <button
-          class="btn instagram"
+          class="btn instagram ${alreadyPublished ? "published" : ""}"
           id="instagramPublishBtn"
           onclick="publishInstagram()"
           ${canPublish ? "" : "disabled"}
         >
-          Publish to Instagram
+          ${alreadyPublished ? "✓ Published to Instagram" : "Publish to Instagram"}
         </button>
-
       </span>
-
     </label>
-
     <textarea
       id="instagram_caption"
       oninput="updateCount('instagram_caption')"
     >${esc(value)}</textarea>
-
   </div>
   `;
 }
 
-function facebookArea(value, art){
+function facebookArea(value, art, asset = {}){
 
+  const alreadyPublished = Boolean(asset.facebook_published_at);
   const canPublish =
-    Boolean(art && String(value || "").trim());
+    !alreadyPublished && Boolean(art && String(value || "").trim());
+
+  const publishedNote = alreadyPublished
+    ? `<span class="counter">Published ${esc(formatPublishedAt(asset.facebook_published_at))}${asset.facebook_post_id ? " · ID " + esc(asset.facebook_post_id) : ""}</span>`
+    : "";
 
   return `
   <div class="field">
     <label>
       Facebook caption
       <span class="instagram-tools">
+        ${publishedNote}
         <span class="counter" id="count-facebook_caption"></span>
         <button class="btn copy" onclick="copyField('facebook_caption')">Copy</button>
         <button
-          class="btn"
+          class="btn ${alreadyPublished ? "green" : ""}"
           id="facebookPublishBtn"
           onclick="publishFacebook()"
           ${canPublish ? "" : "disabled"}
         >
-          Publish to Facebook
+          ${alreadyPublished ? "✓ Published to Facebook" : "Publish to Facebook"}
         </button>
       </span>
     </label>
@@ -2257,12 +2253,26 @@ function facebookArea(value, art){
   `;
 }
 
+function formatPublishedAt(value){
+  if(!value) return "";
+  const d = new Date(value);
+  if(Number.isNaN(d.getTime())) return String(value);
+  return d.toLocaleString();
+}
+
 function mistakePublicUrl(m){
   return `https://sportsmistakes.com/mistake.html?id=${encodeURIComponent(m.id)}`;
 }
 
 async function publishFacebook(){
   if(!current) return;
+
+  const existingAsset = assetsByMistake[current.id] || {};
+  if(existingAsset.facebook_published_at){
+    document.getElementById("status").textContent =
+      "Already published to Facebook. Duplicate post blocked.";
+    return;
+  }
 
   const baseCaption = val("facebook_caption").trim();
   const art = artworkOf(current);
@@ -2323,8 +2333,14 @@ async function publishFacebook(){
       "Published to Facebook successfully. Post ID: " +
       (data.facebook_post_id || data.facebook_photo_id || "created");
 
+    assetsByMistake[current.id] = {
+      ...(assetsByMistake[current.id] || {}),
+      facebook_published_at: data.facebook_published_at || new Date().toISOString(),
+      facebook_post_id: data.facebook_post_id || data.facebook_photo_id || null
+    };
+
     if(b){
-      b.textContent = "✓ Published";
+      b.textContent = "✓ Published to Facebook";
       b.classList.add("green");
     }
   }catch(error){
@@ -2340,6 +2356,13 @@ async function publishFacebook(){
 async function publishInstagram(){
 
   if(!current){
+    return;
+  }
+
+  const existingAsset = assetsByMistake[current.id] || {};
+  if(existingAsset.instagram_published_at){
+    document.getElementById("status").textContent =
+      "Already published to Instagram. Duplicate post blocked.";
     return;
   }
 
@@ -2408,8 +2431,14 @@ async function publishInstagram(){
       "Published to Instagram successfully. Media ID: " +
       data.instagram_media_id;
 
+    assetsByMistake[current.id] = {
+      ...(assetsByMistake[current.id] || {}),
+      instagram_published_at: data.instagram_published_at || new Date().toISOString(),
+      instagram_media_id: data.instagram_media_id || null
+    };
+
     if(b){
-      b.textContent = "✓ Published";
+      b.textContent = "✓ Published to Instagram";
       b.classList.add("published");
     }
 
