@@ -4088,6 +4088,213 @@
 @media (max-width:1099px){#smDesktopOnePager{display:none!important}}
 </style>
 
+
+<style id="sm-white-onepager-desktop-v2-fixes">
+/* SEP 25 2026 — TRUE DESKTOP ONE-SCREEN FIX
+   Fixes: hidden featured content, skinny Hall/Rankings columns,
+   oval Today's 5 cards, excessive vertical height and blank space. */
+@media (min-width:1100px){
+  html,body{min-height:100%;background:#f7f7f5!important}
+  body{overflow-x:hidden}
+  .top-nav{height:58px!important;min-height:58px!important;padding:7px 22px!important}
+  .sportsmistakes-header-logo{max-height:48px!important}
+  .page-shell{max-width:1500px!important;padding:12px 20px 10px!important}
+
+  /* Keep the desktop landing page to one compact screen. */
+  #smDesktopOnePager{display:block!important}
+  #smDesktopOnePager + .museum-home,
+  .museum-home.gallery-home{display:none!important}
+  #featuredHero,.database-title,.dashboard-four,.container,.record-ending{display:none!important}
+  #smDesktopOnePager #featuredHero{display:grid!important}
+  footer{display:none!important}
+
+  /* HERO */
+  .sm-op-hero{
+    grid-template-columns:minmax(0,1fr) 300px!important;
+    gap:16px!important;
+    margin-bottom:12px!important;
+    height:286px!important;
+  }
+  .sm-op-feature{
+    grid-column:auto!important;
+    display:block!important;
+    min-height:0!important;
+    height:286px!important;
+    overflow:hidden!important;
+  }
+  .sm-op-feature #featuredHero{
+    grid-template-columns:1.05fr .95fr!important;
+    width:100%!important;
+    height:100%!important;
+    min-height:0!important;
+    margin:0!important;
+    border:0!important;
+    border-radius:0!important;
+    box-shadow:none!important;
+    background:#fff!important;
+  }
+  .sm-op-feature #featuredHero .featured-art{
+    min-height:0!important;
+    height:286px!important;
+  }
+  .sm-op-feature #featuredHero .featured-info{
+    min-height:0!important;
+    height:286px!important;
+    padding:18px 22px!important;
+  }
+  .sm-op-feature #featuredHero .featured-info h2{
+    font-size:34px!important;
+    line-height:.96!important;
+    margin:0 0 9px!important;
+  }
+  .sm-op-feature #featuredHero .featured-summary{
+    font-size:14px!important;
+    line-height:1.35!important;
+    margin-bottom:9px!important;
+    -webkit-line-clamp:3!important;
+  }
+  .sm-op-feature #featuredHero .featured-meta{margin-bottom:7px!important}
+  .sm-op-feature #featuredHero .read-btn{
+    margin-top:2px!important;
+    min-height:38px!important;
+    padding:10px 16px!important;
+  }
+  .sm-op-actions{gap:12px!important}
+  .sm-op-action{padding:16px!important}
+  .sm-op-action strong{font-size:19px!important}
+
+  /* TODAY'S 5 — force five normal landscape cards, not old museum medallions. */
+  .sm-op-today{margin-bottom:12px!important}
+  .sm-op-section-head{margin-bottom:8px!important}
+  .sm-op-section-head h2{font-size:27px!important}
+  .sm-op-today-grid{display:block!important;width:100%!important}
+  .sm-op-today-grid #todaysFiveGrid{
+    display:grid!important;
+    grid-template-columns:repeat(5,minmax(0,1fr))!important;
+    gap:12px!important;
+    width:100%!important;
+    max-width:none!important;
+    overflow:visible!important;
+    padding:0!important;
+  }
+  .sm-op-today-grid #todaysFiveGrid .today-card{
+    display:block!important;
+    width:auto!important;
+    min-width:0!important;
+    max-width:none!important;
+    border-radius:8px!important;
+    overflow:hidden!important;
+    background:#fff!important;
+    border:1px solid #e5e7eb!important;
+    box-shadow:0 3px 10px rgba(15,23,42,.06)!important;
+  }
+  .sm-op-today-grid #todaysFiveGrid .today-art{
+    width:100%!important;
+    height:92px!important;
+    min-height:92px!important;
+    aspect-ratio:auto!important;
+    margin:0!important;
+    border:0!important;
+    border-radius:0!important;
+    box-shadow:none!important;
+    background:#eef1f4!important;
+  }
+  .sm-op-today-grid #todaysFiveGrid .today-art img{
+    width:100%!important;height:100%!important;object-fit:cover!important;border-radius:0!important;
+  }
+  .sm-op-today-grid #todaysFiveGrid .today-body{
+    display:block!important;
+    padding:7px 9px!important;
+    text-align:left!important;
+    min-height:48px!important;
+  }
+  .sm-op-today-grid #todaysFiveGrid .today-title{
+    max-width:none!important;
+    min-height:0!important;
+    font-size:11px!important;
+    line-height:1.15!important;
+    text-align:left!important;
+    margin:0 0 3px!important;
+  }
+  .sm-op-today-grid #todaysFiveGrid .today-meta{font-size:9px!important;text-align:left!important}
+  .sm-op-today-grid #todaysFiveGrid .today-judge-cta{font-size:9px!important;margin-top:3px!important}
+
+  /* BOTTOM ROW */
+  .sm-op-bottom{
+    grid-template-columns:1.18fr .9fr .9fr!important;
+    gap:14px!important;
+    height:176px!important;
+  }
+  .sm-op-panel{
+    min-height:0!important;
+    height:176px!important;
+    padding:13px!important;
+  }
+  .sm-op-panel-head{margin-bottom:7px!important}
+  .sm-op-panel-head h3{font-size:20px!important}
+  .sm-op-panel-sub{margin:-3px 0 8px!important;font-size:10px!important}
+
+  /* Search panel: actual working search input visible. */
+  .sm-op-search-slot{position:relative!important}
+  .sm-op-search .gallery-tool-panel{display:block!important;padding:0!important;background:transparent!important;border:0!important;box-shadow:none!important}
+  .sm-op-search .search-hero{display:block!important;margin:0!important;padding:0!important;background:transparent!important;border:0!important;box-shadow:none!important}
+  .sm-op-search .search-row{display:flex!important;height:38px!important}
+  .sm-op-search #searchInput{font-size:12px!important}
+  .sm-op-sport-pills{gap:5px!important;margin-top:8px!important;flex-wrap:nowrap!important}
+  .sm-op-sport-pills button{padding:5px 8px!important;font-size:9px!important}
+
+  /* Hall: wrapper contains the real #museumHallGrid. Make THAT the 3-column grid. */
+  .sm-op-hall-grid{display:block!important;width:100%!important}
+  .sm-op-hall-grid #museumHallGrid{
+    display:grid!important;
+    grid-template-columns:repeat(3,minmax(0,1fr))!important;
+    gap:7px!important;
+    width:100%!important;
+  }
+  .sm-op-hall-grid #museumHallGrid .hall-card{min-width:0!important;width:auto!important}
+  .sm-op-hall-grid #museumHallGrid .hall-art{
+    width:100%!important;height:76px!important;min-height:0!important;aspect-ratio:auto!important;
+    border:2px solid #c79b3b!important;border-radius:5px!important;
+  }
+  .sm-op-hall-grid #museumHallGrid .hall-copy{padding:4px 0!important;min-height:0!important}
+  .sm-op-hall-grid #museumHallGrid .hall-copy strong{font-size:9px!important;line-height:1.08!important}
+  .sm-op-hall-grid #museumHallGrid .hall-copy span,.sm-op-hall-grid .gallery-ribbon{display:none!important}
+
+  /* Rankings: same wrapper problem — apply the 3 columns to #museumRankings. */
+  .sm-op-ranks{display:block!important;width:100%!important}
+  .sm-op-ranks #museumRankings{
+    display:grid!important;
+    grid-template-columns:repeat(3,minmax(0,1fr))!important;
+    gap:7px!important;
+    width:100%!important;
+    margin:0!important;
+  }
+  .sm-op-ranks #museumRankings .museum-rank-row{
+    display:block!important;
+    min-width:0!important;
+    min-height:0!important;
+    height:auto!important;
+    padding:0!important;
+    border:0!important;
+    background:transparent!important;
+  }
+  .sm-op-ranks #museumRankings .museum-rank-row:nth-child(n+4){display:none!important}
+  .sm-op-ranks #museumRankings .rank-num,.sm-op-ranks #museumRankings .gallery-rank-copy{display:none!important}
+  .sm-op-ranks #museumRankings .rank-thumb{
+    display:block!important;width:100%!important;height:96px!important;min-height:0!important;
+    aspect-ratio:auto!important;border:2px solid #c79b3b!important;border-radius:5px!important;
+  }
+  .sm-op-ranks #museumRankings .rank-thumb img{width:100%!important;height:100%!important;object-fit:cover!important}
+
+  /* Search results can open over the page without making the landing page taller. */
+  .sm-op-search .search-results-wrap.active{
+    display:block!important;position:fixed!important;left:50%!important;right:auto!important;top:110px!important;
+    width:min(900px,90vw)!important;max-height:70vh!important;overflow:auto!important;transform:translateX(-50%)!important;
+    z-index:999!important;background:#fff!important;
+  }
+}
+</style>
+
 </head>
 
 <body>
