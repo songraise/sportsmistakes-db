@@ -4295,6 +4295,84 @@
 }
 </style>
 
+
+<style id="sm-white-onepager-v3-artwork-fix">
+/* SEP 25 2026 — Today’s 5 normal artwork + Hall caption cleanup */
+@media (min-width:1100px){
+  /* Kill every legacy medallion/oval rule inside the desktop one-pager. */
+  #smDesktopOnePager #todaysFiveGrid.gallery-medallions .today-card{
+    display:block!important;
+    overflow:hidden!important;
+    background:#fff!important;
+    border:1px solid #e5e7eb!important;
+    border-radius:8px!important;
+    box-shadow:0 3px 10px rgba(15,23,42,.06)!important;
+    text-align:left!important;
+  }
+  #smDesktopOnePager #todaysFiveGrid.gallery-medallions .today-art{
+    display:block!important;
+    width:100%!important;
+    height:92px!important;
+    min-height:92px!important;
+    max-width:none!important;
+    margin:0!important;
+    padding:0!important;
+    border:0!important;
+    border-radius:0!important;
+    overflow:hidden!important;
+    box-shadow:none!important;
+    background:#eef1f4!important;
+  }
+  #smDesktopOnePager #todaysFiveGrid.gallery-medallions .today-art .artwork-shell,
+  #smDesktopOnePager #todaysFiveGrid.gallery-medallions .today-art img,
+  #smDesktopOnePager #todaysFiveGrid.gallery-medallions .artwork-shell,
+  #smDesktopOnePager #todaysFiveGrid.gallery-medallions img{
+    width:100%!important;
+    height:100%!important;
+    display:block!important;
+    object-fit:cover!important;
+    border-radius:0!important;
+    clip-path:none!important;
+    -webkit-clip-path:none!important;
+    mask:none!important;
+    -webkit-mask:none!important;
+  }
+  #smDesktopOnePager #todaysFiveGrid.gallery-medallions .today-body{
+    display:block!important;
+    padding:7px 9px!important;
+    text-align:left!important;
+  }
+  #smDesktopOnePager #todaysFiveGrid.gallery-medallions .today-title{
+    max-width:none!important;
+    margin:0 0 3px!important;
+    color:#111827!important;
+    text-align:left!important;
+  }
+  #smDesktopOnePager #todaysFiveGrid.gallery-medallions .today-judge-cta{
+    display:block!important;
+    color:#f59e0b!important;
+    text-align:left!important;
+  }
+
+  /* Keep Hall of Game labels readable inside the existing one-page height. */
+  .sm-op-hall-grid #museumHallGrid .hall-art{height:70px!important}
+  .sm-op-hall-grid #museumHallGrid .hall-copy{
+    display:block!important;
+    padding:3px 1px 0!important;
+    overflow:visible!important;
+  }
+  .sm-op-hall-grid #museumHallGrid .hall-copy strong{
+    display:-webkit-box!important;
+    -webkit-box-orient:vertical!important;
+    -webkit-line-clamp:2!important;
+    overflow:hidden!important;
+    font-size:9px!important;
+    line-height:1.05!important;
+    color:#111827!important;
+  }
+}
+</style>
+
 </head>
 
 <body>
