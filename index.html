@@ -4392,7 +4392,7 @@
   .sm-op-section-head{margin-bottom:5px!important}
   .sm-op-section-head h2{font-size:25px!important}
 
-  /* Five equal cards. The artwork itself is a true 1:1 square — never oval or flattened. */
+  /* Today's 5 — five large artwork cards like the approved one-page mockup. */
   #smDesktopOnePager #todaysFiveGrid.gallery-medallions{
     display:grid!important;
     grid-template-columns:repeat(5,minmax(0,1fr))!important;
@@ -4402,21 +4402,22 @@
   #smDesktopOnePager #todaysFiveGrid.gallery-medallions .today-card{
     display:flex!important;
     flex-direction:column!important;
-    align-items:center!important;
+    align-items:stretch!important;
     min-width:0!important;
-    padding-top:6px!important;
+    padding-top:0!important;
+    overflow:hidden!important;
   }
   #smDesktopOnePager #todaysFiveGrid.gallery-medallions .today-art{
-    width:128px!important;
+    width:100%!important;
     height:128px!important;
-    min-width:128px!important;
+    min-width:0!important;
     min-height:128px!important;
-    max-width:128px!important;
+    max-width:none!important;
     max-height:128px!important;
-    aspect-ratio:1 / 1!important;
+    aspect-ratio:auto!important;
     flex:0 0 128px!important;
-    margin:0 auto!important;
-    border-radius:6px!important;
+    margin:0!important;
+    border-radius:6px 6px 0 0!important;
     overflow:hidden!important;
     background:#eef1f4!important;
   }
@@ -4424,7 +4425,8 @@
   #smDesktopOnePager #todaysFiveGrid.gallery-medallions .today-art img{
     width:100%!important;
     height:100%!important;
-    aspect-ratio:1 / 1!important;
+    max-width:none!important;
+    aspect-ratio:auto!important;
     object-fit:cover!important;
     object-position:center!important;
     border-radius:0!important;
