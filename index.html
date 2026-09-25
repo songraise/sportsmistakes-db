@@ -4373,6 +4373,89 @@
 }
 </style>
 
+
+<style id="sm-white-onepager-v4-square-today">
+/* SEP 25 2026 — square Today's 5 artwork while preserving desktop one-page height */
+@media (min-width:1100px){
+  /* Recover vertical room so square art does not turn the homepage back into a long scroller. */
+  .sm-op-hero{height:260px!important;margin-bottom:8px!important}
+  .sm-op-feature{height:260px!important}
+  .sm-op-feature #featuredHero .featured-art,
+  .sm-op-feature #featuredHero .featured-info{height:260px!important}
+  .sm-op-feature #featuredHero .featured-info{padding:14px 20px!important}
+  .sm-op-feature #featuredHero .featured-info h2{font-size:31px!important}
+  .sm-op-feature #featuredHero .featured-summary{font-size:13px!important;line-height:1.28!important}
+  .sm-op-actions{gap:8px!important}
+  .sm-op-action{padding:12px 14px!important}
+
+  .sm-op-today{margin-bottom:8px!important}
+  .sm-op-section-head{margin-bottom:5px!important}
+  .sm-op-section-head h2{font-size:25px!important}
+
+  /* Five equal cards. The artwork itself is a true 1:1 square — never oval or flattened. */
+  #smDesktopOnePager #todaysFiveGrid.gallery-medallions{
+    display:grid!important;
+    grid-template-columns:repeat(5,minmax(0,1fr))!important;
+    gap:12px!important;
+    align-items:stretch!important;
+  }
+  #smDesktopOnePager #todaysFiveGrid.gallery-medallions .today-card{
+    display:flex!important;
+    flex-direction:column!important;
+    align-items:center!important;
+    min-width:0!important;
+    padding-top:6px!important;
+  }
+  #smDesktopOnePager #todaysFiveGrid.gallery-medallions .today-art{
+    width:128px!important;
+    height:128px!important;
+    min-width:128px!important;
+    min-height:128px!important;
+    max-width:128px!important;
+    max-height:128px!important;
+    aspect-ratio:1 / 1!important;
+    flex:0 0 128px!important;
+    margin:0 auto!important;
+    border-radius:6px!important;
+    overflow:hidden!important;
+    background:#eef1f4!important;
+  }
+  #smDesktopOnePager #todaysFiveGrid.gallery-medallions .today-art .artwork-shell,
+  #smDesktopOnePager #todaysFiveGrid.gallery-medallions .today-art img{
+    width:100%!important;
+    height:100%!important;
+    aspect-ratio:1 / 1!important;
+    object-fit:cover!important;
+    object-position:center!important;
+    border-radius:0!important;
+    clip-path:none!important;
+    -webkit-clip-path:none!important;
+    mask:none!important;
+    -webkit-mask:none!important;
+  }
+  #smDesktopOnePager #todaysFiveGrid.gallery-medallions .today-body{
+    width:100%!important;
+    padding:5px 8px 6px!important;
+  }
+  #smDesktopOnePager #todaysFiveGrid.gallery-medallions .today-title{
+    font-size:10px!important;
+    line-height:1.12!important;
+    white-space:nowrap!important;
+    overflow:hidden!important;
+    text-overflow:ellipsis!important;
+  }
+  #smDesktopOnePager #todaysFiveGrid.gallery-medallions .today-meta{display:none!important}
+  #smDesktopOnePager #todaysFiveGrid.gallery-medallions .today-judge-cta{font-size:9px!important;margin-top:2px!important}
+
+  /* Compact bottom row just enough to keep the desktop landing page on one screen. */
+  .sm-op-bottom{height:158px!important;gap:12px!important}
+  .sm-op-panel{height:158px!important;padding:11px!important}
+  .sm-op-panel-head h3{font-size:19px!important}
+  .sm-op-panel-sub{margin:-3px 0 6px!important}
+  .sm-op-hall-grid #museumHallGrid .hall-art{height:62px!important}
+  .sm-op-ranks #museumRankings .rank-thumb{height:78px!important}
+}
+</style>
 </head>
 
 <body>
