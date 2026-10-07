@@ -4447,167 +4447,22 @@
     }
 
     // ============================================================
-    // PUBLIC MISTAKE URL
-    // Homepage/search/cards now open the clean static record page first.
-    // The static page's JUDGE AND LEARN button then opens mistake.html
-    // for voting, reasons and debate.
-    // This slug/path logic intentionally matches generate-seo-pages.mjs.
+    // PUBLIC MISTAKE URL — OCT 7 2026
+    // Homepage links open the redesigned dynamic page directly:
+    // mistake.html?id=<UUID>. Static /mistakes/en|fr/...html record pages
+    // remain live for Google/crawlers, but homepage/search/cards no longer
+    // route through them. The old availability-check click interceptor and
+    // slug/short-id helpers were removed with this change.
     // ============================================================
-    function staticMistakeSlug(value = "") {
-      return (
-        String(value)
-          .normalize("NFKD")
-          .replace(/[\u0300-\u036f]/g, "")
-          .toLowerCase()
-          .replace(/&/g, " and ")
-          .replace(/[^a-z0-9]+/g, "-")
-          .replace(/^-+|-+$/g, "")
-          .slice(0, 88) || "sports-mistake"
-      );
-    }
-
-    function staticMistakeShortId(id = "") {
-      return String(id)
-        .replace(/[^a-zA-Z0-9]/g, "")
-        .slice(0, 10);
-    }
-
-    function hasStaticFrenchPage(record) {
-      if (!record) return false;
-
-      return Boolean(
-        String(record.title_fr || "").trim() &&
-        (
-          String(record.summary_fr || "").trim() ||
-          String(record.why_it_matters_fr || "").trim() ||
-          String(record.lessons_learned_fr || "").trim()
-        )
-      );
-    }
-
     function staticMistakeUrl(recordOrId) {
-      let record =
-        (recordOrId && typeof recordOrId === "object")
-          ? recordOrId
-          : mistakes.find(
-              m => String(m.id) === String(recordOrId || "")
-            );
+      const mistakeId =
+        recordOrId && typeof recordOrId === "object"
+          ? recordOrId.id
+          : recordOrId;
 
-      if (!record || !record.id || !record.title) {
-        const fallbackId =
-          (record && record.id) ||
-          (typeof recordOrId === "string" ? recordOrId : "");
-
-        return `mistake.html?id=${encodeURIComponent(fallbackId)}`;
-      }
-
-      const currentLanguage =
-        (window.SMLanguage && typeof window.SMLanguage.get === "function")
-          ? window.SMLanguage.get()
-          : "en";
-
-      const useFrench =
-        currentLanguage === "fr" &&
-        hasStaticFrenchPage(record);
-
-      const pageTitle =
-        useFrench
-          ? (record.title_fr || record.title)
-          : record.title;
-
-      return `mistakes/${useFrench ? "fr" : "en"}/${staticMistakeSlug(pageTitle)}-${staticMistakeShortId(record.id)}.html`;
+      return `mistake.html?id=${encodeURIComponent(String(mistakeId || ""))}`;
     }
 
-
-    // SEO-SAFE STATIC PAGE FALLBACK — SEP 18 2026
-    // Keep clean static /mistakes/en|fr/...html URLs in the actual <a href>
-    // for Google/crawlers. For a HUMAN normal click only, verify that GitHub
-    // has generated the file. If it is not there yet, open the working
-    // dynamic mistake.html?id=... page instead of showing a 404.
-    const staticPageAvailabilityCache = new Map();
-
-    function normalizedStaticPath(urlValue) {
-      try {
-        const u = new URL(urlValue, location.href);
-        if (u.origin !== location.origin) return "";
-        return u.pathname.replace(/^\/+/, "");
-      } catch (_) {
-        return "";
-      }
-    }
-
-    function recordForStaticPath(pathname) {
-      const wanted = String(pathname || "").replace(/^\/+/, "");
-      if (!wanted) return null;
-
-      return mistakes.find(m => {
-        if (!m || !m.id || !m.title) return false;
-
-        const en = `mistakes/en/${staticMistakeSlug(m.title)}-${staticMistakeShortId(m.id)}.html`;
-        if (en === wanted) return true;
-
-        if (hasStaticFrenchPage(m)) {
-          const frTitle = m.title_fr || m.title;
-          const fr = `mistakes/fr/${staticMistakeSlug(frTitle)}-${staticMistakeShortId(m.id)}.html`;
-          if (fr === wanted) return true;
-        }
-        return false;
-      }) || null;
-    }
-
-    async function staticPageExists(url) {
-      const absolute = new URL(url, location.href).href;
-      if (staticPageAvailabilityCache.has(absolute)) {
-        return staticPageAvailabilityCache.get(absolute);
-      }
-
-      try {
-        // GET is more reliable than HEAD on static hosts/CDNs.
-        // We do not read the body; the browser only needs the HTTP status.
-        const response = await fetch(absolute, {
-          method: "GET",
-          cache: "no-store",
-          redirect: "follow",
-          headers: { "Accept": "text/html" }
-        });
-        const exists = response.ok;
-        staticPageAvailabilityCache.set(absolute, exists);
-        return exists;
-      } catch (_) {
-        // If the availability check itself fails, do NOT strand the visitor.
-        return false;
-      }
-    }
-
-    document.addEventListener("click", async (event) => {
-      const anchor = event.target.closest?.('a[href*="mistakes/en/"], a[href*="mistakes/fr/"]');
-      if (!anchor) return;
-
-      // Preserve browser behavior for new-tab / modified clicks.
-      if (
-        event.defaultPrevented ||
-        event.button !== 0 ||
-        event.metaKey || event.ctrlKey || event.shiftKey || event.altKey ||
-        anchor.target === "_blank" ||
-        anchor.hasAttribute("download")
-      ) return;
-
-      const staticPath = normalizedStaticPath(anchor.href);
-      if (!/^mistakes\/(en|fr)\/.+\.html$/i.test(staticPath)) return;
-
-      const record = recordForStaticPath(staticPath);
-      if (!record || !record.id) return;
-
-      event.preventDefault();
-
-      const exists = await staticPageExists(anchor.href);
-
-      if (exists) {
-        location.href = anchor.href;
-      } else {
-        location.href = `mistake.html?id=${encodeURIComponent(record.id)}`;
-      }
-    }, true);
 
     function smUI(text) {
       return window.SMLanguage ? window.SMLanguage.ui(text) : text;
