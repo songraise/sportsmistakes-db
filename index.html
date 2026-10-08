@@ -4764,11 +4764,13 @@
         .sort((a,b) => Number(b.year || 0) - Number(a.year || 0))
         .slice(0,2);
 
-      renderList("trendingList", trending, m =>
-        voteStatsLoaded && getVoteTotal(m.id) > 0
-          ? `🔥 ${getVoteTotal(m.id)} ${window.SMLanguage?.get()==="fr" ? "votes" : "votes"}`
-          : `🔥 ${m.controversy_score || 0}/100`
-      );
+      renderList("trendingList", trending, m => {
+        const votes = voteStatsLoaded ? getVoteTotal(m.id) : 0;
+        const fr = window.SMLanguage && window.SMLanguage.get && window.SMLanguage.get() === "fr";
+        if (votes >= VOTE_DISPLAY_THRESHOLD) return `🔥 ${votes} votes`;
+        if (votes > 0) return `🔥 ${fr ? "à vous de juger" : "cast the deciding vote"}`;
+        return `🔥 ${m.controversy_score || 0}/100`;
+      });
 
       renderList("controversialList", controversial, m => `${m.controversy_score || 0}%`);
       renderList("mostViewedList", viewed, m => `👁 ${formatNumber(m.views || 0)}`);
@@ -4878,10 +4880,17 @@
 
       const yesPercent = Math.round((stats.yes / stats.total) * 100);
 
+      const fr = window.SMLanguage && window.SMLanguage.get && window.SMLanguage.get() === "fr";
+      const thin = stats.total < VOTE_DISPLAY_THRESHOLD;
+
+      const fanVotesHtml = thin
+        ? `<span class="fan-votes" style="color:#f5b942;font-weight:700">${fr ? "à vous de juger" : "cast the deciding vote"}</span>`
+        : `<span class="fan-votes">(${stats.total} vote${stats.total === 1 ? "" : "s"})</span>`;
+
       return `
         <div class="fan-verdict">
-          Fan Verdict: ${yesPercent}% say YES this was a mistake
-          <span class="fan-votes">(${stats.total} vote${stats.total === 1 ? "" : "s"})</span>
+          Fan Verdict: ${thin ? "" : `${yesPercent}% say YES this was a mistake `}
+          ${fanVotesHtml}
         </div>
       `;
     }
@@ -4890,7 +4899,7 @@
       const vote = voteStatsByMistake[mistakeId];
       const lesson = lessonStatsByMistake[mistakeId];
 
-      const hasVotes = vote && vote.total;
+      const hasVotes = vote && vote.total >= VOTE_DISPLAY_THRESHOLD;
       const yesPercent = hasVotes ? Math.round((vote.yes / vote.total) * 100) : 0;
       const yesDegrees = hasVotes ? Math.round((yesPercent / 100) * 360) : 0;
 
@@ -4902,7 +4911,7 @@
               ? `background:conic-gradient(#e22424 0deg ${yesDegrees}deg,#64748b ${yesDegrees}deg 360deg)`
               : `background:conic-gradient(#334155 0deg 360deg)`}">
           </span>
-          <span>${hasVotes ? `${yesPercent}% ${smUI("YES")}` : "0 votes"}</span>
+          <span>${hasVotes ? `${yesPercent}% ${smUI("YES")}` : ((window.SMLanguage && window.SMLanguage.get && window.SMLanguage.get()==="fr") ? "Soyez le premier" : "Be the first")}</span>
         </span>`;
 
       const lessonHtml = lesson
@@ -5106,6 +5115,28 @@
 
     function getVoteTotal(id) {
       return voteStatsByMistake[id]?.total || 0;
+    }
+
+    // ============================================================
+    // THIN-VOTE THRESHOLD — OCT 8 2026
+    // Below this many votes, hide absolute counts AND agreement
+    // percentages; show a "judge it" CTA instead. Above the
+    // threshold, counts carry a plain-language agreement label so
+    // the percentage always reads as a stat, never a glitch.
+    // ============================================================
+    const VOTE_DISPLAY_THRESHOLD = 25;
+    function smFanTotalCaption(total, yesPercent) {
+      const fr = window.SMLanguage && window.SMLanguage.get && window.SMLanguage.get() === "fr";
+      if (total < VOTE_DISPLAY_THRESHOLD) {
+        if (!total) return fr ? "Aucun vote — soyez le premier à juger." : "No votes yet — be the first to judge.";
+        return fr ? "À vous de juger." : "Cast the deciding vote.";
+      }
+      const verdict = yesPercent >= 50
+        ? (fr ? `${yesPercent} % disent OUI, c'était une erreur` : `${yesPercent}% say YES, it was a mistake`)
+        : (fr ? `${100 - yesPercent} % disent NON, ce n'en était pas une` : `${100 - yesPercent}% say NO, it wasn't`);
+      return fr
+        ? `${total.toLocaleString()} jugement${total === 1 ? "" : "s"} de partisans • ${verdict}`
+        : `${total.toLocaleString()} fan judgment${total === 1 ? "" : "s"} • ${verdict}`;
     }
 
     async function showAllSection(mode) {
@@ -5323,7 +5354,7 @@ function formatNumber(n) {
               <div class="personal-verdict-headline">YES ${yesPercent}% · NO ${noPercent}%</div>
               <div class="personal-verdict-copy">This browser voted on this mistake before this new comparison feature was added, so SportsMistakes cannot tell which side you chose.</div>
             </div>
-            <div class="fan-total">${total.toLocaleString()} fan judgment${total===1?"":"s"}</div>`;
+            <div class="fan-total">${smFanTotalCaption(total, yesPercent)}</div>`;
         }
         return `<span class="compare-label">2. Compare with fans</span><strong>Your vote is already recorded.</strong>`;
       }
@@ -5374,7 +5405,7 @@ function formatNumber(n) {
           </div>
           <div>
             <div class="fan-legend"><span class="yes">YES ${yesPercent}%</span><span class="no">NO ${noPercent}%</span></div>
-            <div class="fan-total">${total.toLocaleString()} fan judgment${total===1?"":"s"}</div>
+            <div class="fan-total">${smFanTotalCaption(total, yesPercent)}</div>
           </div>
         </div>`;
     }
@@ -5930,9 +5961,12 @@ function formatNumber(n) {
       if(rankBox){
         rankBox.innerHTML=ranked.map((m,i)=>{
           const votes=getVoteTotal(m.id);
-          const scoreText=voteStatsLoaded && votes>0
+          const fr=window.SMLanguage?.get()==="fr";
+          const scoreText=voteStatsLoaded && votes>=VOTE_DISPLAY_THRESHOLD
             ? `${votes} vote${votes===1?"":"s"}`
-            : `${Number(m.controversy_score||0)}/100`;
+            : (voteStatsLoaded && votes>0
+                ? (fr ? "à vous de juger" : "cast the deciding vote")
+                : `${Number(m.controversy_score||0)}/100`);
           return `
           <a class="museum-rank-row gallery-rank-card" href="${staticMistakeUrl(m)}">
             <div class="rank-num">${i+1}</div>
@@ -5988,7 +6022,7 @@ function formatNumber(n) {
         hallBox.innerHTML=hall.map((m,index)=>{
           const vote=voteStatsByMistake[m.id];
           const lesson=lessonStatsByMistake[m.id];
-          const yesPercent=vote && vote.total ? Math.round((vote.yes/vote.total)*100) : null;
+          const yesPercent=vote && vote.total >= VOTE_DISPLAY_THRESHOLD ? Math.round((vote.yes/vote.total)*100) : null;
 
           const communityLine = yesPercent !== null
             ? `${yesPercent}% say mistake${lesson ? ` · Top lesson: ${escapeHtml(lesson.name)}` : ""}`
