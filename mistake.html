@@ -487,6 +487,8 @@ img{max-width:100%}
 }
 .smx-deck{margin:0 0 14px;color:#d7e0ec;font-size:16px;max-width:60ch}
 .smx-meta-row{display:flex;align-items:center;gap:16px;flex-wrap:wrap;font-size:13px;color:var(--smx-muted)}
+.smx-nominator{margin:10px 0 0;font-size:13px;color:var(--smx-muted)}
+.smx-nominator strong{color:#f5b942;font-weight:800}
 .smx-share{display:flex;align-items:center;gap:8px}
 .smx-share .lbl{font-size:12px;font-weight:700;letter-spacing:.06em}
 .smx-share a,.smx-share button{
@@ -1010,6 +1012,7 @@ async function loadMistake(){
           </span>
         </div>
         <div id="shareMessage" class="smx-share-msg"></div>
+        ${(() => { const nb = String(data.nominated_by || "").trim(); return nb ? `<p class="smx-nominator">${smText("Nominated by", "Proposé par")} <strong>${escapeHtml(nb)}</strong></p>` : ""; })()}
       </div>
     </section>
 
@@ -1223,7 +1226,13 @@ async function loadVotes(){
     return;
   }
 
-  box.innerHTML=`<span class="y">${yesPercent}% ${smText("YES","OUI")}</span> · <span class="n">${noPercent}% ${smText("NO","NON")}</span><br><small style="font-size:13px;color:var(--smx-muted);font-weight:400">${total} ${smText(total===1?"total vote":"total votes",total===1?"vote au total":"votes au total")}</small>`;
+  // THIN-VOTE THRESHOLD — OCT 7 2026: below 25 votes, hide the absolute
+  // count and show a "judge it" CTA. Percentages read fine at any count.
+  const VOTE_DISPLAY_THRESHOLD=25;
+  const countLine = total < VOTE_DISPLAY_THRESHOLD
+    ? smText("Cast the deciding vote.","Votez pour faire pencher la balance.")
+    : `${total} ${smText(total===1?"total vote":"total votes",total===1?"vote au total":"votes au total")}`;
+  box.innerHTML=`<span class="y">${yesPercent}% ${smText("YES","OUI")}</span> · <span class="n">${noPercent}% ${smText("NO","NON")}</span><br><small style="font-size:13px;color:var(--smx-muted);font-weight:400">${countLine}</small>`;
 }
 
 async function submitVote(vote){
