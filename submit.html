@@ -22,6 +22,8 @@ a{color:inherit}
 .nom-row{display:grid;grid-template-columns:1fr auto;gap:10px}
 #nominationInput{width:100%;padding:16px;border-radius:9px;border:1px solid rgba(255,255,255,.23);background:#080e15;color:#fff;font-size:17px;outline:none}
 #nominationInput:focus{border-color:var(--red);box-shadow:0 0 0 3px rgba(226,36,36,.12)}
+#nominatorName{width:100%;padding:16px;border-radius:9px;border:1px solid rgba(255,255,255,.23);background:#080e15;color:#fff;font-size:17px;outline:none;margin-top:10px;box-sizing:border-box}
+#nominatorName:focus{border-color:var(--red);box-shadow:0 0 0 3px rgba(226,36,36,.12)}
 .nominate-btn{border:0;border-radius:9px;padding:0 22px;background:linear-gradient(135deg,var(--red),#bd1414);color:#fff;font-weight:1000;text-transform:uppercase;cursor:pointer;font-size:14px}
 .nominate-btn:disabled{opacity:.55;cursor:not-allowed}
 .matches{display:none;margin-top:10px;border:1px solid rgba(255,255,255,.15);border-radius:10px;overflow:hidden;background:#080e15}.matches.active{display:block}
@@ -274,6 +276,12 @@ body{
     font-size:16px !important;
     min-height:52px !important;
   }
+  #nominatorName{
+    width:100% !important;
+    min-width:0 !important;
+    font-size:16px !important;
+    min-height:52px !important;
+  }
   .nominate-btn{
     width:100% !important;
     min-height:50px !important;
@@ -363,6 +371,7 @@ body{
       <input id="nominationInput" maxlength="180" autocomplete="off" placeholder="e.g. Seahawks pass at the goal line">
       <button id="nominateButton" class="nominate-btn" type="button" onclick="nominate()">Nominate It</button>
     </div>
+    <input id="nominatorName" maxlength="40" autocomplete="nickname" placeholder="Your name or handle (optional — shown as credit on the entry)">
 
     <div id="matches" class="matches" aria-live="polite"></div>
     <div id="status" class="status" aria-live="polite"></div>
@@ -573,6 +582,7 @@ async function nominate(confirmedEvent=false){
   const button=document.getElementById("nominateButton");
   const status=document.getElementById("status");
   const nomination=input.value.trim();
+  const nominatorName=(document.getElementById("nominatorName")?.value||"").trim().slice(0,40);
 
   if(nomination.length<4){
     status.className="status active bad";
@@ -596,6 +606,7 @@ async function nominate(confirmedEvent=false){
       },
       body:JSON.stringify({
         nomination,
+        nominator_name:nominatorName||null,
         client_id:getClientId(),
         confirmed_event:confirmedEvent === true,
         confirmed_subject:confirmedEvent ? String(pendingAiSuggestion||"") : ""
@@ -783,6 +794,8 @@ loadMistakes();
 
     const input=document.getElementById("nominationInput");
     if(input) input.placeholder="ex. : la passe des Seahawks près de la ligne des buts";
+    const nominator=document.getElementById("nominatorName");
+    if(nominator) nominator.placeholder="Votre nom ou identifiant (facultatif — affiché comme crédit sur la fiche)";
   }
 
   document.addEventListener("DOMContentLoaded",translateStatic);
