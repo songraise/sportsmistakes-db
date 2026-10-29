@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Which Was Worse? | SportsMistakes</title>
+<meta name="description" content="Two famous sports blunders. One pick. Which was worse? Duel your way through the Daily 5 and see where you stand with the crowd.">
+<meta property="og:title" content="Which Was Worse? | SportsMistakes">
+<meta property="og:description" content="Two famous sports blunders. One pick. Which was worse?">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  :root{
+    --smx-bg:#0a1424; --smx-card:#122441; --smx-line:rgba(255,255,255,.09);
+    --smx-text:#f2f5f9; --smx-muted:#9fb0c6; --smx-gold:#d9a441;
+    --smx-red:#e02424; --smx-blue:#4a7fc1; --smx-radius:14px;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--smx-bg);color:var(--smx-text);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+  a{color:var(--smx-gold)}
+  .wrap{max-width:720px;margin:0 auto;padding:20px 16px 48px}
+  header{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:8px}
+  .logo{font-weight:900;letter-spacing:.5px;text-decoration:none;color:var(--smx-text);font-size:20px}
+  .logo span{color:var(--smx-gold)}
+  .navlink{color:var(--smx-muted);text-decoration:none;font-size:14px;white-space:nowrap}
+  .hero{text-align:center;margin:28px 0 8px}
+  .hero h1{font-size:clamp(32px,8vw,52px);line-height:1.05;margin:0 0 10px;font-weight:900;letter-spacing:-.5px}
+  .hero h1 em{font-style:normal;color:var(--smx-gold)}
+  .hero p{color:var(--smx-muted);font-size:17px;line-height:1.5;margin:0 auto;max-width:520px}
+  .statusbar{display:flex;justify-content:space-between;gap:12px;margin:22px 0 14px;
+    color:var(--smx-muted);font-size:14px;font-weight:600}
+  .card{background:var(--smx-card);border:1px solid var(--smx-line);border-radius:var(--smx-radius);
+    padding:20px;margin-bottom:16px}
+  .theme{font-size:12px;letter-spacing:1.5px;text-transform:uppercase;color:var(--smx-gold);font-weight:800}
+  .question{font-size:clamp(22px,5.5vw,30px);font-weight:900;margin:8px 0 18px;line-height:1.2}
+  .vs{display:grid;grid-template-columns:1fr;gap:14px}
+  @media(min-width:560px){ .vs{grid-template-columns:1fr 1fr} }
+  .contender{border:1px solid var(--smx-line);border-radius:12px;overflow:hidden;background:rgba(255,255,255,.03)}
+  .contender img{width:100%;aspect-ratio:16/9;object-fit:cover;display:block;background:#060c17}
+  .contender .body{padding:14px}
+  .contender h3{margin:0 0 6px;font-size:18px;line-height:1.3}
+  .contender .year{color:var(--smx-muted);font-size:13px;font-weight:600}
+  .contender p{margin:8px 0 14px;color:var(--smx-muted);font-size:15px;line-height:1.5}
+  button.pick{width:100%;padding:13px;border:0;border-radius:10px;cursor:pointer;
+    background:var(--smx-gold);color:#1a1206;font-weight:900;font-size:16px}
+  button.pick:active{transform:scale(.98)}
+  .contender.picked{outline:2px solid var(--smx-gold)}
+  .contender.loser{opacity:.65}
+  .yourpick{display:inline-block;margin-top:12px;background:var(--smx-gold);color:#1a1206;
+    font-size:12px;font-weight:900;letter-spacing:.5px;padding:4px 9px;border-radius:999px}
+  .split{margin-top:18px}
+  .splitbar{display:flex;height:34px;border-radius:999px;overflow:hidden;background:rgba(255,255,255,.08)}
+  .splitbar .seg-a{background:var(--smx-gold);color:#1a1206;display:flex;align-items:center;justify-content:center;
+    font-weight:900;font-size:15px;min-width:0;white-space:nowrap}
+  .splitbar .seg-b{background:var(--smx-blue);color:#fff;display:flex;align-items:center;justify-content:center;
+    font-weight:900;font-size:15px;min-width:0;white-space:nowrap}
+  .splitlabels{display:flex;justify-content:space-between;font-size:13px;color:var(--smx-muted);margin-top:8px}
+  .verdict{font-size:17px;font-weight:800;margin:16px 0 4px;line-height:1.4}
+  .verdict small{display:block;color:var(--smx-muted);font-weight:500;font-size:14px;margin-top:4px}
+  .actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:18px}
+  .actions button{flex:1 1 180px;padding:13px;border-radius:10px;cursor:pointer;font-weight:800;font-size:15px}
+  .btn-next{background:var(--smx-gold);color:#1a1206;border:0}
+  .btn-share{background:transparent;color:var(--smx-text);border:1px solid var(--smx-line)}
+  .btn-quiet{background:transparent;color:var(--smx-muted);border:1px solid var(--smx-line)}
+  .storylinks{display:flex;flex-wrap:wrap;gap:14px;margin-top:14px;font-size:14px}
+  .notice{background:rgba(217,164,65,.14);border:1px solid rgba(217,164,65,.45);border-radius:10px;
+    padding:12px 14px;color:#ffe9bd;font-size:14px;line-height:1.5}
+  .fine{color:var(--smx-muted);font-size:13px;line-height:1.6;text-align:center;margin-top:26px}
+  .results h2{font-size:26px;margin:0 0 6px}
+  .results .row{border-top:1px solid var(--smx-line);padding:12px 0}
+  .results .row:first-of-type{border-top:0}
+  .results .row b{display:block;font-size:16px;line-height:1.4}
+  .results .row span{color:var(--smx-muted);font-size:14px}
+  .loading,.error{text-align:center;color:var(--smx-muted);padding:48px 12px;font-size:17px;line-height:1.6}
+  .error{color:#ffd9d9}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <a class="logo" href="index.html">SPORTS<span>MISTAKES</span></a>
+    <a class="navlink" href="index.html">Browse all mistakes &rarr;</a>
+  </header>
+
+  <div id="app">
+    <div class="loading" id="loading">Loading today's duels&hellip;</div>
+  </div>
+
+  <p class="fine">
+    Picks are anonymous — one pick per duel per browser, stored so the crowd split is real.
+    Duel cards read the same entries as the archive; "Read the full story" opens the entry's deeper dive.
+    Artwork on this site is AI-generated.
+  </p>
+</div>
+
+<script>
+/* ------------------------------------------------------------------
+   WHICH WAS WORSE? — duel feed for sportsmistakes.com
+   Paste-ready: drop this file next to index.html in the repo.
+   Requires: duel_picks.sql run once in Supabase (see DUEL_DEPLOY.md).
+   Wiring matches the existing site: same Supabase project, same public
+   anon key pattern as index.html / mistake.html, same browser voter id
+   (sportsmistakes_voter_id) as the mistake page.
+   ------------------------------------------------------------------ */
+const SUPABASE_URL = "https://scwjlljurircxuufhqih.supabase.co";
+const SUPABASE_ANON_KEY = "__SUPABASE_ANON_KEY__"; /* same public anon key already used by index.html — RLS is the protection, never put a service-role key here */
+const client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+/* 30 approved duels (see duel-pairs-draft.md). "year" is the DISPLAY year:
+   the mistakes table has wrong years on 5 rows (Warriors 2019→2016,
+   Maple Leafs 1980→2013, Clippers 2020→2015, Thunder/Harden 2008→2012,
+   Dodgers/Hill 2017→2018), so cards use the corrected year here while
+   "Read the full story" still links to the correct entry. */
+const DUELS = [
+{key:"duel-01",theme:"The Collapses",question:"Which collapse was worse?",
+ a:{id:"0f1e2d9e-ba19-4a0f-abea-f6d40a472700",year:1986,line:"Ground ball through the legs in Game 6 of the 1986 World Series."},
+ b:{id:"324ca12e-0229-48b1-b419-2575d6b0e475",year:2017,line:"Led the Patriots 28–3 in the Super Bowl — and lost."}},
+{key:"duel-02",theme:"The Collapses",question:"Which blown lead was worse?",
+ a:{id:"84fa7815-c377-4afb-ae70-265056b7a9e3",year:2004,line:"Up 3–0 in the ALCS. Lost four straight to Boston."},
+ b:{id:"8144c414-2d35-4fd3-8088-ce524c8aa483",year:2016,line:"73 wins, up 3–1 in the Finals. Lost to Cleveland."}},
+{key:"duel-03",theme:"The Collapses",question:"Which European collapse was worse?",
+ a:{id:"4bca10b5-7f5b-462f-ac13-f4e805087f15",year:2017,line:"Won the first leg 4–0. Lost the tie 6–5."},
+ b:{id:"72fe4502-7b6c-4e79-aa0f-e66035676a09",year:2005,line:"Led Liverpool 3–0 at halftime of the final. Lost on penalties."}},
+{key:"duel-04",theme:"The Collapses",question:"Which 3–1 lead was worse to blow?",
+ a:{id:"9a16b205-527e-4c50-b331-ff2fc7e3845f",year:2013,line:"Led Boston 4–1 with ten minutes left in Game 7. Lost."},
+ b:{id:"9b88e99c-a65f-4300-8df3-ab6cc470f3e8",year:2015,line:"Up 3–1 on Houston with home court. Lost the series."}},
+{key:"duel-05",theme:"The Collapses",question:"Which late collapse was worse?",
+ a:{id:"0449f700-3891-40f0-ab3b-4854f73f5923",year:2018,line:"Took a 4–1 lead to Rome. Lost 3–0 and went out."},
+ b:{id:"8959455a-97d1-4e0c-893a-e428772bb08e",year:1999,line:"Led the Champions League final until stoppage time. Lost 2–1."}},
+{key:"duel-06",theme:"The Calls",question:"Which injustice was worse?",
+ a:{id:"ac2d5e59-94ed-4ff1-8e8e-99f14a10b0bf",year:1986,line:"Maradona punched it in — and the ref allowed it."},
+ b:{id:"635d25bc-b3ad-42b7-8f9e-faa7a713ff42",year:2002,line:"A fumble that wasn't, by rule — and a dynasty was born."}},
+{key:"duel-07",theme:"The Calls",question:"Which call was worse?",
+ a:{id:"84fc565e-2899-4983-9769-11ab8157b45b",year:1985,line:"Called the runner safe in Game 6. Replays said out."},
+ b:{id:"b3f89d5e-5a3a-4fe3-89a5-1b55c2a4b25f",year:2019,line:"A blatant pass interference, uncalled, with a Super Bowl trip on the line."}},
+{key:"duel-08",theme:"The Calls",question:"Which catch ruling was worse?",
+ a:{id:"3a34d012-f273-4634-9bb5-89784f483b67",year:2015,line:"Caught it, reached for the line — ruled incomplete."},
+ b:{id:"60fcba39-0701-473a-a2eb-4a95bd66d91f",year:2010,line:"Caught the winner, let go to celebrate — ruled incomplete."}},
+{key:"duel-09",theme:"The Calls",question:"Which umpire robbed history worse?",
+ a:{id:"49a6e78f-e06c-4655-99d8-2545012c13c8",year:1996,line:"A 12-year-old reached over the wall and turned an out into a homer."},
+ b:{id:"cb854580-5414-4479-a428-30b18396f38f",year:2010,line:"One out from a perfect game. The umpire called the runner safe."}},
+{key:"duel-10",theme:"The Calls",question:"Which officiating disaster was worse?",
+ a:{id:"f39a23a5-9846-423a-9d27-bbbce41dd638",year:2012,line:"Replacement refs awarded a game-winning touchdown that wasn't."},
+ b:{id:"ba674de0-b00e-42c0-b36f-bb828f5c57e0",year:2002,line:"27 Lakers free throws in the fourth quarter of Game 6."}},
+{key:"duel-11",theme:"Brain Locks",question:"Which brain lock was worse?",
+ a:{id:"f075bbc2-9661-4599-916e-af102fcc9f63",year:1993,line:"Called a timeout Michigan didn't have, in the title game."},
+ b:{id:"ad0a73c5-fcae-4d7a-a8d4-853f760a9e5",year:2018,line:"Got the rebound, tie game, 4.7 seconds left — and dribbled away."}},
+{key:"duel-12",theme:"Brain Locks",question:"Which Leon Lett was worse?",
+ a:{id:"dd57721e-2085-4300-8f3-1034d0b881de",year:1993,line:"Tried to recover a blocked kick in the snow. Kicked it to Miami."},
+ b:{id:"9438093d-ddbd-4a0d-ab3e-3a6ea9d73202",year:1993,line:"Slowed down to showboat a fumble return — and got caught at the 1."}},
+{key:"duel-13",theme:"Brain Locks",question:"Which wrong-way moment was worse?",
+ a:{id:"915061d4-1f8e-4f9e-b6f4-8c6a-edd7a7a85e",year:1964,line:"Recovered a fumble and ran 66 yards into his own end zone."},
+ b:{id:"f0d9ce4a-878a-4a82-b1fb-a8871b03460a",year:2012,line:"Ran into his own lineman's backside and fumbled — on Thanksgiving."}},
+{key:"duel-14",theme:"Brain Locks",question:"Which miss was worse?",
+ a:{id:"1d91386e-56ee-4429-857f-3235933a4940",year:2007,line:"Missed an empty net from feet away. The other team tied it seconds later."},
+ b:{id:"d73104f5-b967-469d-ad70-7ef8eeb6d25b",year:1994,line:"Missed the penalty that would have kept Italy alive in the World Cup final shootout."}},
+{key:"duel-15",theme:"Cheating & Scandals",question:"Which cheating scandal was worse?",
+ a:{id:"3ab05ef8-b7f7-4c5d-8156-2c1dfca3689f8",year:2017,line:"Stole signs with trash cans — and won a World Series."},
+ b:{id:"d7213a44-7bb3-4e80-8749-d03b066e24d4",year:1919,line:"Eight players threw the World Series for gamblers' money."}},
+{key:"duel-16",theme:"Cheating & Scandals",question:"Which league scandal was worse?",
+ a:{id:"e020fbdb-b948-4a4b-bc93-8691003e7de4",year:2015,line:"Under-inflated footballs, a $1M fine, and a four-game suspension."},
+ b:{id:"661c266b-6dd0-48ca-937d-51c537ad6091",year:2012,line:"Paid bonuses for injuring opponents. The coach got a year."}},
+{key:"duel-17",theme:"Cheating & Scandals",question:"Which glove crime was worse?",
+ a:{id:"756faf3d-9c34-4f6a-9a9f-1d529a0c5e5d",year:1983,line:"Won with plaster in his gloves. His opponent never fought again."},
+ b:{id:"4ad71c7-dc00-4253-820b-518a-9e2f83b5e",year:1983,line:"The trainer who took the padding out — same fight, same crime."}},
+{key:"duel-18",theme:"Cheating & Scandals",question:"Which doping fall was worse?",
+ a:{id:"18ee6ae9-b645-4bdf-a21b-466c625a57ff",year:2012,line:"Seven Tour titles, stripped for systematic doping."},
+ b:{id:"9d1b02b2-c476-4d18-82ac-cdfe9ebe54b6",year:1988,line:"A 9.79 world record that lasted 48 hours before the positive test."}},
+{key:"duel-19",theme:"Front Office Disasters",question:"Which draft pass was worse?",
+ a:{id:"0b256f88-906d-4a02-97c0-71fc04d71f0f",year:1984,line:"Portland took Sam Bowie second. Jordan went third."},
+ b:{id:"85104158-5b8f-43ee-84fe-b1e3a118ad1e",year:2003,line:"Detroit took Darko second. Melo, Wade, and Bosh went after him."}},
+{key:"duel-20",theme:"Front Office Disasters",question:"Which trade gave away more?",
+ a:{id:"030d2092-0b0c-45a8-bd07-26b890db586c",year:1996,line:"Charlotte drafted Kobe 13th — and had already agreed to trade him."},
+ b:{id:"3591736e-aa3d-4375-8e9d-dce302b9fbc3",year:2012,line:"OKC traded a future MVP to save money. He won it in Houston."}},
+{key:"duel-21",theme:"Front Office Disasters",question:"Which old-school trade was worse?",
+ a:{id:"bf6f4981-ba6c-4f56-b459-fa9cabcc817c",year:1919,line:"Boston sold Ruth for $100,000. The curse lasted 86 years."},
+ b:{id:"b8f8d4b0-4ce1-4a64-8749-37242625c910",year:1964,line:"Chicago traded Lou Brock for Ernie Broglio — and watched Brock become a Hall of Famer."}},
+{key:"duel-22",theme:"Front Office Disasters",question:"Which draft bust was worse?",
+ a:{id:"52a3eefc-71cd-43bf-a652-6276c1a895c6",year:1998,line:"The second pick of the 1998 draft. The name every bust list starts with."},
+ b:{id:"2c01bd8a-38ff-466e-4e21-91de-c0935588e27b",year:2007,line:"First overall pick, biggest contract, out of the league in three years."}},
+{key:"duel-23",theme:"Front Office Disasters",question:"Which ownership decision was worse?",
+ a:{id:"31abdaed-521b-468d-b066-fdfe4dd5b6db",year:2008,line:"Seattle lost its 41-year-old franchise to Oklahoma City."},
+ b:{id:"76174176-6b00-423f-8432-8fa28a426a81",year:1998,line:"Six titles — and management broke it up while it could still win."}},
+{key:"duel-24",theme:"Coaching Decisions",question:"Which endgame call was worse?",
+ a:{id:"65d76f85-0949-455f-9ae2-502f5ad2381c7f",year:2015,line:"Second-and-goal at the 1, 26 seconds left — and they threw it."},
+ b:{id:"729cc514-c13f-4576-afcb-c1fd174f6e5b",year:2003,line:"Left Pedro in one batter too long, up 5–2 in Game 7 of the ALCS."}},
+{key:"duel-25",theme:"Coaching Decisions",question:"Which benching was worse?",
+ a:{id:"d9372376-ea17-4445-816a-c90d25ee718f",year:2018,line:"Benched his Super Bowl hero for the entire Super Bowl."},
+ b:{id:"dbf77e87-aa34-4112-b5eb-5d26cfd03b55",year:2016,line:"Never used his unhittable closer in an elimination game."}},
+{key:"duel-26",theme:"Coaching Decisions",question:"Which early hook was worse?",
+ a:{id:"f1d18599-3b0d-41c1-86c0-e67735c66ef7",year:2020,line:"Pulled a cruising Snell in Game 6 of the World Series, up 1–0."},
+ b:{id:"67da272e-d7b5-46b8-83f8b8b6f8",year:2018,line:"Pulled Hill after 6.1 scoreless innings with a 4–0 lead — and lost."}},
+{key:"duel-27",theme:"Coaching Decisions",question:"Which pitcher handling was worse?",
+ a:{id:"05d25bc9-5845-4592-92bd-dab662813d3f",year:2003,line:"Rode Prior and Wood until both arms broke down."},
+ b:{id:"23a12984-4408-4463-bc42-4d37f3b417af",year:2012,line:"Shut down a healthy ace before the playoffs to protect his arm."}},
+{key:"duel-28",theme:"Golf Collapses",question:"Which golf collapse was worse?",
+ a:{id:"a058eac2-5319-4319-a908-6eb3c9679e99",year:1999,line:"Needed double-bogey to win The Open. Made triple."},
+ b:{id:"c67870ef-7976-40ed-9b0d-057f41aab6e2",year:2016,line:"Led by five on the back nine at Augusta. Hit two balls in the water on 12."}},
+{key:"duel-29",theme:"Golf Collapses",question:"Which Masters Sunday was worse?",
+ a:{id:"15f89fc3-7fa0-4f66-ada5-71c5b68fb406",year:1996,line:"Led by six entering Sunday at Augusta. Shot 78."},
+ b:{id:"728fb5af-98d4-49f9-997a-a85bef726a08",year:2011,line:"Led by four entering Sunday at Augusta. Shot 80."}},
+{key:"duel-30",theme:"Golf Collapses",question:"Which major slipped away worse?",
+ a:{id:"929c0aae-5f99-4a0d-a32f-55ec791971a8",year:2006,line:"Needed par on the 72nd hole to win the U.S. Open. Made double."},
+ b:{id:"2714954b-7e67-4030-a42d-6860e80eb829",year:1970,line:"Missed a three-footer on the 72nd hole to win The Open."}}
+];
+
+const ALL_IDS = [...new Set(DUELS.flatMap(d => [d.a.id, d.b.id]))];
+const VOTER_KEY = "sportsmistakes_voter_id";
+const PICKS_KEY = "sportsmistakes_duel_picks";
+const SITE_URL = "https://sportsmistakes.com/duel.html";
+
+let entries = {};      /* id -> {title, artwork_url} */
+let queue = [];        /* duel objects in today's play order */
+let qi = 0;            /* index into queue */
+let dailyDone = false; /* daily 5 finished (results shown) */
+let crowd = {};        /* duel key -> {a, b, total} */
+let tableMissing = false;
+
+function getVoterId(){
+  let v = localStorage.getItem(VOTER_KEY);
+  if(!v){
+    v = (globalThis.crypto && crypto.randomUUID) ? crypto.randomUUID()
+       : "sm-voter-" + Date.now() + "-" + Math.random().toString(36).slice(2);
+    localStorage.setItem(VOTER_KEY, v);
+  }
+  return v;
+}
+function getPicks(){
+  try { return JSON.parse(localStorage.getItem(PICKS_KEY) || "{}"); } catch(e){ return {}; }
+}
+function setPick(key, winnerId){
+  const p = getPicks(); p[key] = winnerId;
+  localStorage.setItem(PICKS_KEY, JSON.stringify(p));
+}
+/* Deterministic daily shuffle: same 5 duels for everyone, all day. */
+function mulberry32(seed){
+  return function(){
+    seed |= 0; seed = (seed + 0x6D2B79F5) | 0;
+    let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+function seededShuffle(arr, seed){
+  const a = arr.slice(), rnd = mulberry32(seed);
+  for(let i = a.length - 1; i > 0; i--){
+    const j = Math.floor(rnd() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+function buildQueue(){
+  const now = new Date();
+  const seed = now.getFullYear() * 10000 + (now.getMonth() + 1) * 100 + now.getDate();
+  const shuffled = seededShuffle(DUELS, seed);
+  const daily = shuffled.slice(0, 5);
+  const rest = seededShuffle(shuffled.slice(5), seed + 1);
+  return { daily, rest };
+}
+function esc(s){
+  return String(s == null ? "" : s).replace(/[&<>"']/g, c =>
+    ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+}
+
+async function loadEntries(){
+  const { data, error } = await client
+    .from("mistakes").select("id,title,artwork_url").in("id", ALL_IDS);
+  if(error) throw error;
+  (data || []).forEach(r => { entries[r.id] = r; });
+  const missing = ALL_IDS.filter(id => !entries[id]);
+  if(missing.length) throw new Error("Missing entries: " + missing.join(", "));
+}
+
+async function loadCounts(duel){
+  if(crowd[duel.key]) return crowd[duel.key];
+  const { data, error } = await client
+    .from("duel_picks").select("winner_id").eq("duel_key", duel.key);
+  if(error){
+    if(error.code === "42P01" || /relation .* does not exist/i.test(error.message || "")){
+      tableMissing = true;
+    }
+    throw error;
+  }
+  let a = 0, b = 0;
+  (data || []).forEach(r => {
+    if(r.winner_id === duel.a.id) a++;
+    else if(r.winner_id === duel.b.id) b++;
+  });
+  crowd[duel.key] = { a, b, total: a + b };
+  return crowd[duel.key];
+}
+
+function renderStatus(){
+  const total = queue.length;
+  const done = Math.min(qi, 5);
+  const picks = getPicks();
+  let withCrowd = 0, counted = 0;
+  queue.slice(0, 5).forEach(d => {
+    const c = crowd[d.key], pick = picks[d.key];
+    if(!c || !pick || c.total === 0) return;
+    counted++;
+    const maj = c.a > c.b ? d.a.id : (c.b > c.a ? d.b.id : null);
+    if(maj && pick === maj) withCrowd++;
+  });
+  return { done, total, withCrowd, counted };
+}
+
+function contenderHtml(duel, side, pickedWinner){
+  const c = duel[side];
+  const e = entries[c.id] || {};
+  const isPicked = pickedWinner === c.id;
+  const isLoser = pickedWinner && !isPicked;
+  return `<div class="contender ${isPicked ? "picked" : ""} ${isLoser ? "loser" : ""}">
+    ${e.artwork_url ? `<img src="${esc(e.artwork_url)}" alt="${esc(e.title || "")}" onerror="this.style.display='none'">` : ""}
+    <div class="body">
+      <h3>${esc(e.title || "Loading…")}</h3>
+      <div class="year">${c.year}</div>
+      <p>${esc(c.line)}</p>
+      ${pickedWinner
+        ? (isPicked ? `<span class="yourpick">YOUR PICK</span>` : "")
+        : `<button class="pick" data-side="${side}">This one was worse</button>`}
+    </div>
+  </div>`;
+}
+
+function renderDuel(){
+  const duel = queue[qi];
+  const app = document.getElementById("app");
+  if(!duel){ renderEnd(); return; }
+  const st = renderStatus();
+  const pickedWinner = getPicks()[duel.key] || null;
+  const isDaily = qi < 5;
+  app.innerHTML = `
+    <div class="hero">
+      <h1>WHICH WAS <em>WORSE?</em></h1>
+      <p>Two famous blunders. One pick. No wrong answers — but the crowd will judge you.</p>
+    </div>
+    <div class="statusbar">
+      <span>${isDaily ? `Daily duel ${qi + 1} of 5` : `Bonus duel ${qi - 4} of ${queue.length - 5}`}</span>
+      <span>${st.counted ? `With the crowd: ${st.withCrowd} of ${st.counted}` : `With the crowd: —`}</span>
+    </div>
+    <div class="card" id="duelCard">
+      <div class="theme">${esc(duel.theme)}</div>
+      <div class="question">${esc(duel.question)}</div>
+      <div class="vs" id="vsBox">
+        ${contenderHtml(duel, "a", pickedWinner)}
+        ${contenderHtml(duel, "b", pickedWinner)}
+      </div>
+      <div id="resultBox"></div>
+    </div>`;
+
+  if(pickedWinner){
+    showResult(duel, pickedWinner).catch(() => {});
+  } else {
+    app.querySelectorAll("button.pick").forEach(btn => {
+      btn.addEventListener("click", async () => {
+        btn.disabled = true;
+        await pickSide(duel, btn.dataset.side);
+      });
+    });
+  }
+}
+
+async function pickSide(duel, side){
+  const winner = duel[side], loser = duel[side === "a" ? "b" : "a"];
+  const voterId = getVoterId();
+  /* Record locally first so a tap is never lost to a network error. */
+  setPick(duel.key, winner.id);
+  try {
+    const { error } = await client.from("duel_picks").insert({
+      duel_key: duel.key,
+      winner_id: winner.id,
+      loser_id: loser.id,
+      voter_id: voterId
+    });
+    /* 23505 = this browser already has a row for this duel (unique index).
+       That pick is already counted — just show the split. */
+    if(error && error.code !== "23505") throw error;
+  } catch(e){
+    if(e && (e.code === "42P01" || /relation .* does not exist/i.test(e.message || ""))){
+      tableMissing = true;
+    } else {
+      console.error("duel pick insert failed", e);
+    }
+  }
+  delete crowd[duel.key]; /* recount including this pick */
+  renderDuel();
+}
+
+async function showResult(duel, pickedWinner){
+  const box = document.getElementById("resultBox");
+  if(!box) return;
+  const aTitle = (entries[duel.a.id] || {}).title || "";
+  const bTitle = (entries[duel.b.id] || {}).title || "";
+  const pickedTitle = pickedWinner === duel.a.id ? aTitle : bTitle;
+  const otherTitle = pickedWinner === duel.a.id ? bTitle : aTitle;
+  let counts = null;
+  try { counts = await loadCounts(duel); } catch(e){ counts = null; }
+
+  if(tableMissing || !counts){
+    box.innerHTML = `
+      <div class="notice">Your pick is saved: <b>${esc(pickedTitle)}</b>. The crowd split will appear here once the vote table is live — run <b>duel_picks.sql</b> in Supabase (see DUEL_DEPLOY.md), then reload.</div>
+      <div class="actions">
+        <button class="btn-next" id="nextBtn">${qi + 1 < queue.length ? "Next duel" : "See results"}</button>
+        <button class="btn-share" id="shareBtn">Share this duel</button>
+      </div>
+      <div class="storylinks">
+        <a href="mistake.html?id=${encodeURIComponent(duel.a.id)}">Read the full story: ${esc(aTitle)} &rarr;</a>
+        <a href="mistake.html?id=${encodeURIComponent(duel.b.id)}">Read the full story: ${esc(bTitle)} &rarr;</a>
+      </div>`;
+  } else {
+    const pctA = counts.total ? Math.round(counts.a / counts.total * 100) : 50;
+    const pctB = 100 - pctA;
+    const maj = counts.a > counts.b ? duel.a.id : (counts.b > counts.a ? duel.b.id : null);
+    const withCrowd = maj && pickedWinner === maj;
+    const verdict = counts.total === 0
+      ? "You're the first to call this one."
+      : (maj === null
+        ? "Perfectly split. No crowd side — defend your pick."
+        : (withCrowd
+          ? `You sided with the crowd. ${pickedWinner === duel.a.id ? pctA : pctB}% agree with you.`
+          : `You went against the crowd. Only ${pickedWinner === duel.a.id ? pctA : pctB}% agree with you — defend it.`));
+    box.innerHTML = `
+      <div class="split">
+        <div class="splitbar">
+          <div class="seg-a" style="width:${pctA}%">${pctA}%</div>
+          <div class="seg-b" style="width:${pctB}%">${pctB}%</div>
+        </div>
+        <div class="splitlabels"><span>${esc(aTitle)}</span><span>${esc(bTitle)}</span></div>
+      </div>
+      <div class="verdict">${esc(verdict)}
+        <small>${counts.total} ${counts.total === 1 ? "pick" : "picks"} so far</small>
+      </div>
+      <div class="actions">
+        <button class="btn-next" id="nextBtn">${qi + 1 < queue.length ? "Next duel" : "See results"}</button>
+        <button class="btn-share" id="shareBtn">Share this duel</button>
+      </div>
+      <div class="storylinks">
+        <a href="mistake.html?id=${encodeURIComponent(duel.a.id)}">Read the full story: ${esc(aTitle)} &rarr;</a>
+        <a href="mistake.html?id=${encodeURIComponent(duel.b.id)}">Read the full story: ${esc(bTitle)} &rarr;</a>
+      </div>`;
+  }
+
+  document.getElementById("nextBtn").addEventListener("click", () => {
+    qi++;
+    if(qi === 5 && !dailyDone){ dailyDone = true; renderResults(); }
+    else renderDuel();
+  });
+  document.getElementById("shareBtn").addEventListener("click", async () => {
+    const counts2 = counts;
+    let text;
+    if(counts2 && counts2.total > 0){
+      const pct = pickedWinner === duel.a.id
+        ? Math.round(counts2.a / counts2.total * 100)
+        : Math.round(counts2.b / counts2.total * 100);
+      text = `${pct}% say ${pickedTitle} was worse than ${otherTitle} — do you agree? ${SITE_URL}`;
+    } else {
+      text = `I picked ${pickedTitle} over ${otherTitle} — which was worse? ${SITE_URL}`;
+    }
+    await copyText(text, document.getElementById("shareBtn"));
+  });
+}
+
+async function copyText(text, btn){
+  try { await navigator.clipboard.writeText(text); }
+  catch(e){
+    const ta = document.createElement("textarea");
+    ta.value = text; document.body.appendChild(ta); ta.select();
+    document.execCommand("copy"); ta.remove();
+  }
+  if(btn){ const old = btn.textContent; btn.textContent = "Copied — paste it anywhere"; setTimeout(() => btn.textContent = old, 2500); }
+}
+
+function renderResults(){
+  const app = document.getElementById("app");
+  const picks = getPicks();
+  const daily = queue.slice(0, 5);
+  let withCrowd = 0, counted = 0;
+  const rows = daily.map(d => {
+    const c = crowd[d.key];
+    const pick = picks[d.key];
+    let line = "";
+    if(c && pick && c.total > 0){
+      counted++;
+      const maj = c.a > c.b ? d.a.id : (c.b > c.a ? d.b.id : null);
+      const side = pick === d.a.id ? "a" : "b";
+      const pct = Math.round(c[side] / c.total * 100);
+      if(maj && pick === maj) withCrowd++;
+      line = `You picked <b>${esc((entries[pick] || {}).title || "")}</b> — ${pct}% of the crowd agrees${maj === null ? " (perfectly split)" : ""}.`;
+    } else if(pick){
+      line = `You picked <b>${esc((entries[pick] || {}).title || "")}</b>.`;
+    } else {
+      line = "Skipped.";
+    }
+    return `<div class="row"><b>${esc(d.question)}</b><span>${line}</span></div>`;
+  }).join("");
+  app.innerHTML = `
+    <div class="hero"><h1>DAILY 5 <em>DONE.</em></h1>
+    <p>${counted ? `You sided with the crowd on ${withCrowd} of ${counted} duels.` : "Your picks are in."} Come back tomorrow for a fresh five — or keep dueling now.</p></div>
+    <div class="card results"><h2>Your verdicts</h2>${rows}
+      <div class="actions">
+        <button class="btn-next" id="keepBtn">Keep dueling (${queue.length - 5} more)</button>
+        <button class="btn-share" id="shareAllBtn">Share my verdicts</button>
+      </div>
+    </div>`;
+  document.getElementById("keepBtn").addEventListener("click", () => { renderDuel(); });
+  document.getElementById("shareAllBtn").addEventListener("click", async () => {
+    const lines = daily.map(d => {
+      const pick = picks[d.key];
+      if(!pick) return null;
+      const other = pick === d.a.id ? d.b.id : d.a.id;
+      return `I picked ${(entries[pick] || {}).title} over ${(entries[other] || {}).title}.`;
+    }).filter(Boolean);
+    await copyText(lines.join("\n") + `\nWhich was worse? ${SITE_URL}`, document.getElementById("shareAllBtn"));
+  });
+}
+
+function renderEnd(){
+  const app = document.getElementById("app");
+  app.innerHTML = `
+    <div class="hero"><h1>YOU DUELED <em>THEM ALL.</em></h1>
+    <p>All 30 duels, called. Come back tomorrow for a fresh Daily 5.</p></div>
+    <div class="card"><div class="actions">
+      <button class="btn-next" id="againBtn">Run it again (reshuffled)</button>
+      <a class="btn-share" style="text-align:center;text-decoration:none;padding:13px;border-radius:10px;font-weight:800;font-size:15px" href="index.html">Back to the archive</a>
+    </div></div>`;
+  document.getElementById("againBtn").addEventListener("click", () => {
+    const { daily, rest } = buildQueue();
+    queue = [...daily, ...seededShuffle(rest, Date.now())];
+    qi = 0; dailyDone = false;
+    renderDuel();
+  });
+}
+
+(async function init(){
+  try {
+    await loadEntries();
+    const { daily, rest } = buildQueue();
+    queue = [...daily, ...rest];
+    /* If this browser already finished today's Daily 5, jump to results. */
+    const picks = getPicks();
+    const doneDaily = daily.every(d => picks[d.key]);
+    if(doneDaily && qi === 0){
+      /* Preload counts so the results screen can score with-the-crowd. */
+      for(const d of daily){ try { await loadCounts(d); } catch(e){} }
+      qi = 5; dailyDone = true;
+      renderResults();
+      return;
+    }
+    renderDuel();
+  } catch(e){
+    console.error(e);
+    document.getElementById("app").innerHTML =
+      `<div class="error">Could not load the duels.<br><small>${esc(e.message || e)}</small><br><br>
+       <button class="btn-share" onclick="location.reload()">Try again</button></div>`;
+  }
+})();
+</script>
+</body>
+</html>
