@@ -104,7 +104,11 @@
    ------------------------------------------------------------------ */
 const SUPABASE_URL = "https://scwjlljurircxuufhqih.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNjd2psbGp1cmlyY3h1dWZocWloIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyNjUyMjcsImV4cCI6MjA5Njg0MTIyN30.WF0HRRb9mAkuOySjabTd8CZXVZRqF0MhMl0N2mafnns"; /* same public anon key already used by index.html — RLS is the protection, never put a private key here */
-const client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+  /* Never serve cached counts: a browser that once saw an empty table
+     must not keep showing 0 after real votes land. */
+  global: { fetch: (url, options) => fetch(url, Object.assign({}, options, { cache: "no-store" })) }
+});
 
 /* 30 approved duels (see duel-pairs-draft.md). "year" is the DISPLAY year:
    the mistakes table has wrong years on 5 rows (Warriors 2019→2016,
